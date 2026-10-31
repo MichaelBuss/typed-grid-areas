@@ -103,7 +103,7 @@ export type BreakpointLayoutConfig<TAreaName extends string> = {
  * Contains the layout structure - id is generated at render time.
  */
 export type GridConfig<TAreaName extends string> = {
-  /** Array of area names - selectors are auto-generated as [data-slot=name] */
+  /** Array of area names - slots are matched as [data-area=name] */
   areas: ReadonlyArray<TAreaName>;
   /** Layout configurations */
   layouts: Array<LayoutConfig<TAreaName>>;
@@ -145,7 +145,7 @@ export type GridStyles = NestedStyles;
  * Contains everything needed to render a GridAreas component.
  */
 export type GridAreasResult<TAreaName extends string> = {
-  /** Props to spread on elements, keyed by area name. Includes data-slot and style.gridArea */
+  /** Props to spread on elements, keyed by area name (a data-area attribute) */
   slots: Record<TAreaName, SlotProps>;
   /** CSS string for use in a <style> tag */
   css: string;

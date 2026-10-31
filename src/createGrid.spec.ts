@@ -2,13 +2,10 @@ import { createGrid } from "./createGrid";
 import { createSlots, generateCss } from "./generateCss";
 import { GridConfig } from "./types";
 
-// Helper to generate grid styles with a predictable id for testing
-const TEST_ID = "test";
 function testGrid<TAreaName extends string>(config: GridConfig<TAreaName>) {
   return {
     slots: createSlots(config.areas),
-    css: generateCss(TEST_ID, config),
-    containerProps: { "data-grid-id": TEST_ID },
+    css: generateCss(config),
   };
 }
 
@@ -403,18 +400,15 @@ describe("generateCss and createSlots", () => {
     });
   });
 
-  describe("containerProps and CSS scoping", () => {
-    it("should generate CSS string with container selector", () => {
-      const config = createGrid()
-        .areas(["info"])
-        .layout({ layout: [["info"]] })
-        .build();
+  describe("CSS scoping", () => {
+    it("should generate identical CSS for the same definition", () => {
+      const build = () =>
+        createGrid()
+          .areas(["info"])
+          .layout({ layout: [["info"]] })
+          .build();
 
-      const result = testGrid(config);
-
-      expect(result.containerProps).toEqual({ "data-grid-id": TEST_ID });
-      expect(result.css).toContain('[data-grid-id="test"]');
-      expect(result.css).toContain("grid-template-areas: 'info'");
+      expect(generateCss(build())).toBe(generateCss(build()));
     });
 
     it("should generate CSS with @container queries", () => {
@@ -490,7 +484,7 @@ describe("createGrid builder pattern", () => {
         .build();
 
       const slots = createSlots(config.areas);
-      const css = generateCss("test-id", config);
+      const css = generateCss(config);
 
       expect(slots.icon).toEqual({ "data-area": "icon" });
       expect(css).toContain("grid-template-areas: 'icon info'");
@@ -599,7 +593,7 @@ describe("createGrid builder pattern", () => {
         .build();
 
       const slots = createSlots(config.areas);
-      const css = generateCss("test-id", config);
+      const css = generateCss(config);
 
       expect(slots.icon).toBeDefined();
       expect(slots.information).toBeDefined();

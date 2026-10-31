@@ -1,9 +1,13 @@
 export { createGrid } from "./createGrid";
+export { gridId } from "./engine/gridId";
 export { createSlots, generateCss } from "./generateCss";
 export { validateGridConfig } from "./validateGridConfig";
 export { validateGridSlots } from "./validateGridSlots";
 export {
   CONTAINER_BREAKPOINTS,
+  type Alignment,
+  type AreaAlignment,
+  type AreaAlignments,
   type BreakpointLayoutConfig,
   type ContainerBreakpoint,
   type EmptyCell,

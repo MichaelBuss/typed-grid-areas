@@ -1,3 +1,4 @@
+import { gridId } from "./engine/gridId";
 import { HideRule, toHideRules } from "./engine/hiding";
 import { placeAreas } from "./engine/placement";
 import { Condition, Rule, toRules } from "./engine/rules";
@@ -109,15 +110,15 @@ function hideRuleToCss(scope: string, { area, condition, except, from, until }: 
 /**
  * Generates the CSS for a grid definition.
  *
- * @param id - Identifier the grid container carries as `data-grid-id`
+ * The CSS depends only on the definition and is scoped to grid containers
+ * carrying `data-grid-id="${gridId(config)}"`, so every instance of a
+ * definition shares it and it only needs emitting once.
+ *
  * @param config - Grid configuration from createGrid().build()
  * @returns {string} CSS string for use in a style tag
  */
-export function generateCss<TAreaName extends string>(
-  id: string,
-  config: GridConfig<TAreaName>,
-): string {
-  const scope = `[data-grid-id="${id}"]`;
+export function generateCss<TAreaName extends string>(config: GridConfig<TAreaName>): string {
+  const scope = `[data-grid-id="${gridId(config)}"]`;
   const rules = toRules(config);
   const css = [
     ...rules.map(rule => ruleToCss(scope, config.areas, rule)),

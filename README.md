@@ -60,46 +60,47 @@ automatically by the React hook in development) and returns human-readable
 warning strings instead of type errors — useful for configs assembled
 dynamically, where the type-level checks can't reach.
 
-## `when` and the generated `:has()` selectors
+## Conditions: `when` and `unless`
 
-A layout without `when` is the **base** layout — always applied. A layout
-with `when` only applies while every area listed in `when` is present _and_
-every other declared area is absent, expressed as a chained `:has()` /
-`:not(:has())` selector on direct children:
+A layout without a condition is the **base** layout — always applied. A
+layout's condition is `when` (areas that must be present) plus `unless`
+(areas that must be absent); areas named in neither don't affect it. It is
+checked with `:has()` / `:not(:has())` on the grid's direct children:
 
 ```ts
 createGrid()
   .areas(["icon", "info", "tag"])
-  .layout({ layout: [["info"]] })
+  .layout({ layout: [["info", "tag"]] })
   .layout({
-    when: ["icon", "info"],
+    when: ["icon"],
+    unless: ["tag"],
     layout: [["icon", "info"]],
+    align: { icon: { justify: "center", align: "start" } },
   })
   .build();
 ```
 
-produces roughly:
-
-```css
-[data-grid-id="…"] {
-  grid-template-areas: "info";
-}
-[data-grid-id="…"]:has(> [data-slot="icon"]):has(> [data-slot="info"]):not(
-    :has(> [data-slot="tag"])
-  ) {
-  grid-template-areas: "icon info";
-}
-```
-
 So layouts react to _which optional children are actually rendered_, without
-any JS layout logic — omit the `icon` slot's element and the grid falls back
-to the base layout automatically.
+any JS layout logic. When several layouts match, the one declared **last**
+wins, however many areas each one mentions.
 
-`breakpoints` nests the same idea under `@container` queries (using
-Tailwind's default `@container` breakpoints — `@xs` through `@7xl`), and are
-self-contained: a breakpoint always explicitly sets `grid-template-rows`/
-`-columns` (to a value, or to `none`) so a base layout's tracks never leak
-into it.
+Every layout is self-contained: while it applies it sets the tracks, the
+placement and the alignment (`justify` / `align`: `start`, `center`, `end`,
+`stretch`, `baseline`) of every area, so nothing leaks in from another
+matching layout. An area a layout's template leaves out is **hidden**
+(`display: none`) while that layout applies.
+
+`breakpoints` give a layout different arrangements under `@container`
+queries (using Tailwind's default `@container` breakpoints — `@xs` through
+`@7xl`). A breakpoint arrangement beats its own layout's base arrangement,
+but a later layout still beats an earlier layout's breakpoints. Breakpoint
+arrangements take their own `rows`, `columns` and `align`; nothing is
+inherited from the layout.
+
+All generated CSS sits in the `typed-grid-areas` cascade layer, so your own
+unlayered classes on a slot (say `justify-self`) always win. The one
+exception is hiding: it is `!important`, so a `display` class on a slot
+can't bring back an area the current layout leaves out.
 
 ```ts
 createGrid()
@@ -115,24 +116,27 @@ createGrid()
 
 ## Slots and CSS
 
-`createSlots(areas)` and `generateCss(id, config)` turn a built `GridConfig`
-into what you actually render:
+`createSlots(areas)`, `generateCss(config)` and `gridId(config)` turn a
+built `GridConfig` into what you actually render:
 
 ```ts
-import { createSlots, generateCss } from "typed-grid-areas";
+import { createSlots, generateCss, gridId } from "typed-grid-areas";
 
 const slots = createSlots(cardGrid.areas);
-// { icon: { "data-slot": "icon", style: { gridArea: "icon" } }, ... }
+// { icon: { "data-area": "icon" }, ... }
 
-const css = generateCss("card-1", cardGrid);
-// CSS string, scoped to [data-grid-id="card-1"]
+const css = generateCss(cardGrid);
+// CSS string, scoped to [data-grid-id="<gridId(cardGrid)>"]
 ```
 
 Spread the relevant slot object onto each child (`{...slots.icon}`) and put
 the CSS in a `<style>` tag alongside a container carrying
-`data-grid-id="card-1"`. `validateGridSlots(container, areas)` can then check
-a real DOM container's direct children for missing, incomplete, mismatched,
-or unrecognized slot props, returning warning strings.
+`data-grid-id={gridId(cardGrid)}`. Placement lives in the CSS, not on the
+slots. The CSS depends only on the definition, so every instance of it
+shares the same CSS and it only needs emitting once.
+`validateGridSlots(container, areas)` can then check a real DOM container's
+direct children for missing or unrecognized slot props, returning warning
+strings.
 
 The React adapter below wires all of this up for you.
 
@@ -163,8 +167,8 @@ function Card() {
 }
 ```
 
-- `useGridAreas(config)` generates a unique id (`useId`) and memoizes
-  `{ slots, css, containerProps }`. In development it also runs
+- `useGridAreas(config)` memoizes `{ slots, css, containerProps }`, scoped
+  by the definition's `gridId`. In development it also runs
   `validateGridConfig` and logs any warnings.
 - `<GridAreas>` renders the `<style>` tag plus the container (a `div` by
   default), spreads `containerProps` and your `style`/`className` onto it,

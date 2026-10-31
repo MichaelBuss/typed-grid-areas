@@ -46,7 +46,9 @@ export function validateGridSlots(
 
   if (unknownSlots.length > 0) {
     const details = unknownSlots
-      .map(({ area, tagName, index }) => `  - <${tagName}> at index ${index} has data-area="${area}"`)
+      .map(
+        ({ area, tagName, index }) => `  - <${tagName}> at index ${index} has data-area="${area}"`,
+      )
       .join("\n");
 
     warnings.push(

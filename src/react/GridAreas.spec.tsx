@@ -49,6 +49,46 @@ describe("GridAreas", () => {
     expect(getByText("info")).toHaveAttribute("data-area", "info");
   });
 
+  it("gives two instances of one definition identical CSS and the same scope", () => {
+    const { container } = render(
+      <>
+        <Card />
+        <Card />
+      </>,
+    );
+
+    const [firstStyle, secondStyle] = Array.from(container.querySelectorAll("style"));
+    const [firstGrid, secondGrid] = Array.from(container.querySelectorAll("[data-grid-id]"));
+
+    expect(firstStyle?.textContent).toBeTruthy();
+    expect(secondStyle?.textContent).toBe(firstStyle?.textContent);
+    expect(secondGrid?.getAttribute("data-grid-id")).toBe(firstGrid?.getAttribute("data-grid-id"));
+  });
+
+  it("scopes different definitions differently", () => {
+    const otherGrid = createGrid()
+      .areas(["icon", "info"])
+      .layout({ layout: [["info", "icon"]] })
+      .build();
+
+    function OtherCard() {
+      const gridAreas = useGridAreas(otherGrid);
+      return <GridAreas {...gridAreas}>{slots => <span {...slots.icon} />}</GridAreas>;
+    }
+
+    const { container } = render(
+      <>
+        <Card />
+        <OtherCard />
+      </>,
+    );
+
+    const [firstGrid, secondGrid] = Array.from(container.querySelectorAll("[data-grid-id]"));
+    expect(secondGrid?.getAttribute("data-grid-id")).not.toBe(
+      firstGrid?.getAttribute("data-grid-id"),
+    );
+  });
+
   it("renders asChild as the single element returned by the render prop instead of a div", () => {
     const { getByTestId } = render(<Card asChild />);
 

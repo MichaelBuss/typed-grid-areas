@@ -29,7 +29,10 @@ function isUnconditional({ when, unless }: Condition): boolean {
 /**
  * Works out where each area a rule leaves out must be hidden.
  */
-export function toHideRules(areas: ReadonlyArray<string>, rules: ReadonlyArray<Rule>): Array<HideRule> {
+export function toHideRules(
+  areas: ReadonlyArray<string>,
+  rules: ReadonlyArray<Rule>,
+): Array<HideRule> {
   const placed = rules.map(rule => placeAreas(rule.arrangement.cells));
   const hideRules: Array<HideRule> = [];
 
@@ -53,7 +56,10 @@ export function toHideRules(areas: ReadonlyArray<string>, rules: ReadonlyArray<R
       for (const shower of [...showers].sort(
         (a, b) => breakpointRank(a.breakpoint) - breakpointRank(b.breakpoint),
       )) {
-        if (breakpointRank(shower.breakpoint) > ownRank && !lowerBounds.includes(shower.breakpoint)) {
+        if (
+          breakpointRank(shower.breakpoint) > ownRank &&
+          !lowerBounds.includes(shower.breakpoint)
+        ) {
           lowerBounds.push(shower.breakpoint);
         }
       }

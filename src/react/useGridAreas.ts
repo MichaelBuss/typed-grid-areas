@@ -1,4 +1,5 @@
-import { useId, useMemo } from "react";
+import { useMemo } from "react";
+import { gridId } from "../engine/gridId";
 import { createSlots, generateCss } from "../generateCss";
 import { GridAreasResult, GridConfig } from "../types";
 import { validateGridConfig } from "../validateGridConfig";
@@ -6,7 +7,8 @@ import { validateGridConfig } from "../validateGridConfig";
 /**
  * React hook for creating type-safe CSS grid-template-areas with automatic :has() selector generation.
  *
- * Automatically generates a unique id using React's useId() hook.
+ * The CSS and its scoping id depend only on the definition, so every
+ * instance of a definition gets identical CSS.
  * Returns memoized grid configuration including slots, CSS, and container props.
  *
  * In development mode, validates the grid configuration and logs warnings for:
@@ -68,8 +70,6 @@ import { validateGridConfig } from "../validateGridConfig";
 export function useGridAreas<TAreaName extends string>(
   config: GridConfig<TAreaName>,
 ): GridAreasResult<TAreaName> {
-  const id = useId();
-
   return useMemo(() => {
     // Config validation (dev only)
     if (process.env.NODE_ENV === "development") {
@@ -82,8 +82,8 @@ export function useGridAreas<TAreaName extends string>(
 
     return {
       slots: createSlots(config.areas),
-      css: generateCss(id, config),
-      containerProps: { "data-grid-id": id },
+      css: generateCss(config),
+      containerProps: { "data-grid-id": gridId(config) },
     };
-  }, [id, config]);
+  }, [config]);
 }
