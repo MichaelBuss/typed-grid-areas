@@ -20,6 +20,7 @@ _Avoid_: Conditional area, nullable area
 **Slot**:
 The rendered element that fills an area. A slot is either present or absent.
 _Avoid_: Child, item
+_Note_: Not the HTML `<slot>` element, nor Vue's or Svelte's slots; a slot here is always an element in the page.
 
 **Layer**:
 An area drawn on top of cells that another area owns, for example a badge over a photo.
