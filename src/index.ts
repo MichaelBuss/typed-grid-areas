@@ -1,4 +1,4 @@
-export { createGrid } from "./createGrid";
+export { defineLayout, type ArrangementInput, type LayoutInput } from "./defineLayout";
 export { gridId } from "./engine/gridId";
 export { createSlots, generateCss } from "./generateCss";
 export { validateGridConfig } from "./validateGridConfig";
@@ -19,6 +19,7 @@ export {
   type GridLayout,
   type GridStyles,
   type LayoutConfig,
+  type LayoutDefinition,
   type NestedStyles,
   type SizeContainerProps,
   type SlotProps,

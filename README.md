@@ -20,45 +20,63 @@ Not published. Consume it as a local path or git dependency:
 
 `react` is an optional peer dependency, only needed for the `typed-grid-areas/react` entry point.
 
-## The factory: `createGrid()`
+## Defining a grid: `defineLayout()`
 
-Build a grid configuration with a fluent builder. Define the area names once
-with `.areas()`, then everything after that — `.layout()` calls, `when`
-clauses, row/column tracks — is checked against that set at the type level.
+Describe a grid once: its areas, and the layouts that arrange them, drawn as
+text templates. Everything that names an area is checked against `areas` at
+the type level.
 
 ```ts
-import { createGrid } from "typed-grid-areas";
+import { defineLayout } from "typed-grid-areas";
 
-const cardGrid = createGrid()
-  .areas(["icon", "info", "tag"])
-  .layout({ layout: [["info"]] })
-  .layout({
-    when: ["icon", "info"],
-    layout: [["icon", "info"]],
-    columns: ["48px", "1fr"],
-  })
-  .build();
+const cardGrid = defineLayout({
+  areas: ["icon?", "information", "cardTag?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information`,
+      columns: "min-content minmax(0, 1fr)",
+      align: { cardTag: { justify: "end" } },
+      breakpoints: {
+        "@sm": {
+          template: "icon information cardTag",
+          columns: "min-content minmax(0, 1fr) auto",
+        },
+      },
+    },
+    { unless: ["cardTag"], template: "icon information" },
+  ],
+});
 ```
 
-Each cell in a `layout` must be one of the declared area names or `"."` for
-an empty cell. Mistype an area name and TypeScript flags it right on the
-`layout` property.
+- **Areas:** a trailing `?` marks an area optional (its slot may be absent);
+  the area is still called `icon`.
+- **Templates:** rows are separated by newlines or `/`, cells by whitespace.
+  `.` is an empty cell, and `base+layer` draws `layer` over `base`.
+- **Track lists:** `rows` and `columns` are one CSS track list each.
+  Whitespace inside parentheses doesn't split a track, so
+  `"min-content minmax(0, 1fr)"` is two tracks.
 
-Compile-time checks the builder gives you:
+Compile-time checks, each reported on the offending property:
 
-- **Area autocomplete** — after `.areas()`, only those names (plus `"."`) are
-  valid layout cells.
-- **Row/column count validation** — `rows`/`columns` array length must match
-  the layout's row/column count, or you get a `_rowCountError` /
-  `_columnCountError` type error on that property.
-- **`when` completeness** — every area listed in `when` must actually appear
-  somewhere in that layout's cells, or you get a `_missingFromLayout` type
-  error on `layout`.
+- an unknown area in a cell (also inside `a+b`): `{ _unknownArea: "iconn" }`
+  on `template`
+- rows with different cell counts:
+  `{ _raggedRow: { row: 2; cells: 1; expected: 2 } }` on `template`
+- a track count that doesn't match the template:
+  `{ _columnCountError: { expected: 2; got: 3 } }` on `columns` (and
+  `_rowCountError` on `rows`); skipped for `repeat(` and non-literal strings
+- unknown `align` keys and unknown `when`/`unless` values
 
-`validateGridConfig()` runs the equivalent checks at runtime (used
-automatically by the React hook in development) and returns human-readable
-warning strings instead of type errors — useful for configs assembled
-dynamically, where the type-level checks can't reach.
+There is no autocomplete inside a template string, and each template reports
+one problem at a time.
+
+In development, `defineLayout` also runs `validateGridConfig()` once per
+definition and logs what types can't check: areas and layers that aren't
+rectangles, and malformed cells. `validateGridConfig()` returns those
+warnings as strings, so it is also useful for definitions assembled
+dynamically.
 
 ## Conditions: `when` and `unless`
 
@@ -68,16 +86,18 @@ layout's condition is `when` (areas that must be present) plus `unless`
 checked with `:has()` / `:not(:has())` on the grid's direct children:
 
 ```ts
-createGrid()
-  .areas(["icon", "info", "tag"])
-  .layout({ layout: [["info", "tag"]] })
-  .layout({
-    when: ["icon"],
-    unless: ["tag"],
-    layout: [["icon", "info"]],
-    align: { icon: { justify: "center", align: "start" } },
-  })
-  .build();
+defineLayout({
+  areas: ["icon", "info", "tag"],
+  layouts: [
+    { template: "info tag" },
+    {
+      when: ["icon"],
+      unless: ["tag"],
+      template: "icon info",
+      align: { icon: { justify: "center", align: "start" } },
+    },
+  ],
+});
 ```
 
 So layouts react to _which optional children are actually rendered_, without
@@ -104,16 +124,18 @@ exception is hiding: it is `!important`, so a `display` class on a slot
 can't bring back an area the current layout leaves out.
 
 ```ts
-createGrid()
-  .areas(["icon", "info"])
-  .layout({
-    layout: [["info"]],
-    breakpoints: {
-      "@sm": { layout: [["icon", "info"]] },
-      "@[40rem]": { layout: [["info", "icon"]] },
+defineLayout({
+  areas: ["icon", "info"],
+  layouts: [
+    {
+      template: "info",
+      breakpoints: {
+        "@sm": { template: "icon info" },
+        "@[40rem]": { template: "info icon" },
+      },
     },
-  })
-  .build();
+  ],
+});
 ```
 
 A breakpoint measures the space the grid itself is given, never a container
@@ -131,7 +153,7 @@ collapses to zero width in an `auto` or `min-content` track of a parent grid.
 ## Slots and CSS
 
 `createSlots(areas)`, `generateCss(config)` and `gridId(config)` turn a
-built `GridConfig` into what you actually render:
+definition into what you actually render:
 
 ```ts
 import { createSlots, generateCss, gridId } from "typed-grid-areas";
@@ -157,13 +179,13 @@ The React adapter below wires all of this up for you.
 ## React adapter: `useGridAreas` + `<GridAreas>`
 
 ```tsx
-import { createGrid } from "typed-grid-areas";
+import { defineLayout } from "typed-grid-areas";
 import { GridAreas, useGridAreas } from "typed-grid-areas/react";
 
-const cardGrid = createGrid()
-  .areas(["icon", "info"])
-  .layout({ layout: [["icon", "info"]] })
-  .build();
+const cardGrid = defineLayout({
+  areas: ["icon", "info"],
+  layouts: [{ template: "icon info" }],
+});
 
 function Card() {
   const gridAreas = useGridAreas(cardGrid);
@@ -184,8 +206,7 @@ function Card() {
 - `useGridAreas(config)` memoizes
   `{ slots, css, containerProps, sizeContainerProps }`, scoped by the
   definition's `gridId` (`sizeContainerProps` only when the definition has
-  breakpoints). In development it also runs
-  `validateGridConfig` and logs any warnings.
+  breakpoints).
 - `<GridAreas>` renders the `<style>` tag plus the container (a `div` by
   default), spreads `containerProps` and your `style`/`className` onto it,
   and calls your render prop with `slots`. In development, its ref callback
@@ -231,8 +252,9 @@ function Card() {
 ## Development
 
 ```sh
-just test       # vitest run
-just typecheck   # tsc --noEmit
+just test          # unit tests (happy-dom), including the compile-budget check
+just test-browser  # in-browser layout tests (Chromium via Playwright)
+just typecheck     # tsc --noEmit, including the type tests
 ```
 
 or via npm directly: `npm test`, `npm run typecheck`.

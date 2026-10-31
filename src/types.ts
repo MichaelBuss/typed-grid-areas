@@ -116,8 +116,21 @@ export type BreakpointLayoutConfig<TAreaName extends string> = {
 export type GridConfig<TAreaName extends string> = {
   /** Array of area names - slots are matched as [data-area=name] */
   areas: ReadonlyArray<TAreaName>;
+  /** The areas whose slots may be absent. Every other area is required. */
+  optionalAreas?: ReadonlyArray<TAreaName>;
   /** Layout configurations */
   layouts: Array<LayoutConfig<TAreaName>>;
+};
+
+/**
+ * A grid definition from `defineLayout`, typed with its area names and which
+ * of them are optional.
+ */
+export type LayoutDefinition<
+  TAreaName extends string,
+  TOptionalAreaName extends TAreaName = never,
+> = Omit<GridConfig<TAreaName>, "optionalAreas"> & {
+  optionalAreas: ReadonlyArray<TOptionalAreaName>;
 };
 
 /**

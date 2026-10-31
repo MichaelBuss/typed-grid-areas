@@ -43,6 +43,14 @@ function validateUnlessClause(
     );
 }
 
+/**
+ * Whether a track list's length is its track count: not when a track uses
+ * `repeat()`, which stands for any number of tracks.
+ */
+function isCountable(tracks: ReadonlyArray<TrackSize>): boolean {
+  return !tracks.some(track => track.includes("repeat("));
+}
+
 interface ValidateLayoutDimensionsOptions {
   layout: GridLayout<string>;
   rows: Array<TrackSize> | undefined;
@@ -78,14 +86,14 @@ function validateLayoutDimensions({
   const firstRowLength = firstRow.length;
 
   // Check rows array length
-  if (rows !== undefined && rows.length !== rowCount) {
+  if (rows !== undefined && isCountable(rows) && rows.length !== rowCount) {
     errors.push(
       `${context}: rows array length (${rows.length}) doesn't match layout row count (${rowCount}).`,
     );
   }
 
   // Check columns array length
-  if (columns !== undefined && columns.length !== firstRowLength) {
+  if (columns !== undefined && isCountable(columns) && columns.length !== firstRowLength) {
     errors.push(
       `${context}: columns array length (${columns.length}) doesn't match layout column count (${firstRowLength}).`,
     );
@@ -107,44 +115,65 @@ function validateLayoutDimensions({
   return errors;
 }
 
-interface ValidateLayoutAreaNamesOptions {
+interface ValidateCellsOptions {
   layout: GridLayout<string>;
   areas: ReadonlyArray<string>;
   context: string;
 }
 
 /**
- * Validates that all cell names in a layout are valid area names.
- *
- * @param options - Validation options
- * @param options.layout - The 2D grid layout
- * @param options.areas - Valid area names
- * @param options.context - Context string for error messages
- * @returns {Array<string>} Array of error messages
+ * The area names in a cell: `"photo+badge"` is the base `photo` with the
+ * layer `badge` drawn over it.
  */
-function validateLayoutAreaNames({
-  layout,
-  areas,
-  context,
-}: ValidateLayoutAreaNamesOptions): Array<string> {
+function cellAreas(cell: string): Array<string> {
+  return cell === "." ? [] : cell.split("+");
+}
+
+/**
+ * Validates a layout's cells: every cell is `.`, an area name, or area names
+ * joined by `+` (a base and the layers over it), each name is an area of
+ * the grid, and every area and layer covers a rectangle of cells.
+ */
+function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<string> {
   const errors: Array<string> = [];
   const areaSet = new Set(areas);
+  const covered = new Map<string, { cells: Array<[number, number]>; asBase: boolean }>();
 
-  for (let rowIndex = 0; rowIndex < layout.length; rowIndex++) {
-    const row = layout[rowIndex];
-    if (row === undefined) {
-      continue;
-    }
-    for (let colIndex = 0; colIndex < row.length; colIndex++) {
-      const cell = row[colIndex];
-      if (cell === undefined) {
-        continue;
-      }
-      if (cell !== "." && !areaSet.has(cell)) {
+  layout.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      const names = cellAreas(cell);
+      if (names.some(name => name === "" || name === ".") || new Set(names).size !== names.length) {
         errors.push(
-          `${context}: Unknown area name "${cell}" at row ${rowIndex}, column ${colIndex}. Valid areas are: ${areas.join(", ")}.`,
+          `${context}: Malformed cell "${cell}" at row ${rowIndex}, column ${colIndex}. A cell is ".", an area name, or area names joined by "+" (each at most once).`,
         );
+        return;
       }
+      names.forEach((name, index) => {
+        if (!areaSet.has(name)) {
+          errors.push(
+            `${context}: Unknown area name "${name}" at row ${rowIndex}, column ${colIndex}. Valid areas are: ${areas.join(", ")}.`,
+          );
+          return;
+        }
+        const entry = covered.get(name) ?? { cells: [], asBase: false };
+        entry.cells.push([rowIndex, colIndex]);
+        entry.asBase ||= index === 0;
+        covered.set(name, entry);
+      });
+    });
+  });
+
+  for (const [name, { cells, asBase }] of covered) {
+    const rows = cells.map(([rowIndex]) => rowIndex);
+    const cols = cells.map(([, colIndex]) => colIndex);
+    const top = Math.min(...rows);
+    const bottom = Math.max(...rows);
+    const left = Math.min(...cols);
+    const right = Math.max(...cols);
+    if ((bottom - top + 1) * (right - left + 1) !== cells.length) {
+      errors.push(
+        `${context}: ${asBase ? "Area" : "Layer"} "${name}" isn't a rectangle, so it will cover rows ${top}-${bottom}, columns ${left}-${right} (its bounding box).`,
+      );
     }
   }
 
@@ -180,7 +209,7 @@ function validateWhenClause({
 
   const errors: Array<string> = [];
   const areaSet = new Set(areas);
-  const layoutCells = new Set(layout.flat());
+  const layoutCells = new Set(layout.flat().flatMap(cellAreas));
 
   for (const item of when) {
     if (!areaSet.has(item)) {
@@ -237,7 +266,7 @@ function validateBreakpoints({
         context,
       }),
     );
-    errors.push(...validateLayoutAreaNames({ layout: config.layout, areas, context }));
+    errors.push(...validateCells({ layout: config.layout, areas, context }));
   }
 
   return errors;
@@ -299,12 +328,12 @@ export function validateGridConfig<TAreaName extends string>(
 
   // Validate areas array
   if (areas.length === 0) {
-    errors.push("Config has no areas defined. Use .areas([...]) to define at least one area.");
+    errors.push("Config has no areas defined. Define at least one area.");
   }
 
   // Validate layouts array
   if (layouts.length === 0) {
-    errors.push("Config has no layouts defined. Use .layout({...}) to define at least one layout.");
+    errors.push("Config has no layouts defined. Define at least one layout.");
   }
 
   // Check for duplicate when-clauses
@@ -326,7 +355,7 @@ export function validateGridConfig<TAreaName extends string>(
         context,
       }),
     );
-    errors.push(...validateLayoutAreaNames({ layout: layoutConfig.layout, areas, context }));
+    errors.push(...validateCells({ layout: layoutConfig.layout, areas, context }));
     errors.push(
       ...validateWhenClause({
         when: layoutConfig.when,

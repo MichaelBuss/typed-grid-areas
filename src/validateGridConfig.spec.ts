@@ -303,6 +303,68 @@ describe("validateGridConfig", () => {
     });
   });
 
+  describe("cell validation", () => {
+    it.each(["photo+", "+badge", "photo++badge", ".+badge", "photo+photo"])(
+      "should warn about the malformed cell %s",
+      cell => {
+        const config: GridConfig<string> = {
+          areas: ["photo", "badge"],
+          layouts: [{ layout: [[cell]] }],
+        };
+
+        expect(validateGridConfig(config)).toEqual([
+          expect.stringContaining(`Malformed cell "${cell}" at row 0, column 0`),
+        ]);
+      },
+    );
+
+    it("should warn about an unknown area in a layered cell", () => {
+      const config: GridConfig<string> = {
+        areas: ["photo", "badge"],
+        layouts: [{ layout: [["photo+badgee"]] }],
+      };
+
+      expect(validateGridConfig(config)).toEqual([
+        expect.stringContaining('Unknown area name "badgee" at row 0, column 0'),
+      ]);
+    });
+
+    it("should warn about areas that aren't rectangles in a breakpoint", () => {
+      const config: GridConfig<string> = {
+        areas: ["a", "b"],
+        layouts: [
+          {
+            layout: [["a", "b"]],
+            breakpoints: {
+              "@sm": {
+                layout: [
+                  ["a", "a"],
+                  ["a", "b"],
+                ],
+              },
+            },
+          },
+        ],
+      };
+
+      expect(validateGridConfig(config)).toEqual([
+        expect.stringContaining(`Layout 0, breakpoint "@sm": Area "a" isn't a rectangle`),
+      ]);
+    });
+
+    it("should accept a layer that is also an area in another layout", () => {
+      const config: GridConfig<string> = {
+        areas: ["photo", "logo"],
+        layouts: [
+          { layout: [["photo+logo", "photo"]] },
+          { when: ["logo"], layout: [["photo", "logo"]] },
+        ],
+      };
+
+      expect(validateGridConfig(config)).toHaveLength(0);
+    });
+  });
+
   describe("valid configurations", () => {
     it("should return empty array for valid config", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {

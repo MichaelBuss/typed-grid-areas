@@ -141,7 +141,7 @@ function hideRuleToCss(scope: Scope, { area, condition, except, from, until }: H
  * container named `sizeContainerName(gridId(config))`), so every instance of
  * a definition shares it and it only needs emitting once.
  *
- * @param config - Grid configuration from createGrid().build()
+ * @param config - Grid definition from defineLayout()
  * @returns {string} CSS string for use in a style tag
  */
 export function generateCss<TAreaName extends string>(config: GridConfig<TAreaName>): string {

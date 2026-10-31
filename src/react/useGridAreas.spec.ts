@@ -1,19 +1,21 @@
 import { renderHook } from "@testing-library/react";
 import { useMemo } from "react";
-import { createGrid } from "../createGrid";
+import { defineLayout } from "../defineLayout";
 import { GridConfig } from "../types";
 import { useGridAreas } from "./useGridAreas";
 
 // Test grid config defined at module level (as recommended usage)
-const testGridConfig = createGrid()
-  .areas(["icon", "info", "tag"])
-  .layout({ layout: [["info"]] })
-  .layout({
-    when: ["icon", "info"],
-    layout: [["icon", "info"]],
-    columns: ["48px", "1fr"],
-  })
-  .build();
+const testGridConfig = defineLayout({
+  areas: ["icon", "info", "tag"],
+  layouts: [
+    { template: "info" },
+    {
+      when: ["icon", "info"],
+      template: "icon info",
+      columns: "48px 1fr",
+    },
+  ],
+});
 
 describe("useGridAreas", () => {
   it("should return slots, css, and containerProps", () => {
@@ -98,7 +100,7 @@ describe("useGridAreas", () => {
       vi.restoreAllMocks();
     });
 
-    it("should warn in development when config has validation errors", () => {
+    it("leaves validation to defineLayout, which runs it once per definition", () => {
       const invalidConfig: GridConfig<string> = {
         areas: ["icon"],
         layouts: [
@@ -110,10 +112,7 @@ describe("useGridAreas", () => {
 
       renderHook(() => useGridAreas(invalidConfig));
 
-      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("useGridAreas:"));
-      expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Unknown area name "unknown"'),
-      );
+      expect(console.warn).not.toHaveBeenCalled();
     });
   });
 });

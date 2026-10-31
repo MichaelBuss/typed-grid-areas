@@ -1,18 +1,15 @@
 import { render } from "@testing-library/react";
 import { createRef } from "react";
-import { createGrid } from "../createGrid";
+import { defineLayout } from "../defineLayout";
 import { GridAreas } from "./GridAreas";
 import { useGridAreas } from "./useGridAreas";
 
-const cardGrid = createGrid()
-  .areas(["icon", "info"])
-  .layout({ layout: [["icon", "info"]] })
-  .build();
+const cardGrid = defineLayout({ areas: ["icon", "info"], layouts: [{ template: "icon info" }] });
 
-const responsiveGrid = createGrid()
-  .areas(["icon", "info"])
-  .layout({ layout: [["icon"], ["info"]], breakpoints: { "@sm": { layout: [["icon", "info"]] } } })
-  .build();
+const responsiveGrid = defineLayout({
+  areas: ["icon", "info"],
+  layouts: [{ template: "icon / info", breakpoints: { "@sm": { template: "icon info" } } }],
+});
 
 function Card({ asChild = false }: { asChild?: boolean }) {
   const gridAreas = useGridAreas(cardGrid);
@@ -99,10 +96,10 @@ describe("GridAreas", () => {
   });
 
   it("scopes different definitions differently", () => {
-    const otherGrid = createGrid()
-      .areas(["icon", "info"])
-      .layout({ layout: [["info", "icon"]] })
-      .build();
+    const otherGrid = defineLayout({
+      areas: ["icon", "info"],
+      layouts: [{ template: "info icon" }],
+    });
 
     function OtherCard() {
       const gridAreas = useGridAreas(otherGrid);

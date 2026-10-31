@@ -59,13 +59,13 @@ export type GridAreasProps<
  * to a slot (via a ref callback that runs once the container mounts) and
  * warns on the console otherwise.
  *
- * @example Basic usage with builder pattern and hook
+ * @example Basic usage with a definition and the hook
  * ```tsx
- * // Define grid config at module level (runs once)
- * const cardGrid = createGrid()
- *   .areas(['icon', 'info'])
- *   .layout({ layout: [['icon', 'info']] })
- *   .build();
+ * // Define the grid at module level (runs once)
+ * const cardGrid = defineLayout({
+ *   areas: ['icon', 'info'],
+ *   layouts: [{ template: 'icon info' }],
+ * });
  *
  * function MyCard() {
  *   const gridAreas = useGridAreas(cardGrid);
@@ -84,15 +84,13 @@ export type GridAreasProps<
  * ```
  * @example Conditional layouts
  * ```tsx
- * const cardGrid = createGrid()
- *   .areas(['icon', 'info', 'tag'])
- *   .layout({ layout: [['info']] })
- *   .layout({
- *     when: ['icon', 'info'],
- *     layout: [['icon', 'info']],
- *     columns: ['48px', '1fr'],
- *   })
- *   .build();
+ * const cardGrid = defineLayout({
+ *   areas: ['icon?', 'info', 'tag?'],
+ *   layouts: [
+ *     { template: 'info' },
+ *     { when: ['icon'], template: 'icon info', columns: '48px 1fr' },
+ *   ],
+ * });
  *
  * function MyCard({ showIcon }) {
  *   const gridAreas = useGridAreas(cardGrid);
