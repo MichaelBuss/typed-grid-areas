@@ -37,6 +37,12 @@ describe("shipped paths", () => {
     expect(shipping("packages/react/src/test-setup.ts")).toEqual([]);
   });
 
+  it("count the source a source-published package lists in files, and nothing else of it", () => {
+    expect(shipping("packages/octane/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/octane"]);
+    expect(shipping("packages/octane/src/render.browser.spec.tsx")).toEqual([]);
+    expect(shipping("packages/octane/src/test-utils/RenderedAs.tsrx")).toEqual([]);
+  });
+
   it("never count a private workspace", () => {
     expect(shipping("packages/acceptance/src/designs.ts")).toEqual([]);
     expect(shipping("packages/acceptance/package.json")).toEqual([]);
