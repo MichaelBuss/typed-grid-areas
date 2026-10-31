@@ -55,12 +55,12 @@ type RootProps = GridComponentProps & {
   "data-area"?: string;
 };
 
-function createRoot(config: GridConfig<string>) {
-  const markup = gridMarkup(config);
+function createRoot(definition: GridConfig<string>) {
+  const markup = gridMarkup(definition);
 
   return function Root({ asChild = false, "data-area": area, children, ref, ...props }: RootProps) {
     // During render, not in an effect: children's layout effects run before ours.
-    putGridStyle(useContext(SheetContext), config);
+    putGridStyle(useContext(SheetContext), definition);
 
     const gridRef = useRef<HTMLDivElement | null>(null);
     const composedRef = useMemo(() => composeRefs(gridRef, ref), [ref]);
@@ -71,7 +71,7 @@ function createRoot(config: GridConfig<string>) {
       if (!isDevelopment() || gridRef.current === null) {
         return;
       }
-      checkSlots.current ??= createSlotCheck(config, {
+      checkSlots.current ??= createSlotCheck(definition, {
         strayChildRemedy: "make it a slot with asChild",
       });
       for (const warning of checkSlots.current(gridRef.current)) {
@@ -164,9 +164,12 @@ function withStatics<TComponent extends object>(
 export function createGridComponent<
   TAreaName extends string,
   const TNest extends GridComponentOptions<TAreaName>["nest"] = {},
->(config: GridConfig<TAreaName>, options: { nest?: TNest } = {}): GridComponent<TAreaName, TNest> {
+>(
+  definition: GridConfig<TAreaName>,
+  options: { nest?: TNest } = {},
+): GridComponent<TAreaName, TNest> {
   const statics: Record<string, unknown> = {};
-  for (const area of config.areas) {
+  for (const area of definition.areas) {
     const nested = options.nest?.[area] as (AnyGridComponent & WithStatics) | undefined;
     if (nested === undefined) {
       statics[area] = createSlotComponent(area);
@@ -178,5 +181,5 @@ export function createGridComponent<
     };
     statics[area] = withStatics(NestedRoot, nested[STATICS] ?? {});
   }
-  return withStatics(createRoot(config), statics) as unknown as GridComponent<TAreaName, TNest>;
+  return withStatics(createRoot(definition), statics) as unknown as GridComponent<TAreaName, TNest>;
 }

@@ -81,8 +81,8 @@ function withMembers<TFunction extends object>(
   return fn;
 }
 
-function createRender(config: GridConfig<string>): GridInternals["render"] {
-  const markup = gridMarkup(config);
+function createRender(definition: GridConfig<string>): GridInternals["render"] {
+  const markup = gridMarkup(definition);
   return (content, options, outerArea) => {
     const { sizeContainer, grid } = markup.elements(outerArea);
     const style =
@@ -95,7 +95,7 @@ function createRender(config: GridConfig<string>): GridInternals["render"] {
     const ownRef = options.ref === undefined ? nothing : ref(options.ref);
     // Compact on purpose: no whitespace of the adapter's own in the server output.
     // prettier-ignore
-    const element = html`<div data-area=${area} data-grid-id=${gridElement(config)} class=${options.class ?? nothing} style=${style} ${ownRef}>${content}</div>`;
+    const element = html`<div data-area=${area} data-grid-id=${gridElement(definition)} class=${options.class ?? nothing} style=${style} ${ownRef}>${content}</div>`;
     if (sizeContainer === undefined) {
       return element;
     }
@@ -131,10 +131,10 @@ function createRender(config: GridConfig<string>): GridInternals["render"] {
 export function createGrid<
   TAreaName extends string,
   const TNest extends CreateGridOptions<TAreaName>["nest"] = {},
->(config: GridConfig<TAreaName>, options: { nest?: TNest } = {}): Grid<TAreaName, TNest> {
+>(definition: GridConfig<TAreaName>, options: { nest?: TNest } = {}): Grid<TAreaName, TNest> {
   const members: Record<string, unknown> = {};
-  const definitions = new Map([[gridMarkup(config).id, config as GridConfig<string>]]);
-  for (const area of config.areas) {
+  const definitions = new Map([[gridMarkup(definition).id, definition as GridConfig<string>]]);
+  for (const area of definition.areas) {
     const nested = options.nest?.[area] as AnyGrid | undefined;
     if (nested === undefined) {
       members[area] = area;
@@ -144,12 +144,12 @@ export function createGrid<
     const renderNested = (content: unknown, nestedOptions: GridOptions = {}) =>
       nestedInternals.render(content, nestedOptions, area);
     members[area] = withMembers(renderNested, nestedInternals);
-    for (const definition of nestedInternals.definitions) {
-      definitions.set(gridMarkup(definition).id, definition);
+    for (const nestedDefinition of nestedInternals.definitions) {
+      definitions.set(gridMarkup(nestedDefinition).id, nestedDefinition);
     }
   }
 
-  const render = createRender(config);
+  const render = createRender(definition);
   const grid = (content: unknown, gridOptions: GridOptions = {}) => render(content, gridOptions);
   return withMembers(grid, {
     render,
