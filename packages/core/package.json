@@ -1,0 +1,45 @@
+{
+  "name": "typed-grid-areas",
+  "version": "0.1.0",
+  "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "bugs": {
+    "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter/index.d.ts",
+      "default": "./dist/adapter/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
+    "postpack": "rm README.md LICENSE",
+    "test": "vitest run --project unit --project node",
+    "test:browser": "vitest run --project browser",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@vitest/browser-playwright": "^5.0.1",
+    "happy-dom": "^20.14.5",
+    "playwright": "^1.64.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

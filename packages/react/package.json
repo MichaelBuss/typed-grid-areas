@@ -1,0 +1,55 @@
+{
+  "name": "@typed-grid-areas/react",
+  "version": "0.0.0",
+  "description": "React adapter for typed-grid-areas: render a grid definition as typed slot components.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "bugs": {
+    "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
+    "postpack": "rm README.md LICENSE",
+    "test": "vitest run --project unit --project node",
+    "test:browser": "vitest run --project browser --project browser-development",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.3.3",
+    "typed-grid-areas": "^0.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@typed-grid-areas/acceptance": "*",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.3.0",
+    "@vitest/browser-playwright": "^5.0.1",
+    "happy-dom": "^20.14.5",
+    "playwright": "^1.64.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1",
+    "vitest-browser-react": "^2.3.0"
+  }
+}

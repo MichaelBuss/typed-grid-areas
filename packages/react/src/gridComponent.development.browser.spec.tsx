@@ -3,7 +3,7 @@
  * is "development".
  */
 import { render } from "vitest-browser-react";
-import { defineLayout } from "../defineLayout.ts";
+import { defineLayout } from "typed-grid-areas";
 import { createGridComponent } from "./gridComponent.tsx";
 
 describe("grid components", () => {

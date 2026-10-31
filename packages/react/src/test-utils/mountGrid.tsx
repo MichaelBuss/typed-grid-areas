@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { render } from "vitest-browser-react";
-import { createGridComponent, GridComponentProps, SlotComponent } from "../react/gridComponent.tsx";
-import { GridConfig } from "../types.ts";
+import { createGridComponent, GridComponentProps, SlotComponent } from "../gridComponent.tsx";
+import type { GridConfig } from "typed-grid-areas";
 
 interface MountGridOptions<TAreaName extends string> {
   /** Width in px of the wrapper the grid is rendered into. */

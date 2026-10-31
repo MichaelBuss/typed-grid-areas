@@ -1,6 +1,5 @@
 import { render } from "vitest-browser-react";
-import { defineLayout } from "../defineLayout.ts";
-import { gridId } from "../engine/gridId.ts";
+import { defineLayout, gridId } from "typed-grid-areas";
 import { createGridComponent } from "./gridComponent.tsx";
 
 /** An element's bounding rect, relative to another element's top-left corner. */

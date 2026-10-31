@@ -1,6 +1,6 @@
 import { render } from "vitest-browser-react";
-import { defineLayout } from "./defineLayout.ts";
-import { createGridComponent } from "./react/gridComponent.tsx";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "./gridComponent.tsx";
 import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 const cardGrid = defineLayout({
