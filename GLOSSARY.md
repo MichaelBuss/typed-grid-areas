@@ -52,3 +52,7 @@ _Avoid_: Variant, state, `when` (that's one half of a condition, not the whole o
 **Breakpoint**:
 A width threshold at which a layout switches to a different arrangement, measured against the space the grid itself is given (never an outer grid's).
 _Avoid_: Media query, responsive variant
+
+**Adapter**:
+What renders grids in one UI framework, turning a definition into that framework's components. Every adapter offers the same concepts (slots, nested grids, hidden areas); how it spells them follows its framework.
+_Avoid_: Renderer, binding, integration
