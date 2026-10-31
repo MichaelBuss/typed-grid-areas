@@ -687,6 +687,115 @@ update when a required area's slot isn't rendered, or when it has a direct
 child that isn't one of its slots. Production builds and server rendering
 log nothing.
 
+## Rendering with Solid: `@typed-grid-areas/solid`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/solid
+```
+
+`@typed-grid-areas/solid` supports Solid 1.x: it needs `solid-js` 1.9 or
+later within 1.x. Solid 2 will be supported by a new major of the adapter.
+
+The API is the React adapter's: `createGridComponent(definition, { nest })`
+returns the grid component, with a slot component per area (`<Card.icon>`),
+and a nested grid's slots reached through its area (`<Card.content.icon>`).
+Create it once, at module level. Slots and the grid take `class`, `style`,
+`ref`, `children` and any other attribute of the element they render.
+
+```tsx solid
+import { createSignal, Show } from "solid-js";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/solid";
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title", "tag?"], layouts: [{ template: "icon title tag" }] }),
+);
+
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+
+function Example(props: { tag?: string }) {
+  const [hasIcon, setHasIcon] = createSignal(true);
+  return (
+    <Card class="gap-4" aria-label="Card">
+      <Card.input as="label" for="notify">
+        <input id="notify" type="checkbox" onChange={() => setHasIcon(!hasIcon())} />
+      </Card.input>
+      <Card.content class="p-4">
+        <Show when={hasIcon()}>
+          <Card.content.icon>★</Card.content.icon>
+        </Show>
+        <Card.content.title>Weekly digest</Card.content.title>
+        <Show when={props.tag}>
+          <Card.content.tag>{props.tag}</Card.content.tag>
+        </Show>
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+- **Optional areas** are absent when their slot isn't rendered: use Solid's
+  own `<Show>` (or any conditional). Slots stay reactive, through a nested
+  grid's root too, and so does the layout.
+- **Your own element as a slot: `as`.** Solid's JSX creates real DOM nodes,
+  so there's no `asChild`; instead `as` (on slots and the grid) renders the
+  slot as a tag name, a component or a render function, with no wrapper.
+  The other props are typed from `as`: with `as="label"`, `for` type-checks
+  and `ref` gets an `HTMLLabelElement`, and an attribute a label doesn't take
+  is an error. A component (or render function) gets the slot's props,
+  including its `data-area`, and must spread them onto its root element.
+  Annotate a render function's `props` for the slot to take that element's
+  attributes:
+
+```tsx solid
+import type { JSX } from "solid-js";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/solid";
+
+const Row = createGridComponent(
+  defineLayout({ areas: ["icon", "input"], layouts: [{ template: "icon input" }] }),
+);
+
+function Icon(props: JSX.SvgSVGAttributes<SVGSVGElement> & { size: number }) {
+  return <svg {...props} width={props.size} height={props.size} />;
+}
+
+function Example() {
+  return (
+    <Row as="section">
+      <Row.icon as={Icon} size={16} />
+      <Row.input
+        as={(props: JSX.LabelHTMLAttributes<HTMLLabelElement>) => <label {...props} />}
+        for="notify"
+      >
+        <input id="notify" type="checkbox" />
+      </Row.input>
+    </Row>
+  );
+}
+```
+
+- **CSS.** Each definition's CSS goes on the page once, however many
+  instances render. In the browser, the grid puts its style tag in `<head>`
+  as it's created, reusing one the server rendered, so hydration adds no
+  second copy. On the server, the grid registers its style tag with Solid's
+  `useAssets`, once per definition per render, and `renderToString`,
+  `renderToStringAsync` and `renderToStream` put it before `</head>` when the
+  app renders the whole document (as SolidStart does). If your app renders
+  only part of the page, put `getAssets()` from `solid-js/web` in the
+  `<head>` you render around it. Nothing else is needed: no `@solidjs/meta`.
+- **Development warnings** are React's: in development
+  (`process.env.NODE_ENV === "development"`), after mount and after every
+  change to its slots, a grid warns about a missing required slot or a
+  direct child that isn't a slot, once per distinct set of problems. Never on
+  the server, never in production.
+- **Builds.** The package's `solid` export is Solid JSX for your bundler's
+  Solid plugin (`vite-plugin-solid` and the like) to compile, for the browser
+  or the server; its `import` export is compiled for the browser.
+
 ## Without React: `typed-grid-areas/adapter`
 
 The core has no React dependency. To render grids in another framework, build
