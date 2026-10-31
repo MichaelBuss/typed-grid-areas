@@ -32,6 +32,16 @@ npm can't hoist it (the root's `typescript` is 7), so it installs into `packages
 
 Pin a second TypeScript only under the name `typescript`. A copy under another name (`@typescript/typescript6`, an `npm:typescript@…` alias) is hoisted to the root, where its `tsc` bin can replace the root's. After `npm install`, `npx tsc --version` at the root must still print 7.
 
+## Telling the release guidance what a build compiles
+
+The release-guidance comment (`docs/agents/release.md`) maps a `files` entry that is a build folder back to the sources compiled into it, so a PR changing those sources is told it needs a changeset. It reads them from `tsconfig.build.json` when that config's `outDir` is the folder (tsc, and ng-packagr with `-c tsconfig.build.json`). A build tool that reads no `tsconfig.build.json` (svelte-package) declares them in the workspace's `package.json`, as folders or globs relative to the workspace:
+
+```json
+"buildSources": { "dist": ["src/lib"] }
+```
+
+`scripts/release-guidance.spec.ts` fails for any `files` entry that ships no source in the repo, naming the workspace.
+
 ## Publishing from a build folder
 
 A tool that writes a complete publishable package (its own `package.json`) into a build folder, such as Angular's `ng-packagr`, declares it in the workspace's `package.json`:

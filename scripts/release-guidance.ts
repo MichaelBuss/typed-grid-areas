@@ -8,14 +8,14 @@
 // what `npm pack` puts in its tarball: its package.json, the entries of its
 // `files`, and the repo's README.md and LICENSE (copied in when it packs). A
 // `files` entry that is the build's output directory ships the sources the
-// build compiles into it, so a PR that changes those sources changes what
-// ships.
+// build compiles into it (see `shippedSources`), so a PR that changes those
+// sources changes what ships.
 
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { readWorkspaces } from "./workspaces.ts";
+import { readWorkspaces, type Workspace } from "./workspaces.ts";
 
 /** Repo paths a package ships. */
 export type Shipped = {
@@ -27,13 +27,6 @@ export type Shipped = {
 export type ShippingPackage = {
   name: string;
   shipped: Shipped;
-};
-
-/** The parts of tsconfig.build.json that decide what lands in its output directory. */
-export type Build = {
-  outDir: string;
-  include: readonly string[];
-  exclude: readonly string[];
 };
 
 export type BumpKind = "patch" | "minor" | "major";
@@ -55,24 +48,34 @@ function andBelow(path: string): string[] {
 }
 
 /**
- * The repo paths a workspace in `dir` ships, given its `files` and, when it
- * has one, its tsconfig.build.json.
+ * The repo paths one `files` entry of a workspace ships. An entry that is the
+ * build's output folder ships the sources the build compiles into it: those
+ * the workspace declares for it in its manifest's `buildSources` (for a build
+ * tool that reads no tsconfig.build.json, such as svelte-package), else those
+ * its tsconfig.build.json includes when that config's `outDir` is the entry
+ * (tsc, ng-packagr). Any other entry ships itself.
  */
-export function shippedPaths(dir: string, files: readonly string[], build?: Build): Shipped {
-  const within = (path: string) => `${normalize(dir)}/${normalize(path)}`;
-  const include = [within("package.json"), within("README.md"), within("LICENSE")];
-  const exclude: string[] = [];
-  for (const entry of files) {
-    if (build !== undefined && normalize(entry) === normalize(build.outDir)) {
-      include.push(...build.include.map(within).flatMap(andBelow));
-      exclude.push(...build.exclude.map(within).flatMap(andBelow));
-    } else {
-      include.push(...andBelow(within(entry)));
+export function shippedSources(root: string, workspace: Workspace, entry: string): Shipped {
+  const within = (path: string) => `${normalize(workspace.dir)}/${normalize(path)}`;
+  const declared = workspace.buildSources?.[normalize(entry)];
+  if (declared !== undefined) {
+    return { include: declared.map(within).flatMap(andBelow), exclude: [] };
+  }
+  const buildPath = join(root, workspace.dir, "tsconfig.build.json");
+  if (existsSync(buildPath)) {
+    const build = JSON.parse(readFileSync(buildPath, "utf8")) as {
+      compilerOptions: { outDir: string };
+      include: string[];
+      exclude?: string[];
+    };
+    if (normalize(entry) === normalize(build.compilerOptions.outDir)) {
+      return {
+        include: build.include.map(within).flatMap(andBelow),
+        exclude: (build.exclude ?? []).map(within).flatMap(andBelow),
+      };
     }
   }
-  // Every package carries the repo's README and LICENSE.
-  include.push("README.md", "LICENSE");
-  return { include, exclude };
+  return { include: andBelow(within(entry)), exclude: [] };
 }
 
 /** The repo's public workspaces, each with what it ships. */
@@ -80,26 +83,17 @@ export function shippingPackages(root: string): ShippingPackage[] {
   return readWorkspaces(root)
     .filter(workspace => !workspace.private)
     .map(workspace => {
-      const buildPath = join(root, workspace.dir, "tsconfig.build.json");
-      const build = existsSync(buildPath)
-        ? (JSON.parse(readFileSync(buildPath, "utf8")) as {
-            compilerOptions: { outDir: string };
-            include: string[];
-            exclude?: string[];
-          })
-        : undefined;
-      return {
-        name: workspace.name,
-        shipped: shippedPaths(
-          workspace.dir,
-          workspace.files ?? [],
-          build && {
-            outDir: build.compilerOptions.outDir,
-            include: build.include,
-            exclude: build.exclude ?? [],
-          },
-        ),
-      };
+      const within = (path: string) => `${normalize(workspace.dir)}/${normalize(path)}`;
+      const include = [within("package.json"), within("README.md"), within("LICENSE")];
+      const exclude: string[] = [];
+      for (const entry of workspace.files ?? []) {
+        const sources = shippedSources(root, workspace, entry);
+        include.push(...sources.include);
+        exclude.push(...sources.exclude);
+      }
+      // Every package carries the repo's README and LICENSE.
+      include.push("README.md", "LICENSE");
+      return { name: workspace.name, shipped: { include, exclude } };
     });
 }
 

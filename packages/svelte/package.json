@@ -22,6 +22,11 @@
   "files": [
     "dist"
   ],
+  "buildSources": {
+    "dist": [
+      "src/lib"
+    ]
+  },
   "scripts": {
     "build": "svelte-package -i src/lib -o dist",
     "prepack": "npm run build 1>&2 && cp ../../README.md ../../LICENSE .",

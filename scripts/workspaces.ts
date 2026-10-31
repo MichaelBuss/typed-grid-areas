@@ -20,6 +20,12 @@ export type Workspace = {
   publishDirectory: string | undefined;
   /** The manifest's `files`. */
   files?: readonly string[] | undefined;
+  /**
+   * The manifest's `buildSources`: for a build tool that reads no
+   * tsconfig.build.json, the source folders (relative to `dir`) it compiles
+   * into each build output folder `files` names, keyed by that folder.
+   */
+  buildSources?: Readonly<Record<string, readonly string[]>> | undefined;
 };
 
 type Manifest = {
@@ -27,6 +33,7 @@ type Manifest = {
   version?: string;
   private?: boolean;
   files?: string[];
+  buildSources?: Record<string, string[]>;
   publishConfig?: { directory?: string };
   workspaces?: string[] | { packages?: string[] };
 };
@@ -58,6 +65,7 @@ export function readWorkspaces(root: string): Workspace[] {
       private: manifest.private === true,
       publishDirectory: manifest.publishConfig?.directory,
       files: manifest.files,
+      buildSources: manifest.buildSources,
     };
   });
 }

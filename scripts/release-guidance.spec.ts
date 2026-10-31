@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import {
   closesIssue,
@@ -5,11 +6,14 @@ import {
   guidance,
   isShippedPath,
   parseChangeset,
+  shippedSources,
   shippingPackages,
   type ChangesetEntry,
 } from "./release-guidance.ts";
+import { readWorkspaces } from "./workspaces.ts";
 
-const packages = shippingPackages(resolve(__dirname, ".."));
+const repo = resolve(__dirname, "..");
+const packages = shippingPackages(repo);
 const shipping = (file: string) =>
   packages.filter(({ shipped }) => isShippedPath(file, shipped)).map(({ name }) => name);
 
@@ -41,6 +45,39 @@ describe("shipped paths", () => {
     expect(shipping("packages/octane/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/octane"]);
     expect(shipping("packages/octane/src/render.browser.spec.tsx")).toEqual([]);
     expect(shipping("packages/octane/src/test-utils/RenderedAs.tsrx")).toEqual([]);
+  });
+
+  it("count the sources a build tool without a tsconfig.build.json compiles, from the workspace's buildSources", () => {
+    // Svelte builds with svelte-package from src/lib.
+    expect(shipping("packages/svelte/src/lib/Grid.svelte")).toEqual(["@typed-grid-areas/svelte"]);
+    expect(shipping("packages/svelte/src/lib/styleOwners.ts")).toEqual(["@typed-grid-areas/svelte"]);
+    expect(shipping("packages/svelte/src/fixtures/Checked.svelte")).toEqual([]);
+    expect(shipping("packages/svelte/src/types/GridComponentTypes.svelte")).toEqual([]);
+    expect(shipping("packages/svelte/src/serverRender.node.spec.ts")).toEqual([]);
+  });
+
+  it("count the sources a package published from its build folder compiles into it", () => {
+    // Angular builds with ng-packagr and publishes dist/ (publishConfig.directory).
+    expect(shipping("packages/angular/src/directives.ts")).toEqual(["@typed-grid-areas/angular"]);
+    expect(shipping("packages/angular/src/gridStyles.ts")).toEqual(["@typed-grid-areas/angular"]);
+    expect(shipping("packages/angular/src/server.node.spec.ts")).toEqual([]);
+    expect(shipping("packages/angular/src/test-utils/serverApp.ts")).toEqual([]);
+    expect(shipping("packages/angular/src/test-setup.node.ts")).toEqual([]);
+  });
+
+  it("back every files entry of every package with sources in the repo, whatever builds it", () => {
+    const tracked = execFileSync("git", ["ls-files"], { cwd: repo, encoding: "utf8" })
+      .split("\n")
+      .filter(Boolean);
+    for (const workspace of readWorkspaces(repo).filter(({ private: isPrivate }) => !isPrivate)) {
+      for (const entry of workspace.files ?? []) {
+        const sources = shippedSources(repo, workspace, entry);
+        expect(
+          tracked.some(file => isShippedPath(file, sources)),
+          `${workspace.name}: "${entry}" in files ships no source in the repo; declare the sources its build compiles in buildSources`,
+        ).toBe(true);
+      }
+    }
   });
 
   it("never count a private workspace", () => {
