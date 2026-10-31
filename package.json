@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "vitest run --project unit",
-    "test:browser": "vitest run --project browser",
+    "test:browser": "vitest run --project browser --project browser-development",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

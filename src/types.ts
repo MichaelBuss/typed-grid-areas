@@ -175,29 +175,3 @@ export interface NestedStyles {
  * CSS-in-JS compatible styles object with nested selectors
  */
 export type GridStyles = NestedStyles;
-
-/**
- * Result type from useGridAreas hook.
- * Contains everything needed to render a GridAreas component.
- */
-export type GridAreasResult<TAreaName extends string> = {
-  /** Props to spread on elements, keyed by area name (a data-area attribute) */
-  slots: Record<TAreaName, SlotProps>;
-  /** CSS string for use in a <style> tag */
-  css: string;
-  /** Data attribute to add to the container element for CSS scoping */
-  containerProps: { "data-grid-id": string };
-  /**
-   * Props for the grid's own size container: a wrapper element around the grid
-   * that its breakpoints measure. Only set when the definition has breakpoints;
-   * grids without breakpoints get no wrapper.
-   */
-  sizeContainerProps?: SizeContainerProps;
-};
-
-/**
- * Props for the wrapper element that is a grid's own size container.
- */
-export type SizeContainerProps = {
-  style: { containerType: "inline-size"; containerName: string };
-};

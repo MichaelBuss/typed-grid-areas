@@ -1,6 +1,6 @@
 import { render } from "vitest-browser-react";
-import { GridAreas } from "../react/GridAreas";
-import { useGridAreas } from "../react/useGridAreas";
+import { ReactNode } from "react";
+import { createGridComponent, GridComponentProps, SlotComponent } from "../react/gridComponent";
 import { GridConfig } from "../types";
 
 interface MountGridOptions<TAreaName extends string> {
@@ -26,47 +26,27 @@ interface MountedGrid<TAreaName extends string> {
   slot: (area: TAreaName) => HTMLElement;
 }
 
-function GridHarness<TAreaName extends string>({
-  config,
-  present,
-  slotClassNames,
-}: {
-  config: GridConfig<TAreaName>;
-  present: ReadonlyArray<TAreaName>;
-  slotClassNames?: Partial<Record<TAreaName, string>>;
-}) {
-  const gridAreas = useGridAreas(config);
-
-  return (
-    <GridAreas {...gridAreas} data-testid="grid">
-      {slots => (
-        <>
-          {present.map(area => (
-            <div
-              key={area}
-              {...slots[area]}
-              className={slotClassNames?.[area]}
-              style={{ minHeight: 10 }}
-            />
-          ))}
-        </>
-      )}
-    </GridAreas>
-  );
-}
-
 /**
- * Mounts a grid config into a real browser at a given container width, with
- * only the given slots rendered, and exposes where the browser actually laid
- * everything out.
+ * Mounts a grid config into a real browser at a given container width, as
+ * its grid component with only the given slots rendered, and exposes where
+ * the browser actually laid everything out.
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
   { width, present, slotClassNames, ancestorContainerWidth }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
+  const Grid = createGridComponent(config);
+  // The root on its own: JSX can't resolve props on a component whose
+  // statics are mapped over a still-generic area type.
+  const Root: (props: GridComponentProps) => ReactNode = Grid;
   const sized = (
     <div style={{ width }}>
-      <GridHarness config={config} present={present} slotClassNames={slotClassNames} />
+      <Root data-testid="grid">
+        {present.map(area => {
+          const Slot: SlotComponent = Grid[area];
+          return <Slot key={area} className={slotClassNames?.[area]} style={{ minHeight: 10 }} />;
+        })}
+      </Root>
     </div>
   );
 

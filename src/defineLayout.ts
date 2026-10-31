@@ -8,6 +8,7 @@ import {
   LayoutConfig,
   LayoutDefinition,
 } from "./types";
+import { isDevelopment } from "./isDevelopment";
 import { validateGridConfig } from "./validateGridConfig";
 
 type OptionalAreaName<TArea extends string> = TArea extends `${infer TName}?` ? TName : never;
@@ -79,18 +80,6 @@ function toLayout<TAreaName extends string>(
             ),
           ),
   };
-}
-
-/**
- * Whether this is a development build. Bundlers replace
- * `process.env.NODE_ENV`; without one, `process` may not exist at all.
- */
-function isDevelopment(): boolean {
-  try {
-    return process.env.NODE_ENV === "development";
-  } catch {
-    return false;
-  }
 }
 
 /**

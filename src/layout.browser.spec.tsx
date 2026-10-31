@@ -1,7 +1,6 @@
 import { render } from "vitest-browser-react";
 import { defineLayout } from "./defineLayout";
-import { GridAreas } from "./react/GridAreas";
-import { useGridAreas } from "./react/useGridAreas";
+import { createGridComponent } from "./react/gridComponent";
 import { mountGrid } from "./test-utils/mountGrid";
 
 const cardGrid = defineLayout({
@@ -318,25 +317,19 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
+    const Outer = createGridComponent(outerGrid, {
+      nest: { main: createGridComponent(breakpointGrid) },
+    });
+
     function Nested() {
-      const outer = useGridAreas(outerGrid);
-      const inner = useGridAreas(breakpointGrid);
       return (
-        <GridAreas {...outer}>
-          {slots => (
-            <>
-              <GridAreas {...inner} {...slots.main} data-testid="inner">
-                {innerSlots => (
-                  <>
-                    <div {...innerSlots.icon} />
-                    <div {...innerSlots.info} />
-                  </>
-                )}
-              </GridAreas>
-              <div {...slots.side} />
-            </>
-          )}
-        </GridAreas>
+        <Outer>
+          <Outer.main data-testid="inner">
+            <Outer.main.icon />
+            <Outer.main.info />
+          </Outer.main>
+          <Outer.side />
+        </Outer>
       );
     }
 

@@ -1,6 +1,14 @@
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
+/** Headless Chromium. A function, since Vitest names each project's instances in place. */
+const chromium = () => ({
+  enabled: true,
+  headless: true,
+  provider: playwright(),
+  instances: [{ browser: "chromium" as const }],
+});
+
 export default defineConfig({
   test: {
     globals: true,
@@ -20,12 +28,18 @@ export default defineConfig({
         test: {
           name: "browser",
           include: ["src/**/*.browser.spec.{ts,tsx}"],
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-          },
+          exclude: ["src/**/*.development.browser.spec.{ts,tsx}"],
+          browser: chromium(),
+        },
+      },
+      {
+        // Development-only behaviour (warnings), with NODE_ENV as a dev server sets it.
+        extends: true,
+        define: { "process.env.NODE_ENV": JSON.stringify("development") },
+        test: {
+          name: "browser-development",
+          include: ["src/**/*.development.browser.spec.{ts,tsx}"],
+          browser: chromium(),
         },
       },
     ],

@@ -2,7 +2,6 @@ export { defineLayout, type ArrangementInput, type LayoutInput } from "./defineL
 export { gridId } from "./engine/gridId";
 export { createSlots, generateCss } from "./generateCss";
 export { validateGridConfig } from "./validateGridConfig";
-export { validateGridSlots } from "./validateGridSlots";
 export {
   CONTAINER_BREAKPOINTS,
   type Alignment,
@@ -13,7 +12,6 @@ export {
   type BreakpointLayoutConfig,
   type ContainerBreakpoint,
   type EmptyCell,
-  type GridAreasResult,
   type GridCell,
   type GridConfig,
   type GridLayout,
@@ -21,7 +19,6 @@ export {
   type LayoutConfig,
   type LayoutDefinition,
   type NestedStyles,
-  type SizeContainerProps,
   type SlotProps,
   type StyleValue,
   type TrackSize,
