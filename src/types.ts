@@ -33,6 +33,14 @@ export type ArbitraryBreakpoint = `@[${string}]`;
 export type BreakpointKey = ContainerBreakpoint | ArbitraryBreakpoint;
 
 /**
+ * The name an area declaration declares. Areas are declared by name, with a
+ * `?` suffix marking an optional area: `"icon?"` declares `"icon"`.
+ */
+export type AreaName<TDeclaration extends string> = TDeclaration extends `${infer TName}?`
+  ? TName
+  : TDeclaration;
+
+/**
  * Empty cell marker for grid-template-areas.
  *
  * In CSS, a "." represents an empty/unnamed cell in the grid.
@@ -116,6 +124,12 @@ export type BreakpointLayoutConfig<TAreaName extends string> = {
 export type GridConfig<TAreaName extends string> = {
   /** Array of area names - slots are matched as [data-area=name] */
   areas: ReadonlyArray<TAreaName>;
+  /**
+   * The areas whose slot may be absent (declared with a `?` suffix). Every
+   * other area is required. Each layout gets a derived layout for every
+   * combination of absent optional areas.
+   */
+  optionalAreas?: ReadonlyArray<TAreaName>;
   /** Layout configurations */
   layouts: Array<LayoutConfig<TAreaName>>;
 };

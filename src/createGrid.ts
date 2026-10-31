@@ -1,5 +1,6 @@
 import {
   AreaAlignments,
+  AreaName,
   BreakpointLayoutConfig,
   BreakpointKey,
   EmptyCell,
@@ -158,12 +159,13 @@ interface GridAreasBuilder<TAreaName extends string> {
  */
 interface GridAreasBuilderInit {
   /**
-   * Define the area names for this grid.
+   * Define the area names for this grid. A `?` suffix marks an area optional
+   * (`"icon?"`); its name is still `"icon"` everywhere else.
    * These names will be available for autocomplete in .layout() calls.
    */
   areas<const TAreas extends ReadonlyArray<string>>(
     areas: TAreas,
-  ): GridAreasBuilder<TAreas[number]>;
+  ): GridAreasBuilder<AreaName<TAreas[number]>>;
 }
 
 // =============================================================================
@@ -203,11 +205,15 @@ interface GridAreasBuilderInit {
 export function createGrid(): GridAreasBuilderInit {
   return {
     areas<const TAreas extends ReadonlyArray<string>>(
-      areas: TAreas,
-    ): GridAreasBuilder<TAreas[number]> {
-      const layouts: Array<LayoutConfig<TAreas[number]>> = [];
+      declarations: TAreas,
+    ): GridAreasBuilder<AreaName<TAreas[number]>> {
+      type TAreaName = AreaName<TAreas[number]>;
+      // Cells and conditions are checked against the area names at compile time.
+      const layouts: Array<LayoutConfig<string>> = [];
+      const areas = declarations.map(declaration => declaration.replace(/\?$/, "") as TAreaName);
+      const optionalAreas = areas.filter((_, index) => declarations[index]?.endsWith("?"));
 
-      const builder: GridAreasBuilder<TAreas[number]> = {
+      const builder: GridAreasBuilder<TAreaName> = {
         layout(config) {
           // At runtime, config properties are always valid arrays (error types only exist at compile-time)
           // We need to cast and copy readonly arrays to mutable arrays for storage
@@ -233,10 +239,11 @@ export function createGrid(): GridAreasBuilderInit {
           return builder;
         },
 
-        build(): GridConfig<TAreas[number]> {
+        build(): GridConfig<TAreaName> {
           return {
-            areas: [...areas],
-            layouts,
+            areas,
+            ...(optionalAreas.length > 0 ? { optionalAreas } : {}),
+            layouts: layouts as Array<LayoutConfig<TAreaName>>,
           };
         },
       };

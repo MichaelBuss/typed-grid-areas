@@ -25,8 +25,15 @@ export function createSlots<TAreaName extends string>(
  */
 const CASCADE_LAYER = "typed-grid-areas";
 
+/**
+ * An attribute selector, with the value unquoted when it is an identifier.
+ */
+function attributeSelector(name: string, value: string): string {
+  return /^[A-Za-z_][\w-]*$/.test(value) ? `[${name}=${value}]` : `[${name}="${value}"]`;
+}
+
 function areaSelector(area: string): string {
-  return `[data-area="${area}"]`;
+  return attributeSelector("data-area", area);
 }
 
 /**
@@ -34,8 +41,20 @@ function areaSelector(area: string): string {
  */
 function conditionCompound({ when, unless }: Condition): string {
   const has = when.map(area => `:has(> ${areaSelector(area)})`);
-  const not = unless.map(area => `:not(:has(> ${areaSelector(area)}))`);
-  return `${has.join("")}${not.join("")}`;
+  const none =
+    unless.length === 0
+      ? ""
+      : `:not(:has(${unless.map(area => `> ${areaSelector(area)}`).join(", ")}))`;
+  return `${has.join("")}${none}`;
+}
+
+/**
+ * Whether two conditions can hold at the same time.
+ */
+function canHoldTogether(a: Condition, b: Condition): boolean {
+  return (
+    !a.when.some(area => b.unless.includes(area)) && !b.when.some(area => a.unless.includes(area))
+  );
 }
 
 /**
@@ -92,35 +111,82 @@ function inWidthRange(css: string, scope: Scope, from?: string, until?: string):
   return `@container ${scope.containerName} ${parts.join(" and ")} {\n${css}\n}`;
 }
 
-function ruleToCss(scope: Scope, areas: ReadonlyArray<string>, rule: Rule): string {
+/**
+ * Places every area by name, once per definition. Each rule's
+ * `grid-template-areas` then decides where that name is, so a rule that
+ * applies places every area it names and nothing leaks in from another.
+ */
+function placementCss(scope: Scope, areas: ReadonlyArray<string>): string {
+  return areas
+    .map(area => `:where(${scope.grid}) > :where(${areaSelector(area)}) { grid-area: ${area}; }`)
+    .join("\n");
+}
+
+function isSet(tracks: ReadonlyArray<string> | undefined): tracks is ReadonlyArray<string> {
+  return tracks !== undefined && tracks.length > 0;
+}
+
+/**
+ * One declaration of a rule: its own value, or the property's initial value
+ * when an earlier rule that can apply at the same time sets it (so that value
+ * can't leak in). Omitted when there is nothing that could leak in.
+ */
+function declaration(
+  property: string,
+  value: string | undefined,
+  initial: string,
+  setEarlier: boolean,
+): Array<string> {
+  if (value !== undefined) {
+    return [`${property}: ${value};`];
+  }
+  return setEarlier ? [`${property}: ${initial};`] : [];
+}
+
+/**
+ * The CSS for one rule. `earlier` are the rules before it that can apply at
+ * the same time; only what they set needs resetting here.
+ */
+function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): string {
   const { cells, rows, columns, align } = rule.arrangement;
   const container = conditionSelector(scope.grid, rule.condition);
-  const placements = placeAreas(cells);
 
   const lines = [
     `${container} { ${[
       `grid-template-areas: ${cells.map(row => `'${row.join(" ")}'`).join(" ")};`,
-      `grid-template-rows: ${rows !== undefined && rows.length > 0 ? rows.join(" ") : "none"};`,
-      `grid-template-columns: ${columns !== undefined && columns.length > 0 ? columns.join(" ") : "none"};`,
+      ...declaration(
+        "grid-template-rows",
+        isSet(rows) ? rows.join(" ") : undefined,
+        "none",
+        earlier.some(other => isSet(other.arrangement.rows)),
+      ),
+      ...declaration(
+        "grid-template-columns",
+        isSet(columns) ? columns.join(" ") : undefined,
+        "none",
+        earlier.some(other => isSet(other.arrangement.columns)),
+      ),
     ].join(" ")} }`,
   ];
 
-  for (const area of areas) {
-    const placement = placements.get(area);
-    if (placement === undefined) {
-      continue;
+  for (const area of placeAreas(cells).keys()) {
+    const alignment = [
+      ...declaration(
+        "justify-self",
+        align?.[area]?.justify,
+        "auto",
+        earlier.some(other => other.arrangement.align?.[area]?.justify !== undefined),
+      ),
+      ...declaration(
+        "align-self",
+        align?.[area]?.align,
+        "auto",
+        earlier.some(other => other.arrangement.align?.[area]?.align !== undefined),
+      ),
+    ];
+    if (alignment.length > 0) {
+      lines.push(`${container} > :where(${areaSelector(area)}) { ${alignment.join(" ")} }`);
     }
-    const { rowStart, columnStart, rowEnd, columnEnd } = placement;
-    // Every area gets alignment in every rule (`auto` where unset), so
-    // alignment from another matching rule never leaks in.
-    const { justify = "auto", align: alignSelf = "auto" } = align?.[area] ?? {};
-    lines.push(
-      `${container} > :where(${areaSelector(area)}) { ${[
-        `grid-area: ${rowStart} / ${columnStart} / ${rowEnd} / ${columnEnd};`,
-        `justify-self: ${justify};`,
-        `align-self: ${alignSelf};`,
-      ].join(" ")} }`,
-    );
   }
 
   return inWidthRange(lines.join("\n"), scope, rule.minWidth);
@@ -146,10 +212,20 @@ function hideRuleToCss(scope: Scope, { area, condition, except, from, until }: H
  */
 export function generateCss<TAreaName extends string>(config: GridConfig<TAreaName>): string {
   const id = gridId(config);
-  const scope: Scope = { grid: `[data-grid-id="${id}"]`, containerName: sizeContainerName(id) };
+  const scope: Scope = {
+    grid: attributeSelector("data-grid-id", id),
+    containerName: sizeContainerName(id),
+  };
   const rules = toRules(config);
   const css = [
-    ...rules.map(rule => ruleToCss(scope, config.areas, rule)),
+    placementCss(scope, config.areas),
+    ...rules.map((rule, index) =>
+      ruleToCss(
+        scope,
+        rule,
+        rules.slice(0, index).filter(other => canHoldTogether(other.condition, rule.condition)),
+      ),
+    ),
     ...toHideRules(config.areas, rules).map(hideRule => hideRuleToCss(scope, hideRule)),
   ];
   return `@layer ${CASCADE_LAYER} {\n${css.join("\n")}\n}`;

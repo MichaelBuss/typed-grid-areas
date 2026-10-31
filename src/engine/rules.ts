@@ -6,6 +6,7 @@ import {
   GridLayout,
   TrackSize,
 } from "../types";
+import { withDerivedRules } from "./derive";
 
 /**
  * When a rule applies: areas that must be present and areas that must be
@@ -71,20 +72,22 @@ export function widthRank(width: string | undefined): number {
 }
 
 /**
- * Turns a grid definition into its ordered list of rules: each layout's own
- * arrangement, followed by its breakpoint arrangements from narrowest to
- * widest, in the order the layouts were declared.
+ * Turns a grid definition into its ordered list of rules, layout by layout in
+ * the order they were declared: each layout's own arrangement, followed by
+ * its breakpoint arrangements from narrowest to widest, then the same again
+ * for each of its derived layouts.
  */
 export function toRules(config: GridConfig<string>): Array<Rule> {
   const rules: Array<Rule> = [];
 
   for (const layoutConfig of config.layouts) {
+    const layoutRules: Array<Rule> = [];
     const condition: Condition = {
       when: layoutConfig.when ?? [],
       unless: layoutConfig.unless ?? [],
     };
 
-    rules.push({
+    layoutRules.push({
       condition,
       arrangement: {
         cells: layoutConfig.layout,
@@ -112,7 +115,8 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
       });
     }
     breakpointRules.sort((a, b) => widthRank(a.minWidth) - widthRank(b.minWidth));
-    rules.push(...breakpointRules);
+    layoutRules.push(...breakpointRules);
+    rules.push(...withDerivedRules(layoutRules, config.optionalAreas ?? []));
   }
 
   return rules;
