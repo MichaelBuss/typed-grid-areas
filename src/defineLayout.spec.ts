@@ -64,7 +64,6 @@ describe("defineLayout", () => {
 
     expect(layout.areas).toEqual(["icon", "information", "cardTag"]);
     expect(layout.optionalAreas).toEqual(["icon", "cardTag"]);
-    expect(generateCss(layout)).toContain('[data-area="icon"]');
   });
 
   it("keeps each layout's condition, alignment and breakpoint arrangements", () => {
@@ -86,17 +85,23 @@ describe("defineLayout", () => {
       ],
     });
 
-    const css = generateCss(layout);
-    expect(css).toMatch(/> :where\(\[data-area="cardTag"\]\) \{[^}]*justify-self: end;/);
-    expect(css).toMatch(
-      /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-areas: 'icon information cardTag'; grid-template-rows: none; grid-template-columns: min-content minmax\(0, 1fr\) auto;/,
-    );
-    expect(css).toMatch(
-      /\(min-width: 24rem\) \{[^@]*\[data-area="icon"\]\) \{[^}]*align-self: center;/,
-    );
-    expect(css).toContain(
-      ':has(> [data-area="icon"]):not(:has(> [data-area="cardTag"]))) { grid-template-areas: \'icon information\';',
-    );
+    expect(layout.layouts).toEqual([
+      {
+        layout: [
+          ["icon", "cardTag"],
+          ["information", "information"],
+        ],
+        align: { cardTag: { justify: "end" } },
+        breakpoints: {
+          "@sm": {
+            layout: [["icon", "information", "cardTag"]],
+            columns: ["min-content", "minmax(0, 1fr)", "auto"],
+            align: { icon: { align: "center" } },
+          },
+        },
+      },
+      { when: ["icon"], unless: ["cardTag"], layout: [["icon", "information"]] },
+    ]);
   });
 
   describe("in development", () => {

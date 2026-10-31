@@ -118,6 +118,43 @@ arrangement, but a later layout still beats an earlier layout's breakpoints.
 Breakpoint arrangements take their own `rows`, `columns` and `align`;
 nothing is inherited from the layout.
 
+## Optional areas and derived layouts
+
+Mark an area optional with a `?` suffix in `areas`; everywhere else it is
+named without the `?`. Draw each layout with every area present, and the
+library derives a layout for every combination of absent optional areas that
+the layout uses and its condition doesn't mention:
+
+```ts
+defineLayout({
+  areas: ["icon?", "information", "cardTag?", "children?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information
+        children    children`,
+    },
+  ],
+});
+// without children: icon cardTag / information information
+// without cardTag:  icon / information / children
+```
+
+A derived layout is the authored one (and each of its breakpoint
+arrangements) with the absent areas taken out:
+
+1. A row or column is dropped, with its track size, when it held an absent
+   area and everything else in it is also absent or continues into a
+   neighbouring track (a spanning area just gets one track shorter).
+2. A hole that can't be dropped is filled by a neighbouring area (left, then
+   right, up, down) if that area stays a rectangle; otherwise it stays empty.
+3. Cells written as `"."` are never dropped or filled.
+
+Where a derived layout isn't what you want, declare an override after the
+layout, for example `{ unless: ["cardTag"], template: "..." }`: the later
+layout wins.
+
 All generated CSS sits in the `typed-grid-areas` cascade layer, so your own
 unlayered classes on a slot (say `justify-self`) always win. The one
 exception is hiding: it is `!important`, so a `display` class on a slot

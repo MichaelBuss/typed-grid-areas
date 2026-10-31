@@ -2,18 +2,13 @@ import { parseTemplate, parseTracks } from "./template/parseTemplate";
 import { ArrangementCheck } from "./template/templateTypes";
 import {
   AreaAlignments,
+  AreaName,
   BreakpointKey,
   BreakpointLayoutConfig,
   LayoutConfig,
   LayoutDefinition,
 } from "./types";
 import { validateGridConfig } from "./validateGridConfig";
-
-/**
- * An area as written in `areas`: its name, with a trailing `?` when the area
- * is optional.
- */
-type AreaName<TArea extends string> = TArea extends `${infer TName}?` ? TName : TArea;
 
 type OptionalAreaName<TArea extends string> = TArea extends `${infer TName}?` ? TName : never;
 

@@ -302,7 +302,7 @@ describe("generateCss and createSlots", () => {
       );
     });
 
-    it("should reset rows/columns in breakpoints even when base does not define them", () => {
+    it("should not emit row/column resets when no earlier rule sets tracks", () => {
       const config = defineLayout({
         areas: ["a", "b"],
         layouts: [
@@ -319,14 +319,10 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      // Breakpoints are self-contained: they always explicitly set rows/columns to none
-      // This ensures consistent behavior and prevents any inherited values from cascading
-      expect(result.css).toMatch(
-        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-rows: none/,
-      );
-      expect(result.css).toMatch(
-        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-columns: none/,
-      );
+      // Nothing sets tracks, so there is nothing that could leak into the
+      // breakpoint and no reset is needed (keeps the CSS small).
+      expect(result.css).not.toContain("grid-template-rows");
+      expect(result.css).not.toContain("grid-template-columns");
     });
 
     it("should support rows and columns in conditional layouts", () => {
