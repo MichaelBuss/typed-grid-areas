@@ -1,18 +1,25 @@
 /**
- * Type-checks every `ts` and `tsx` code block in the README against the
- * source, each as its own module, with `typed-grid-areas`,
- * `typed-grid-areas/react` and `typed-grid-areas/adapter` resolving to `src/`.
+ * Type-checks every `ts` and `tsx` code block in the repo's README, each as
+ * its own module, with `@typed-grid-areas/react` resolving to this package's
+ * `src/` and `typed-grid-areas` (and its `/adapter` entry) to the built core,
+ * as a consumer gets them.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, join, resolve } from "node:path";
 
-const root = resolve(__dirname, "..");
-const workDir = join(root, "node_modules", ".cache", "typed-grid-areas-readme");
-const tsc = join(root, "node_modules", "typescript", "bin", "tsc");
+const packageDir = resolve(__dirname, "..");
+const readmePath = resolve(packageDir, "..", "..", "README.md");
+const workDir = join(packageDir, "node_modules", ".cache", "typed-grid-areas-readme");
+const tsc = join(
+  dirname(createRequire(import.meta.url).resolve("typescript/package.json")),
+  "bin",
+  "tsc",
+);
 
 function readmeBlocks(): Array<{ language: string; code: string; line: number }> {
-  const readme = readFileSync(join(root, "README.md"), "utf8");
+  const readme = readFileSync(readmePath, "utf8");
   return Array.from(readme.matchAll(/^```(tsx?)\n([\s\S]*?)^```/gm), match => ({
     language: match[1]!,
     code: match[2]!,
@@ -40,15 +47,13 @@ describe("the README", () => {
     writeFileSync(
       join(workDir, "tsconfig.json"),
       JSON.stringify({
-        extends: join(root, "tsconfig.json"),
+        extends: join(packageDir, "tsconfig.json"),
         include: [],
         files,
         compilerOptions: {
           types: ["node"],
           paths: {
-            "typed-grid-areas": [join(root, "src", "index.ts")],
-            "typed-grid-areas/react": [join(root, "src", "react", "index.ts")],
-            "typed-grid-areas/adapter": [join(root, "src", "adapter", "index.ts")],
+            "@typed-grid-areas/react": [join(packageDir, "src", "index.ts")],
           },
         },
       }),

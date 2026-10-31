@@ -1,9 +1,9 @@
 /**
- * The two target designs from issue #4, defined with public exports only.
- * The browser acceptance spec renders them; the CSS budget check measures
- * them. Keep the README's examples in step with these.
+ * The two target designs from issue #4, defined with the public API only.
+ * Every adapter's browser acceptance tests render them; the CSS budget check
+ * measures them. Keep the README's examples in step with these.
  */
-import { defineLayout } from "../index.ts";
+import { defineLayout } from "typed-grid-areas";
 
 /**
  * PreferenceCard, outer grid: an optional input panel beside the content

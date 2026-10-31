@@ -1,22 +1,38 @@
 #!/usr/bin/env node
-// The version-sync invariant: package.json is the version's single source of
-// truth; package-lock.json carries the identical version after this script
-// runs. `changeset version` only writes package.json, so `npm run version`
-// chains this after it.
+// The version-sync invariant: each workspace's package.json is the single
+// source of truth for its version and dependency ranges; package-lock.json
+// carries the identical values after this script runs. `changeset version`
+// only writes the package.json files (bumping versions, and the ranges of
+// workspaces that depend on a bumped one), so `npm run version` chains this
+// after it, and `npm ci` keeps accepting the lockfile.
 
 import { existsSync, realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { readWorkspaces } from "./workspaces.ts";
 
-export type Versioned = { version: string };
+const DEPENDENCY_FIELDS = [
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "optionalDependencies",
+] as const;
 
-export type Lockfile = Versioned & {
-  packages?: { ""?: Versioned };
+type DependencyField = (typeof DEPENDENCY_FIELDS)[number];
+
+export type Manifest = { version: string } & {
+  [field in DependencyField]?: Record<string, string>;
+};
+
+export type Lockfile = {
+  version?: string;
+  packages?: Record<string, Partial<Manifest> & Record<string, unknown>>;
 };
 
 export type SyncInput = {
-  pkg: Versioned;
+  /** Each workspace's folder (relative to the root, as the lockfile keys it) and manifest. */
+  workspaces: ReadonlyArray<{ dir: string; manifest: Manifest }>;
   lock?: Lockfile | undefined;
 };
 
@@ -25,17 +41,30 @@ export type SyncResult = {
   changed: readonly string[];
 };
 
-export function syncVersions({ pkg, lock }: SyncInput): SyncResult {
-  const version = pkg.version;
-  const changed: string[] = [];
-  if (lock !== undefined && lock.version !== version) {
-    lock.version = version;
-    if (lock.packages?.[""] !== undefined) {
-      lock.packages[""].version = version;
+export function syncVersions({ workspaces, lock }: SyncInput): SyncResult {
+  let changed = false;
+  for (const { dir, manifest } of workspaces) {
+    const entry = lock?.packages?.[dir];
+    if (entry === undefined) {
+      continue;
     }
-    changed.push("package-lock.json");
+    if (entry.version !== manifest.version) {
+      entry.version = manifest.version;
+      changed = true;
+    }
+    for (const field of DEPENDENCY_FIELDS) {
+      if (JSON.stringify(entry[field]) === JSON.stringify(manifest[field])) {
+        continue;
+      }
+      if (manifest[field] === undefined) {
+        delete entry[field];
+      } else {
+        entry[field] = { ...manifest[field] };
+      }
+      changed = true;
+    }
   }
-  return { lock, changed };
+  return { lock, changed: changed ? ["package-lock.json"] : [] };
 }
 
 function isCliEntry(): boolean {
@@ -50,21 +79,27 @@ function isCliEntry(): boolean {
   }
 }
 
-export async function syncVersionCli(): Promise<number> {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8")) as Versioned;
+export async function syncVersionCli(
+  root = join(dirname(fileURLToPath(import.meta.url)), ".."),
+): Promise<number> {
+  const workspaces = await Promise.all(
+    readWorkspaces(root).map(async ({ dir }) => ({
+      dir,
+      manifest: JSON.parse(await readFile(join(root, dir, "package.json"), "utf8")) as Manifest,
+    })),
+  );
   const lockPath = join(root, "package-lock.json");
   const lock = existsSync(lockPath)
     ? (JSON.parse(await readFile(lockPath, "utf8")) as Lockfile)
     : undefined;
-  const result = syncVersions({ pkg, lock });
+  const result = syncVersions({ workspaces, lock });
   if (lock !== undefined && result.changed.includes("package-lock.json")) {
     await writeFile(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
   }
   process.stdout.write(
     result.changed.length === 0
-      ? `All manifests agree at ${pkg.version}\n`
-      : `Synced ${result.changed.join(", ")} to ${pkg.version}\n`,
+      ? "package-lock.json already agrees with every workspace\n"
+      : `Synced ${result.changed.join(", ")} to every workspace's package.json\n`,
   );
   return 0;
 }

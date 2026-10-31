@@ -6,23 +6,27 @@ library works out the layout for every combination of present slots, at
 every breakpoint, as generated CSS: no `:has()` rules or layout JavaScript
 of your own. Everything that names an area is checked at compile time.
 
-Framework-free at the core; ships a React adapter that renders a definition
-as typed slot components (`<Card>`, `<Card.icon>`).
+Framework-free at the core (`typed-grid-areas`); each UI framework's adapter
+is a package of its own. The React adapter, `@typed-grid-areas/react`,
+renders a definition as typed slot components (`<Card>`, `<Card.icon>`).
 
 ## Install
 
 ```sh
-npm i typed-grid-areas
+npm i typed-grid-areas @typed-grid-areas/react
 ```
 
-`react` (19 or later) is an optional peer dependency, only needed for the
-`typed-grid-areas/react` entry point.
+`@typed-grid-areas/react` needs `react` 19 or later. The core on its own
+(`npm i typed-grid-areas`) has no framework dependency.
+
+Moving from `typed-grid-areas/react` (0.1)? Install `@typed-grid-areas/react`
+and import `createGridComponent` from it instead; nothing else changes.
 
 ## At a glance
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const Card = createGridComponent(
   defineLayout({
@@ -340,7 +344,7 @@ renders as. Create it once, at module level:
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const Card = createGridComponent(
   defineLayout({
@@ -375,7 +379,7 @@ function Example() {
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const Row = createGridComponent(
   defineLayout({ areas: ["input", "content"], layouts: [{ template: "input content" }] }),
@@ -406,7 +410,7 @@ of the nested grid, and reaches that grid's slots through it:
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const Content = createGridComponent(
   defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
@@ -464,7 +468,7 @@ library's browser acceptance tests render this design in every combination.
 ```tsx
 import type { ReactNode } from "react";
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const PreferenceContent = createGridComponent(
   defineLayout({
@@ -538,7 +542,7 @@ everything else moves beside it.
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "typed-grid-areas/react";
+import { createGridComponent } from "@typed-grid-areas/react";
 
 const Card = createGridComponent(
   defineLayout({
@@ -659,14 +663,23 @@ rendering by hand.
 
 ## Development
 
+An npm-workspaces monorepo: one folder per package under `packages/`
+(`core` is `typed-grid-areas`, `react` is `@typed-grid-areas/react`, and the
+private `acceptance` holds the browser acceptance tests every adapter runs).
+`npm install` at the root sets them all up.
+
 ```sh
-just test          # unit tests (happy-dom), the release scripts and the packed package
+just test          # unit tests (happy-dom), the release scripts and the packed packages
 just test-browser  # in-browser layout tests (Chromium via Playwright)
 just typecheck     # tsc --noEmit, including the type tests
-just build         # compile src/ into dist/, as npm pack does
+just build         # compile each package's src/ into its dist/, as npm pack does
 ```
 
-or via npm directly: `npm test`, `npm run typecheck`, `npm run build`.
+Each runs every package's own script of that name (or via npm directly:
+`npm test`, `npm run typecheck`, `npm run build`). Each package owns its
+toolchain, down to its TypeScript version; see
+[docs/agents/workspaces.md](docs/agents/workspaces.md) for adding an adapter
+and pinning its own TypeScript.
 
-A change to the package carries a changeset (`npm run changeset`); see
+A change to a package carries a changeset (`npm run changeset`); see
 [docs/agents/release.md](docs/agents/release.md) for how releases ship.

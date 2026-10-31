@@ -4,19 +4,29 @@
 // a changeset is present, and whether the body closes an issue. Informational
 // only — it never fails a PR.
 //
-// What ships is what `npm pack` puts in the tarball: package.json and the
-// entries of its `files`. A `files` entry that is the build's output
-// directory ships the sources the build compiles into it, so a PR that
-// changes those sources changes what ships.
+// Every public workspace is a package of its own. What a package ships is
+// what `npm pack` puts in its tarball: its package.json, the entries of its
+// `files`, and the repo's README.md and LICENSE (copied in when it packs). A
+// `files` entry that is the build's output directory ships the sources the
+// build compiles into it, so a PR that changes those sources changes what
+// ships.
 
-import { realpathSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { readWorkspaces } from "./workspaces.ts";
 
+/** Repo paths a package ships. */
 export type Shipped = {
   include: readonly string[];
   exclude: readonly string[];
+};
+
+/** A published package and the repo paths it ships. */
+export type ShippingPackage = {
+  name: string;
+  shipped: Shipped;
 };
 
 /** The parts of tsconfig.build.json that decide what lands in its output directory. */
@@ -44,18 +54,53 @@ function andBelow(path: string): string[] {
   return normalized.includes("*") ? [normalized] : [normalized, `${normalized}/**`];
 }
 
-export function shippedPaths(files: readonly string[], build: Build): Shipped {
-  const include = ["package.json"];
+/**
+ * The repo paths a workspace in `dir` ships, given its `files` and, when it
+ * has one, its tsconfig.build.json.
+ */
+export function shippedPaths(dir: string, files: readonly string[], build?: Build): Shipped {
+  const within = (path: string) => `${normalize(dir)}/${normalize(path)}`;
+  const include = [within("package.json"), within("README.md"), within("LICENSE")];
   const exclude: string[] = [];
   for (const entry of files) {
-    if (normalize(entry) === normalize(build.outDir)) {
-      include.push(...build.include.flatMap(andBelow));
-      exclude.push(...build.exclude.flatMap(andBelow));
+    if (build !== undefined && normalize(entry) === normalize(build.outDir)) {
+      include.push(...build.include.map(within).flatMap(andBelow));
+      exclude.push(...build.exclude.map(within).flatMap(andBelow));
     } else {
-      include.push(...andBelow(entry));
+      include.push(...andBelow(within(entry)));
     }
   }
+  // Every package carries the repo's README and LICENSE.
+  include.push("README.md", "LICENSE");
   return { include, exclude };
+}
+
+/** The repo's public workspaces, each with what it ships. */
+export function shippingPackages(root: string): ShippingPackage[] {
+  return readWorkspaces(root)
+    .filter(workspace => !workspace.private)
+    .map(workspace => {
+      const buildPath = join(root, workspace.dir, "tsconfig.build.json");
+      const build = existsSync(buildPath)
+        ? (JSON.parse(readFileSync(buildPath, "utf8")) as {
+            compilerOptions: { outDir: string };
+            include: string[];
+            exclude?: string[];
+          })
+        : undefined;
+      return {
+        name: workspace.name,
+        shipped: shippedPaths(
+          workspace.dir,
+          workspace.files ?? [],
+          build && {
+            outDir: build.compilerOptions.outDir,
+            include: build.include,
+            exclude: build.exclude ?? [],
+          },
+        ),
+      };
+    });
 }
 
 export function globMatch(pattern: string, file: string): boolean {
@@ -135,35 +180,47 @@ export type Guidance = {
 
 export function guidance(input: {
   changedFiles: readonly string[];
-  shipped: Shipped;
-  package: string;
+  packages: readonly ShippingPackage[];
   changesets: readonly ChangesetEntry[];
   closesIssue: boolean;
 }): Guidance {
-  const packageFiles = input.changedFiles.filter(file => isShippedPath(file, input.shipped));
-  const own = input.changesets.filter(entry => entry.package === input.package);
+  const sections = input.packages
+    .map(({ name, shipped }) => ({
+      name,
+      files: input.changedFiles.filter(file => isShippedPath(file, shipped)),
+      own: input.changesets.filter(entry => entry.package === name),
+    }))
+    .filter(section => section.files.length > 0 || section.own.length > 0);
   const lines: string[] = [];
 
-  if (packageFiles.length === 0) {
+  if (sections.length === 0) {
     lines.push("**No shipped files change in this PR.**");
-  } else {
-    lines.push(`**Shipped files change:** ${formatFiles(packageFiles)}`);
-  }
-
-  if (own.length > 0) {
-    lines.push("");
-    lines.push("**Changeset** (what the release notes will say):");
-    lines.push("");
-    for (const entry of own) {
-      lines.push(`- \`${entry.package}\`: **${entry.kind}** — ${entry.note}`);
-    }
-  } else if (packageFiles.length === 0) {
     lines.push("**No changeset**, and none needed.");
-  } else {
+  }
+  for (const { name, files, own } of sections) {
+    if (lines.length > 0) {
+      lines.push("");
+    }
+    lines.push(`### \`${name}\``);
     lines.push("");
     lines.push(
-      "**No changeset yet — none of these changes will ship when this merges.** Add one with `npm run changeset`, and write a note worth reading in a changelog. Assumed bump for a fix-shaped PR is **patch**; set it explicitly: `patch` for fixes, `minor` for new features, `major` for breaking changes.",
+      files.length === 0
+        ? "**No shipped files change.**"
+        : `**Shipped files change:** ${formatFiles(files)}`,
     );
+    if (own.length > 0) {
+      lines.push("");
+      lines.push("**Changeset** (what the release notes will say):");
+      lines.push("");
+      for (const entry of own) {
+        lines.push(`- **${entry.kind}** — ${entry.note}`);
+      }
+    } else {
+      lines.push("");
+      lines.push(
+        "**No changeset yet — none of these changes will ship when this merges.** Add one with `npm run changeset`, and write a note worth reading in a changelog. Assumed bump for a fix-shaped PR is **patch**; set it explicitly: `patch` for fixes, `minor` for new features, `major` for breaking changes.",
+      );
+    }
   }
 
   if (input.closesIssue) {
@@ -177,12 +234,13 @@ export function guidance(input: {
   }
 
   const markdown = lines.join("\n");
+  const own = sections.flatMap(section => section.own);
   const headline =
-    packageFiles.length === 0
+    sections.length === 0
       ? "No shipped files change in this PR"
-      : own.length > 0
-        ? `Changeset: ${own.map(entry => `${entry.kind} for ${entry.package}`).join("; ")}`
-        : "Shipped files change without a changeset";
+      : sections.some(section => section.own.length === 0)
+        ? "Shipped files change without a changeset"
+        : `Changeset: ${own.map(entry => `${entry.kind} for ${entry.package}`).join("; ")}`;
   return {
     headline,
     markdown,
@@ -244,20 +302,7 @@ export async function releaseGuidanceCli(argv: readonly string[]): Promise<numbe
     );
     return 1;
   }
-  const pkg = JSON.parse(await readFile("package.json", "utf8")) as {
-    name: string;
-    files: string[];
-  };
-  const build = JSON.parse(await readFile("tsconfig.build.json", "utf8")) as {
-    compilerOptions: { outDir: string };
-    include: string[];
-    exclude: string[];
-  };
-  const shipped = shippedPaths(pkg.files, {
-    outDir: build.compilerOptions.outDir,
-    include: build.include,
-    exclude: build.exclude,
-  });
+  const packages = shippingPackages(process.cwd());
   const changedFiles = (await readFile(changedPath, "utf8"))
     .split(/\r?\n/)
     .map(line => line.trim())
@@ -277,8 +322,7 @@ export async function releaseGuidanceCli(argv: readonly string[]): Promise<numbe
   }
   const result = guidance({
     changedFiles,
-    shipped,
-    package: pkg.name,
+    packages,
     changesets,
     closesIssue: closesIssue(body),
   });

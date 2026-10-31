@@ -1,7 +1,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { ComponentPropsWithRef, ReactNode, useCallback, useEffect, useRef } from "react";
-import { createSlotCheck, gridMarkup, isDevelopment } from "../adapter/index.ts";
-import { GridConfig } from "../types.ts";
+import { createSlotCheck, gridMarkup, isDevelopment } from "typed-grid-areas/adapter";
+import type { GridConfig } from "typed-grid-areas";
 
 /**
  * Props of a slot component (`<Card.icon>`) and of a grid's root component

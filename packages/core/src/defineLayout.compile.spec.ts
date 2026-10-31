@@ -1,15 +1,20 @@
 /**
- * Runs the repo's tsc on generated files: a stress file that must type-check
+ * Runs the package's tsc on generated files: a stress file that must type-check
  * within the compile budget, and a file of mistakes whose error messages must
  * name the problem.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, join, resolve } from "node:path";
 
 const root = resolve(__dirname, "..");
 const workDir = join(root, "node_modules", ".cache", "typed-grid-areas-compile");
-const tsc = join(root, "node_modules", "typescript", "bin", "tsc");
+const tsc = join(
+  dirname(createRequire(import.meta.url).resolve("typescript/package.json")),
+  "bin",
+  "tsc",
+);
 const defineLayoutPath = join(root, "src", "defineLayout");
 
 /**

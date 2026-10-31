@@ -1,4 +1,4 @@
-import { defineLayout } from "./defineLayout.ts";
+import { defineLayout } from "typed-grid-areas";
 import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 describe("derived layouts in a real browser", () => {

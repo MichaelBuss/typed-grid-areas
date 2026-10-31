@@ -2,25 +2,55 @@
 // The release script: the one place a version ships. The changesets GitHub
 // Action runs it on every push to main that has no pending changesets — i.e.
 // right after the Version Packages PR merges — but any other main merge lands
-// here too, so everything is idempotent: a version npm already has is skipped,
-// the tag and GitHub Release are only created when missing. npm publishes via
-// trusted publishing (OIDC, --provenance). When npm publishing is not
-// configured yet, the failure is instructive: exact human setup steps, never a
-// silent skip, never an opaque error.
+// here too, so everything is idempotent: every public workspace whose version
+// npm doesn't have yet is published, a version npm already has is skipped, and
+// the `<name>@<version>` tag and GitHub Release are only created when missing.
+// npm publishes via trusted publishing (OIDC, --provenance). When npm
+// publishing is not configured yet for a package, the failure is instructive:
+// exact human setup steps naming each package, never a silent skip, never an
+// opaque error.
+//
+// `--dry-run` prints what would be published, and from which folder, and
+// fails the same way for packages that need setup, without touching npm,
+// git or GitHub beyond reading what npm already has.
 
 import { spawnSync } from "node:child_process";
 import { realpathSync } from "node:fs";
-import { appendFile, readFile } from "node:fs/promises";
+import { appendFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { readWorkspaces, type Workspace } from "./workspaces.ts";
 
-export type ReleasePlan = { npm: boolean };
+/** The versions npm has of a package, or "unpublished" when npm has never seen it. */
+export type NpmVersions = readonly string[] | "unpublished";
 
-export function planRelease(input: {
-  version: string;
-  npmVersions: readonly string[];
-}): ReleasePlan {
-  return { npm: !input.npmVersions.includes(input.version) };
+export type ReleaseStep =
+  | { action: "publish"; name: string; version: string; directory: string; tag: string }
+  | { action: "skip"; name: string; version: string; tag: string }
+  | { action: "placeholder"; name: string; version: string };
+
+export function planRelease(
+  workspaces: readonly Workspace[],
+  npm: ReadonlyMap<string, NpmVersions>,
+): ReleaseStep[] {
+  return workspaces
+    .filter(workspace => !workspace.private)
+    .map((workspace): ReleaseStep => {
+      const { name, version } = workspace;
+      const onNpm = npm.get(name) ?? [];
+      if (onNpm === "unpublished") {
+        return { action: "placeholder", name, version };
+      }
+      const tag = `${name}@${version}`;
+      if (onNpm.includes(version)) {
+        return { action: "skip", name, version, tag };
+      }
+      const directory =
+        workspace.publishDirectory === undefined
+          ? workspace.dir
+          : `${workspace.dir}/${workspace.publishDirectory.replace(/^\.\/|\/$/g, "")}`;
+      return { action: "publish", name, version, directory, tag };
+    });
 }
 
 export function isNpmSetupError(stderr: string): boolean {
@@ -33,18 +63,51 @@ export function isNpmAlreadyPublished(stderr: string): boolean {
   return /E409|cannot publish over|previously published/i.test(stderr);
 }
 
-export function npmSetupInstructions(name: string, version: string): string {
-  return `npm refused to publish ${name}@${version} — trusted publishing is not configured yet. A human needs to:
+const scopeOf = (name: string) => (name.startsWith("@") ? name.split("/")[0] : undefined);
 
-1. Make sure \`${name}\` is yours on npmjs.com: if npm has never seen it, publish it once by hand from your own account.
-2. Open the package's settings on npmjs.com and configure **Trusted Publishing**: GitHub Actions, repository \`MichaelBuss/typed-grid-areas\`, workflow \`.github/workflows/publish.yml\`, with publishing allowed (not stage-only).
-3. Re-run the failed release workflow — it skips anything already published and finishes the rest.`;
+export function npmSetupInstructions(input: {
+  /** Packages npm has never seen, which need a placeholder before trusted publishing. */
+  placeholders: readonly string[];
+  /** Packages npm refused to publish, which need trusted publishing configured. */
+  trustedPublishing: readonly string[];
+}): string {
+  const all = [...new Set([...input.placeholders, ...input.trustedPublishing])];
+  const list = (names: readonly string[]) => names.map(name => `\`${name}\``).join(", ");
+  const steps: string[] = [];
+
+  const scopes = [...new Set(input.placeholders.map(scopeOf))].filter(scope => scope !== undefined);
+  for (const scope of scopes) {
+    steps.push(
+      `Create the \`${scope}\` organisation on npmjs.com, if it doesn't exist yet, so its packages can be published.`,
+    );
+  }
+  if (input.placeholders.length > 0) {
+    const commands = input.placeholders
+      .map(
+        name =>
+          `mkdir -p placeholder && cd placeholder\necho '{ "name": "${name}", "version": "0.0.0" }' > package.json\nnpm publish --access public\ncd .. && rm -rf placeholder`,
+      )
+      .join("\n\n");
+    steps.push(
+      `npm has never seen ${list(input.placeholders)}, and only lets you configure trusted publishing on a package that exists. Publish a placeholder of each once, from your own machine and npm account:\n\n${`\`\`\`sh\n${commands}\n\`\`\``.replace(/^/gm, "   ")}`,
+    );
+  }
+  steps.push(
+    `On npmjs.com, configure **Trusted Publishing** in the settings of each of ${list(all)}: GitHub Actions, repository \`MichaelBuss/typed-grid-areas\`, workflow \`.github/workflows/publish.yml\`, with publishing allowed (not stage-only).`,
+  );
+  steps.push(
+    "Re-run the failed release workflow — it skips anything already published and finishes the rest.",
+  );
+
+  return `npm can't publish ${list(all)} yet — trusted publishing is not set up for ${all.length === 1 ? "it" : "them"}. A human needs to:
+
+${steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}`;
 }
 
 type ShResult = { status: number; stdout: string; stderr: string };
 
-function sh(command: string, args: readonly string[]): ShResult {
-  const result = spawnSync(command, args, { encoding: "utf8" });
+function sh(command: string, args: readonly string[], cwd?: string): ShResult {
+  const result = spawnSync(command, args, { encoding: "utf8", cwd });
   return {
     status: result.status ?? 1,
     stdout: result.stdout ?? "",
@@ -68,15 +131,16 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function npmVersions(name: string): Promise<string[] | undefined> {
+/** What npm has of a package; undefined when that can't be determined. */
+async function npmVersions(name: string): Promise<NpmVersions | undefined> {
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) {
       await sleep(attempt * 2000);
     }
     const result = sh("npm", ["view", name, "versions", "--json"]);
     if (result.status !== 0) {
-      if (isNpmSetupError(result.stderr)) {
-        return [];
+      if (/E404|404 Not Found/.test(result.stderr)) {
+        return "unpublished";
       }
       continue;
     }
@@ -134,8 +198,7 @@ async function commentOnMergedPr(instructions: string): Promise<void> {
   sh("gh", ["pr", "comment", number, "--repo", repo, "--body", body]);
 }
 
-function ensureTag(version: string): boolean {
-  const tag = `v${version}`;
+function ensureTag(tag: string): boolean {
   // Push unconditionally: a prior run may have tagged locally without
   // pushing, and pushing an existing tag is a harmless no-op.
   if (sh("git", ["rev-parse", "-q", "--verify", `refs/tags/${tag}`]).status !== 0) {
@@ -146,8 +209,7 @@ function ensureTag(version: string): boolean {
   return sh("git", ["push", "origin", tag]).status === 0;
 }
 
-async function ensureGithubRelease(version: string): Promise<boolean> {
-  const tag = `v${version}`;
+function ensureGithubRelease(tag: string): boolean {
   if (sh("gh", ["release", "view", tag]).status === 0) {
     return true;
   }
@@ -158,72 +220,121 @@ async function ensureGithubRelease(version: string): Promise<boolean> {
   return sh("gh", ["release", "create", tag]).status === 0;
 }
 
-export async function releaseCli(): Promise<number> {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8")) as {
-    name: string;
-    version: string;
-  };
-  const { name, version } = pkg;
+export type ReleaseOptions = {
+  /** The repo root, whose package.json lists the workspaces. */
+  root: string;
+  dryRun: boolean;
+  npmVersions: (name: string) => Promise<NpmVersions | undefined>;
+  write: (text: string) => void;
+  writeError?: (text: string) => void;
+};
 
-  const onNpm = await npmVersions(name);
-  if (onNpm === undefined) {
-    process.stderr.write(
-      `Cannot determine what npm already has for ${name}; not risking a double publish.\n`,
-    );
-    return 1;
+export async function releaseCli(options: ReleaseOptions): Promise<number> {
+  const { root, dryRun, write } = options;
+  const writeError = options.writeError ?? write;
+  const workspaces = readWorkspaces(root);
+
+  const npm = new Map<string, NpmVersions>();
+  for (const workspace of workspaces.filter(workspace => !workspace.private)) {
+    const versions = await options.npmVersions(workspace.name);
+    if (versions === undefined) {
+      writeError(
+        `Cannot determine what npm already has for ${workspace.name}; not risking a double publish.\n`,
+      );
+      return 1;
+    }
+    npm.set(workspace.name, versions);
   }
 
-  const plan = planRelease({ version, npmVersions: onNpm });
-  if (!plan.npm) {
-    process.stdout.write(`${name}@${version} is already on npm; ensuring tag and release exist.\n`);
-    const tagged = ensureTag(version);
-    const released = await ensureGithubRelease(version);
-    process.stdout.write(
-      tagged && released
-        ? "Nothing to publish; tag and release are in place.\n"
-        : "Tag or release could not be ensured.\n",
-    );
-    return tagged && released ? 0 : 1;
+  const plan = planRelease(workspaces, npm);
+  const placeholders = plan.filter(step => step.action === "placeholder").map(step => step.name);
+  const trustedPublishing: string[] = [];
+  let failed = false;
+
+  if (!dryRun && plan.some(step => step.action === "publish")) {
+    // Every package builds against the core's build output, so build them all, in workspace order.
+    const build = sh("npm", ["run", "build"], root);
+    write(build.stdout);
+    writeError(build.stderr);
+    if (build.status !== 0) {
+      writeError("The build failed; nothing is released.\n");
+      return 1;
+    }
   }
 
-  process.stdout.write(`Publishing ${name}@${version} to npm with provenance.\n`);
-  const publish = sh("npm", ["publish", "--provenance", "--access", "public"]);
-  // Pass npm's own output through, success included: it is the only place
-  // that says whether the version went live or was staged for approval.
-  process.stdout.write(publish.stdout);
-  process.stderr.write(publish.stderr);
-  if (publish.status !== 0 && isNpmAlreadyPublished(publish.stderr)) {
-    process.stdout.write(
-      `npm already has ${name}@${version} (a prior run got there first); skipping.\n`,
+  for (const step of plan) {
+    if (step.action === "placeholder") {
+      continue;
+    }
+    if (step.action === "skip") {
+      write(`${step.name}@${step.version} is already on npm; ensuring tag and release exist.\n`);
+      if (!dryRun && !(ensureTag(step.tag) && ensureGithubRelease(step.tag))) {
+        writeError(`Tag or release ${step.tag} could not be ensured.\n`);
+        failed = true;
+      }
+      continue;
+    }
+    if (dryRun) {
+      write(
+        `Would publish ${step.name}@${step.version} from ${step.directory}, tagged ${step.tag}.\n`,
+      );
+      continue;
+    }
+
+    write(`Publishing ${step.name}@${step.version} from ${step.directory} with provenance.\n`);
+    const publish = sh(
+      "npm",
+      ["publish", "--provenance", "--access", "public"],
+      join(root, step.directory),
     );
-  } else if (publish.status !== 0) {
-    if (isNpmSetupError(publish.stderr)) {
-      const instructions = npmSetupInstructions(name, version);
-      process.stdout.write(`\n${instructions}\n`);
+    // Pass npm's own output through, success included: it is the only place
+    // that says whether the version went live or was staged for approval.
+    write(publish.stdout);
+    writeError(publish.stderr);
+    if (publish.status !== 0 && isNpmAlreadyPublished(publish.stderr)) {
+      write(`npm already has ${step.tag} (a prior run got there first); skipping.\n`);
+    } else if (publish.status !== 0) {
+      if (isNpmSetupError(publish.stderr)) {
+        trustedPublishing.push(step.name);
+      }
+      writeError(`npm publish failed; ${step.tag} is not released.\n`);
+      failed = true;
+      continue;
+    }
+
+    if (!ensureTag(step.tag)) {
+      writeError(`Published, but the ${step.tag} tag could not be created or pushed.\n`);
+      failed = true;
+      continue;
+    }
+    if (!ensureGithubRelease(step.tag)) {
+      writeError(
+        `Published and tagged, but the GitHub Release ${step.tag} could not be created.\n`,
+      );
+      failed = true;
+      continue;
+    }
+    write(`Released ${step.tag}: npm, tag, GitHub Release.\n`);
+  }
+
+  if (placeholders.length > 0 || trustedPublishing.length > 0) {
+    const instructions = npmSetupInstructions({ placeholders, trustedPublishing });
+    write(`\n${instructions}\n`);
+    if (!dryRun) {
       await appendSummary(`## npm publish needs human setup\n\n${instructions}\n`);
       await commentOnMergedPr(instructions);
     }
-    process.stderr.write(`npm publish failed; ${name}@${version} is not released.\n`);
     return 1;
   }
-
-  const tagged = ensureTag(version);
-  if (!tagged) {
-    process.stderr.write(`Published, but the v${version} tag could not be created or pushed.\n`);
-    return 1;
-  }
-  const released = await ensureGithubRelease(version);
-  if (!released) {
-    process.stderr.write(
-      `Published and tagged, but the GitHub Release for v${version} could not be created.\n`,
-    );
-    return 1;
-  }
-  process.stdout.write(`Released ${name}@${version}: npm, tag v${version}, GitHub Release.\n`);
-  return 0;
+  return failed ? 1 : 0;
 }
 
 if (isCliEntry()) {
-  process.exitCode = await releaseCli();
+  process.exitCode = await releaseCli({
+    root: join(dirname(fileURLToPath(import.meta.url)), ".."),
+    dryRun: process.argv.includes("--dry-run"),
+    npmVersions,
+    write: text => process.stdout.write(text),
+    writeError: text => process.stderr.write(text),
+  });
 }

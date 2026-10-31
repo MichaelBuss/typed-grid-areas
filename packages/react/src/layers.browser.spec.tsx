@@ -1,5 +1,5 @@
-import { defineLayout } from "./defineLayout.ts";
-import { idCardGrid as idCard } from "./test-utils/designs.ts";
+import { defineLayout } from "typed-grid-areas";
+import { idCardGrid as idCard } from "@typed-grid-areas/acceptance";
 import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 describe("layers in a real browser", () => {

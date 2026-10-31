@@ -1,0 +1,26 @@
+{
+  "name": "@typed-grid-areas/acceptance",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The framework-independent half of every adapter's browser acceptance tests. Never published.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "typed-grid-areas": "*"
+  },
+  "peerDependencies": {
+    "vitest": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
