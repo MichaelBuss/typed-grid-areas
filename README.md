@@ -884,6 +884,11 @@ function Example() {
 - **Builds.** The package's `solid` export is Solid JSX for your bundler's
   Solid plugin (`vite-plugin-solid` and the like) to compile, for the browser
   or the server; its `import` export is compiled for the browser.
+- **Server rendering needs a Solid-aware bundler.** Only the `solid` export
+  renders on the server, so the server build must resolve the `solid`
+  export condition, as `vite-plugin-solid` (and SolidStart) does. Without
+  that condition, plain Node loads the browser build, and importing it
+  throws Solid's "Client-only API called on the server side".
 
 ## Rendering with Svelte: `@typed-grid-areas/svelte`
 
