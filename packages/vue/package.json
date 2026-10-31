@@ -1,0 +1,52 @@
+{
+  "name": "@typed-grid-areas/vue",
+  "version": "0.0.0",
+  "description": "Vue adapter for typed-grid-areas: render a grid definition as typed slot components.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "bugs": {
+    "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
+    "postpack": "rm README.md LICENSE",
+    "test": "vitest run --project unit --project node",
+    "test:browser": "vitest run --project browser --project browser-development",
+    "typecheck": "node scripts/vue-tsc.cjs --noEmit"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "typed-grid-areas": "^0.1.0"
+  },
+  "devDependencies": {
+    "@typed-grid-areas/acceptance": "*",
+    "@types/node": "^22.10.5",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "@vitest/browser-playwright": "^5.0.1",
+    "happy-dom": "^20.14.5",
+    "playwright": "^1.64.1",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.1",
+    "vitest-browser-vue": "^3.1.0",
+    "vue": "^3.5.44",
+    "vue-tsc": "^3.3.13"
+  }
+}
