@@ -1,6 +1,7 @@
 import { gridId } from "./engine/gridId";
 import { HideRule, toHideRules } from "./engine/hiding";
-import { placeAreas } from "./engine/placement";
+import { parseCell } from "./engine/cells";
+import { Placement, placeAreas } from "./engine/placement";
 import { Condition, Rule, toRules } from "./engine/rules";
 import { GridConfig, SlotProps } from "./types";
 
@@ -115,11 +116,17 @@ function inWidthRange(css: string, scope: Scope, from?: string, until?: string):
  * Places every area by name, once per definition. Each rule's
  * `grid-template-areas` then decides where that name is, so a rule that
  * applies places every area it names and nothing leaks in from another.
+ *
+ * Slots aren't layers until a rule makes them one, so `--tga-over` starts at
+ * `none` (rather than inheriting, say, from an outer grid's layer).
  */
 function placementCss(scope: Scope, areas: ReadonlyArray<string>): string {
-  return areas
-    .map(area => `:where(${scope.grid}) > :where(${areaSelector(area)}) { grid-area: ${area}; }`)
-    .join("\n");
+  return [
+    `:where(${scope.grid}) > :where([data-area]) { --tga-over: none; }`,
+    ...areas.map(
+      area => `:where(${scope.grid}) > :where(${areaSelector(area)}) { grid-area: ${area}; }`,
+    ),
+  ].join("\n");
 }
 
 function isSet(tracks: ReadonlyArray<string> | undefined): tracks is ReadonlyArray<string> {
@@ -144,6 +151,48 @@ function declaration(
 }
 
 /**
+ * Places a layer by line numbers over the bounding rectangle of its cells:
+ * it has no name in `grid-template-areas`, since its base owns those cells.
+ * Drawn above the base whatever their order in the DOM, and tells its
+ * content which area it is over through `--tga-over`.
+ */
+function layerPlacement({
+  rowStart,
+  columnStart,
+  rowEnd,
+  columnEnd,
+  over,
+}: Placement): Array<string> {
+  return [
+    `grid-area: ${rowStart} / ${columnStart} / ${rowEnd} / ${columnEnd};`,
+    "z-index: 1;",
+    `--tga-over: ${over === undefined || over === "." ? "none" : over};`,
+  ];
+}
+
+/**
+ * Places an area back by name, for a rule where it owns cells after an
+ * earlier rule that can apply at the same time made it a layer.
+ */
+function namedPlacement(area: string): Array<string> {
+  return [`grid-area: ${area};`, "z-index: auto;", "--tga-over: none;"];
+}
+
+const placementCache = new WeakMap<Rule, Map<string, Placement>>();
+
+/**
+ * Where a rule places each area, worked out once per rule.
+ */
+function placementsOf(rule: Rule): Map<string, Placement> {
+  let placements = placementCache.get(rule);
+  if (placements === undefined) {
+    placements = placeAreas(rule.arrangement.cells);
+    placementCache.set(rule, placements);
+  }
+  return placements;
+}
+
+/**
  * The CSS for one rule. `earlier` are the rules before it that can apply at
  * the same time; only what they set needs resetting here.
  */
@@ -153,7 +202,9 @@ function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): stri
 
   const lines = [
     `${container} { ${[
-      `grid-template-areas: ${cells.map(row => `'${row.join(" ")}'`).join(" ")};`,
+      `grid-template-areas: ${cells
+        .map(row => `'${row.map(cell => parseCell(cell).base).join(" ")}'`)
+        .join(" ")};`,
       ...declaration(
         "grid-template-rows",
         isSet(rows) ? rows.join(" ") : undefined,
@@ -169,7 +220,7 @@ function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): stri
     ].join(" ")} }`,
   ];
 
-  for (const area of placeAreas(cells).keys()) {
+  for (const [area, placement] of placementsOf(rule)) {
     const alignment = [
       ...declaration(
         "justify-self",
@@ -184,8 +235,16 @@ function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): stri
         earlier.some(other => other.arrangement.align?.[area]?.align !== undefined),
       ),
     ];
-    if (alignment.length > 0) {
-      lines.push(`${container} > :where(${areaSelector(area)}) { ${alignment.join(" ")} }`);
+    const declarations = [
+      ...(placement.over !== undefined
+        ? layerPlacement(placement)
+        : earlier.some(other => placementsOf(other).get(area)?.over !== undefined)
+          ? namedPlacement(area)
+          : []),
+      ...alignment,
+    ];
+    if (declarations.length > 0) {
+      lines.push(`${container} > :where(${areaSelector(area)}) { ${declarations.join(" ")} }`);
     }
   }
 

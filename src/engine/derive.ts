@@ -1,17 +1,27 @@
 import { AreaAlignments, GridLayout, TrackSize } from "../types";
+import { cellAreas, formatCell, parseCell } from "./cells";
 import type { Arrangement, Rule } from "./rules";
 
 /**
- * A cell an absent area left behind, until it is dropped or filled.
+ * Where an absent area owned a cell, until the cell is dropped or filled.
  */
 type Hole = { removed: string };
 
-type Cell = string | Hole;
+/**
+ * One cell while deriving: the area that owns it (`"."` when empty, a hole
+ * when its area is absent) and the layers drawn over it. An absent layer
+ * just leaves the list; it never makes a hole.
+ */
+type Cell = { base: string | Hole; layers: ReadonlyArray<string> };
 
 type Grid = Array<Array<Cell>>;
 
-function isHole(cell: Cell | undefined): cell is Hole {
-  return typeof cell === "object";
+function isHole(base: string | Hole | undefined): base is Hole {
+  return typeof base === "object";
+}
+
+function isHoleCell(cell: Cell): boolean {
+  return isHole(cell.base);
 }
 
 function transpose(grid: Grid): Grid {
@@ -21,18 +31,23 @@ function transpose(grid: Grid): Grid {
 /**
  * Whether a row can be dropped: it held a removed area, and every other cell
  * in it is also removed or an area that continues into a neighbouring row.
- * `"."` cells are never dropped.
+ * Every layer in the row must continue into a neighbouring row too, so a
+ * present layer never loses its cells. `"."` cells are never dropped.
  */
 function isDroppableRow(grid: Grid, rowIndex: number): boolean {
   const row = grid[rowIndex] ?? [];
   return (
-    row.some(isHole) &&
-    row.every(
-      (cell, column) =>
-        isHole(cell) ||
-        (cell !== "." &&
-          (grid[rowIndex - 1]?.[column] === cell || grid[rowIndex + 1]?.[column] === cell)),
-    )
+    row.some(isHoleCell) &&
+    row.every((cell, column) => {
+      const neighbours = [grid[rowIndex - 1]?.[column], grid[rowIndex + 1]?.[column]];
+      const baseContinues =
+        isHole(cell.base) ||
+        (cell.base !== "." && neighbours.some(neighbour => neighbour?.base === cell.base));
+      return (
+        baseContinues &&
+        cell.layers.every(layer => neighbours.some(neighbour => neighbour?.layers.includes(layer)))
+      );
+    })
   );
 }
 
@@ -45,7 +60,7 @@ function nextRowToDrop(grid: Grid): number | undefined {
     return undefined;
   }
   const droppable = grid.map((_, index) => index).filter(index => isDroppableRow(grid, index));
-  return droppable.find(index => grid[index]?.every(isHole)) ?? droppable[0];
+  return droppable.find(index => grid[index]?.every(isHoleCell)) ?? droppable[0];
 }
 
 function withoutIndex<T>(items: ReadonlyArray<T> | undefined, index: number): Array<T> | undefined {
@@ -68,8 +83,9 @@ function dropEmptiedTracks(
   for (;;) {
     const row = nextRowToDrop(current);
     const column = nextRowToDrop(transpose(current));
-    const rowIsEmpty = row !== undefined && current[row]?.every(isHole) === true;
-    const columnIsEmpty = column !== undefined && current.every(cells => isHole(cells[column]));
+    const rowIsEmpty = row !== undefined && current[row]?.every(isHoleCell) === true;
+    const columnIsEmpty =
+      column !== undefined && current.every(cells => isHole(cells[column]?.base));
 
     if (row !== undefined && (rowIsEmpty || !columnIsEmpty)) {
       current = current.filter((_, index) => index !== row);
@@ -84,7 +100,8 @@ function dropEmptiedTracks(
 }
 
 /**
- * Whether every cell in the bounding rectangle of `area` is `area`.
+ * Whether every cell in the bounding rectangle of `area`'s cells is owned by
+ * `area`.
  */
 function isRectangle(grid: Grid, area: string): boolean {
   let top = Infinity;
@@ -93,7 +110,7 @@ function isRectangle(grid: Grid, area: string): boolean {
   let right = -Infinity;
   grid.forEach((row, rowIndex) =>
     row.forEach((cell, column) => {
-      if (cell === area) {
+      if (cell.base === area) {
         top = Math.min(top, rowIndex);
         bottom = Math.max(bottom, rowIndex);
         left = Math.min(left, column);
@@ -103,7 +120,7 @@ function isRectangle(grid: Grid, area: string): boolean {
   );
   for (let rowIndex = top; rowIndex <= bottom; rowIndex++) {
     for (let column = left; column <= right; column++) {
-      if (grid[rowIndex]?.[column] !== area) {
+      if (grid[rowIndex]?.[column]?.base !== area) {
         return false;
       }
     }
@@ -123,16 +140,23 @@ const NEIGHBOUR_OFFSETS: ReadonlyArray<Position> = [
 
 /**
  * Lets a neighbouring area grow into a hole, trying left, right, up and down
- * in turn, if the area stays a rectangle. Returns whether it was filled.
+ * in turn, if the area stays a rectangle. Layers over the hole stay where
+ * they are. Returns whether it was filled.
  */
 function fillHole(grid: Grid, hole: ReadonlyArray<Position>): boolean {
   const inHole = (row: number, column: number) =>
     hole.some(([holeRow, holeColumn]) => holeRow === row && holeColumn === column);
+  const fillWith = (target: Grid, area: string) => {
+    for (const [row, column] of hole) {
+      const cells = target[row] as Array<Cell>;
+      cells[column] = { ...(cells[column] as Cell), base: area };
+    }
+  };
 
   for (const [rowOffset, columnOffset] of NEIGHBOUR_OFFSETS) {
     const candidates = new Set<string>();
     for (const [row, column] of hole) {
-      const neighbour = grid[row + rowOffset]?.[column + columnOffset];
+      const neighbour = grid[row + rowOffset]?.[column + columnOffset]?.base;
       if (
         typeof neighbour === "string" &&
         neighbour !== "." &&
@@ -144,11 +168,9 @@ function fillHole(grid: Grid, hole: ReadonlyArray<Position>): boolean {
 
     for (const candidate of candidates) {
       const filled = grid.map(cells => [...cells]);
-      for (const [row, column] of hole) {
-        (filled[row] as Array<Cell>)[column] = candidate;
-      }
+      fillWith(filled, candidate);
       if (isRectangle(filled, candidate)) {
-        hole.forEach(([row, column]) => ((grid[row] as Array<Cell>)[column] = candidate));
+        fillWith(grid, candidate);
         return true;
       }
     }
@@ -164,11 +186,11 @@ function fillHole(grid: Grid, hole: ReadonlyArray<Position>): boolean {
 function fillHoles(grid: Grid): GridLayout<string> {
   const holesByArea = new Map<string, Array<Position>>();
   grid.forEach((row, rowIndex) =>
-    row.forEach((cell, column) => {
-      if (isHole(cell)) {
-        const positions = holesByArea.get(cell.removed) ?? [];
+    row.forEach(({ base }, column) => {
+      if (isHole(base)) {
+        const positions = holesByArea.get(base.removed) ?? [];
         positions.push([rowIndex, column]);
-        holesByArea.set(cell.removed, positions);
+        holesByArea.set(base.removed, positions);
       }
     }),
   );
@@ -179,20 +201,31 @@ function fillHoles(grid: Grid): GridLayout<string> {
     }
   }
 
-  return grid.map(row => row.map(cell => (isHole(cell) ? "." : cell)));
+  return grid.map(row =>
+    row.map(({ base, layers }) =>
+      formatCell({ base: isHole(base) ? "." : base, layers: [...layers] }),
+    ),
+  );
 }
 
 /**
  * Derives the arrangement for when the `absent` areas aren't rendered: they
  * leave their cells, emptied rows and columns are dropped, and a neighbour
- * grows into any hole that remains. Alignment for absent areas is dropped.
+ * grows into any hole that remains. An absent layer just disappears from its
+ * cells. Alignment for absent areas is dropped.
  */
 export function deriveArrangement(
   arrangement: Arrangement,
   absent: ReadonlySet<string>,
 ): Arrangement {
   const grid: Grid = arrangement.cells.map(row =>
-    row.map(cell => (absent.has(cell) ? { removed: cell } : cell)),
+    row.map(cell => {
+      const { base, layers } = parseCell(cell);
+      return {
+        base: absent.has(base) ? { removed: base } : base,
+        layers: layers.filter(layer => !absent.has(layer)),
+      };
+    }),
   );
   const dropped = dropEmptiedTracks(grid, arrangement.rows, arrangement.columns);
 
@@ -223,7 +256,7 @@ function nonEmptySubsets<T>(items: ReadonlyArray<T>): Array<Array<T>> {
  * A key that two arrangements share exactly when they lay a grid out the same.
  */
 function arrangementKey({ cells, rows, columns, align }: Arrangement): string {
-  const placed = new Set(cells.flat());
+  const placed = new Set(cells.flat().flatMap(cellAreas));
   const relevantAlign = Object.entries(align ?? {})
     .filter(([area, value]) => placed.has(area) && value !== undefined)
     .map(([area, { justify, align: alignSelf } = {}]) => [area, justify ?? "", alignSelf ?? ""])
@@ -259,7 +292,7 @@ export function withDerivedRules(
     return [];
   }
   const { when, unless } = first.condition;
-  const used = new Set(rules.flatMap(rule => rule.arrangement.cells.flat()));
+  const used = new Set(rules.flatMap(rule => rule.arrangement.cells.flat().flatMap(cellAreas)));
   const varied = optionalAreas.filter(
     area => used.has(area) && !when.includes(area) && !unless.includes(area),
   );

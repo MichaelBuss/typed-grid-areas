@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { render } from "vitest-browser-react";
 import { GridAreas } from "../react/GridAreas";
 import { useGridAreas } from "../react/useGridAreas";
@@ -10,6 +11,8 @@ interface MountGridOptions<TAreaName extends string> {
   present: ReadonlyArray<TAreaName>;
   /** Consumer classes to put on individual slots. */
   slotClassNames?: Partial<Record<TAreaName, string>>;
+  /** Content to render inside individual slots (slots are empty otherwise). */
+  slotContent?: Partial<Record<TAreaName, ReactNode>>;
   /**
    * If set, the wrapper sits inside an unrelated size container
    * (`container-type: inline-size`) of this width in px.
@@ -30,10 +33,12 @@ function GridHarness<TAreaName extends string>({
   config,
   present,
   slotClassNames,
+  slotContent,
 }: {
   config: GridConfig<TAreaName>;
   present: ReadonlyArray<TAreaName>;
   slotClassNames?: Partial<Record<TAreaName, string>>;
+  slotContent?: Partial<Record<TAreaName, ReactNode>>;
 }) {
   const gridAreas = useGridAreas(config);
 
@@ -47,7 +52,9 @@ function GridHarness<TAreaName extends string>({
               {...slots[area]}
               className={slotClassNames?.[area]}
               style={{ minHeight: 10 }}
-            />
+            >
+              {slotContent?.[area]}
+            </div>
           ))}
         </>
       )}
@@ -62,11 +69,22 @@ function GridHarness<TAreaName extends string>({
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
-  { width, present, slotClassNames, ancestorContainerWidth }: MountGridOptions<TAreaName>,
+  {
+    width,
+    present,
+    slotClassNames,
+    slotContent,
+    ancestorContainerWidth,
+  }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
   const sized = (
     <div style={{ width }}>
-      <GridHarness config={config} present={present} slotClassNames={slotClassNames} />
+      <GridHarness
+        config={config}
+        present={present}
+        slotClassNames={slotClassNames}
+        slotContent={slotContent}
+      />
     </div>
   );
 
