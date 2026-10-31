@@ -22,6 +22,8 @@ type ArrangementInput = {
   rows?: string;
   columns?: string;
   align?: Record<string, AreaAlign>;
+  /** `{ badge: "photo" }`: badge is layered over every cell photo owns. Sugar for `photo+badge`. */
+  layers?: Record<string, string>;
 };
 type LayoutInput = ArrangementInput & {
   when?: Array<string>;
@@ -45,7 +47,14 @@ export type LayoutComponent<A extends string, N = unknown> = RootComponent & {
 let counter = 0;
 
 const toArrangement = (input: ArrangementInput): Arrangement => ({
-  template: parseTemplate(input.template),
+  template: parseTemplate(input.template).map(row =>
+    row.map(cell =>
+      Object.entries(input.layers ?? {}).reduce(
+        (acc, [layer, host]) => (acc.split("+")[0] === host ? `${acc}+${layer}` : acc),
+        cell,
+      ),
+    ),
+  ),
   rows: parseTracks(input.rows),
   columns: parseTracks(input.columns),
   align: input.align,
@@ -93,8 +102,10 @@ export function defineLayout<
         const AsSlot: RootComponent = props => nested({ ...props, area: name });
         return [name, Object.assign(AsSlot, nested)];
       }
-      const Slot: SlotComponent = ({ as: Tag = "div", style, ...rest }) => (
-        <Tag {...rest} data-area={name} style={{ gridArea: name, ...style }} />
+      // Placement lives in the generated CSS (an area can be layered in one layout and own cells in
+      // another), so slots carry no inline grid-area.
+      const Slot: SlotComponent = ({ as: Tag = "div", ...rest }) => (
+        <Tag {...rest} data-area={name} />
       );
       return [name, Slot];
     }),

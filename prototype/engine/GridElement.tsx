@@ -27,7 +27,6 @@ export function GridElement({
   children,
 }: GridElementProps) {
   const areaProps = area ? { "data-area": area } : {};
-  const areaStyle: CSSProperties = area ? { gridArea: area } : {};
   const css = (
     <style href={`tga-${grid.id}`} precedence="typed-grid-areas">
       {grid.css}
@@ -42,7 +41,7 @@ export function GridElement({
           {...areaProps}
           className={className}
           data-grid={grid.id}
-          style={{ display: "grid", ...areaStyle, ...style }}
+          style={{ display: "grid", ...style }}
         >
           {children}
         </Tag>
@@ -57,7 +56,6 @@ export function GridElement({
         {...areaProps}
         data-grid-container={grid.id}
         style={{
-          ...areaStyle,
           containerType: "inline-size",
           containerName: containerName(grid.id),
           minWidth: 0,

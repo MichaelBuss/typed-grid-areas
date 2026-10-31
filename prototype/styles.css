@@ -217,3 +217,101 @@ details pre {
   color: white;
   cursor: pointer;
 }
+
+/* ID card (stretch goal) */
+.cases {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.cases button {
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: white;
+  cursor: pointer;
+}
+.cases button[aria-pressed="true"] {
+  background: #111827;
+  color: white;
+}
+.id-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: white;
+  overflow: hidden;
+}
+.photo {
+  display: flex;
+  height: 100%;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366f1, #0ea5e9);
+  color: rgb(255 255 255 / 0.45);
+  font-size: 48px;
+  font-weight: 800;
+}
+.identity {
+  display: grid;
+  padding: 8px 12px;
+}
+.identity span {
+  color: #525252;
+  font-size: 12px;
+}
+/* While layered over something, the slot carries --tga-over: restyle for contrast. */
+@container style(--tga-over: photo) {
+  .identity {
+    padding-top: 24px;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+    color: white;
+  }
+  .identity span {
+    color: rgb(255 255 255 / 0.85);
+  }
+}
+.details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+}
+.details dt {
+  color: #737373;
+}
+.details dd {
+  margin: 0;
+}
+.logo {
+  display: grid;
+  width: 40px;
+  height: 28px;
+  margin: 8px;
+  place-items: center;
+  border-radius: 6px;
+  background: white;
+  color: #4338ca;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+.badge {
+  display: inline-block;
+  margin: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #facc15;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.qr {
+  width: 64px;
+  height: 64px;
+  margin: 12px;
+  background: repeating-conic-gradient(#111 0 25%, #fff 0 50%) 0 0 / 16px 16px;
+  outline: 1px solid #e5e5e5;
+}

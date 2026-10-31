@@ -1,60 +1,114 @@
-// PROTOTYPE (issue #4) — throwaway comparison page: ?variant=A|B|C, ← → to switch.
+// PROTOTYPE (issue #4) — throwaway comparison page: ?variant=A…E, ← → to switch within a case.
 import { ReactNode, useEffect, useState } from "react";
 import { CompiledGrid } from "./engine/core";
-import { Parts } from "./parts";
 import * as A from "./variants/A-nested-explicit";
 import sourceA from "./variants/A-nested-explicit.tsx?raw";
 import * as B from "./variants/B-nested-derived";
 import sourceB from "./variants/B-nested-derived.tsx?raw";
 import * as C from "./variants/C-flat-derived";
 import sourceC from "./variants/C-flat-derived.tsx?raw";
+import * as D from "./variants/D-idcard-layers";
+import sourceD from "./variants/D-idcard-layers.tsx?raw";
+import * as E from "./variants/E-idcard-cells";
+import sourceE from "./variants/E-idcard-cells.tsx?raw";
+
+type Flags = Record<string, boolean>;
 
 type Variant = {
   title: string;
   points: Array<string>;
   source: string;
   grids: Array<CompiledGrid>;
-  PreferenceCard: (parts: Parts) => ReactNode;
+  Render: (flags: Flags) => ReactNode;
 };
 
-const VARIANTS: Record<string, Variant> = {
-  A: {
-    title: "Nested grids, explicit layouts",
-    points: [
-      "Today's API: builder, hook, render prop, spread slot props. Fixes from round 1 applied.",
-      "Every combination you care about is written out; partial conditions + later-wins keep it to 4 head layouts.",
-      "Children can't be an area cheaply (another optional area doubles the explicit layouts), so a plain stack holds them.",
-    ],
-    source: sourceA,
-    grids: A.grids,
-    PreferenceCard: A.PreferenceCard,
+type Case = {
+  title: string;
+  /** Optional parts the matrix enumerates. */
+  optional: Array<string>;
+  /** Extra flags the playground can toggle; always on in the matrix. */
+  extras: Array<string>;
+  widths: Array<number>;
+  variants: Record<string, Variant>;
+};
+
+const CASES: Record<string, Case> = {
+  "preference-card": {
+    title: "PreferenceCard",
+    optional: ["input", "icon", "cardTag", "children"],
+    extras: ["titleTag"],
+    widths: [300, 560],
+    variants: {
+      A: {
+        title: "Nested grids, explicit layouts",
+        points: [
+          "Today's API: builder, hook, render prop, spread slot props. Fixes from round 1 applied.",
+          "Every combination you care about is written out; partial conditions + later-wins keep it to 4 head layouts.",
+          "Children can't be an area cheaply (another optional area doubles the explicit layouts), so a plain stack holds them.",
+        ],
+        source: sourceA,
+        grids: A.grids,
+        Render: A.PreferenceCard as unknown as Variant["Render"],
+      },
+      B: {
+        title: "Nested grids, one definition each, derived layouts",
+        points: [
+          '"?" marks optional areas. You draw the everything-present picture; absent areas collapse out automatically.',
+          "Overrides are only needed where the derived result isn't what you want (here: 2, both optional).",
+          "Grids nest through `nest`, and render as slot components: no hooks, render props or spreads.",
+        ],
+        source: sourceB,
+        grids: B.grids,
+        Render: B.PreferenceCard as unknown as Variant["Render"],
+      },
+      C: {
+        title: "One flat grid, derived layouts",
+        points: [
+          "Same definition style as B, but every part is an area of the card itself: one grid, one definition.",
+          "Panels with their own padding/background (the input panel) don't map to cells: needs a negative-margin bleed.",
+          "One row gap / column gap for everything; the breakpoint measures the whole card, not the content.",
+        ],
+        source: sourceC,
+        grids: C.grids,
+        Render: C.PreferenceCard as unknown as Variant["Render"],
+      },
+    },
   },
-  B: {
-    title: "Nested grids, one definition each, derived layouts",
-    points: [
-      '"?" marks optional areas. You draw the everything-present picture; absent areas collapse out automatically.',
-      "Overrides are only needed where the derived result isn't what you want (here: 2, both optional).",
-      "Grids nest through `nest`, and render as slot components: no hooks, render props or spreads.",
-    ],
-    source: sourceB,
-    grids: B.grids,
-    PreferenceCard: B.PreferenceCard,
-  },
-  C: {
-    title: "One flat grid, derived layouts",
-    points: [
-      "Same definition style as B, but every part is an area of the card itself: one grid, one definition.",
-      "Panels with their own padding/background (the input panel) don't map to cells: needs a negative-margin bleed.",
-      "One row gap / column gap for everything; the breakpoint measures the whole card, not the content.",
-    ],
-    source: sourceC,
-    grids: C.grids,
-    PreferenceCard: C.PreferenceCard,
+  "id-card": {
+    title: "ID card (stretch goal)",
+    optional: ["logo", "qr", "badge"],
+    extras: [],
+    widths: [300, 560],
+    variants: {
+      D: {
+        title: "Layering by naming the area underneath",
+        points: [
+          '`layers: { badge: "photo" }` puts badge over all of photo; `align` pins it to a corner.',
+          "Template stays a plain picture of the cells; what floats on top is listed beside it.",
+          "Two layers that pin to the same corner would collide: they'd need to be one area (or a nested grid).",
+        ],
+        source: sourceD,
+        grids: D.grids,
+        Render: D.IdCard as unknown as Variant["Render"],
+      },
+      E: {
+        title: "Layering written into the template cells",
+        points: [
+          "`photo+badge` = photo owns the cell, badge sits on top. Corners are cells, so the picture shows placement.",
+          "Several layers can share one photo in different cells (logo, badge, identity) without colliding.",
+          "Needs extra rows/columns to carve the photo into cells; align only fine-tunes within a cell.",
+        ],
+        source: sourceE,
+        grids: E.grids,
+        Render: E.IdCard as unknown as Variant["Render"],
+      },
+    },
   },
 };
-const KEYS = Object.keys(VARIANTS);
 
-/** Non-blank lines inside `// #region <name>` … `// #endregion`. */
+const caseOf = (variant: string) => Object.keys(CASES).find(c => variant in CASES[c]!.variants)!;
+
+/** Non-blank, non-comment lines inside `// #region <name>` … `// #endregion`. */
 function regionLines(source: string, region: string): number {
   const match = source.match(new RegExp(`// #region ${region}\\n([\\s\\S]*?)// #endregion`));
   return (
@@ -62,29 +116,31 @@ function regionLines(source: string, region: string): number {
   );
 }
 
-const OPTIONAL: Array<keyof Parts> = ["input", "icon", "cardTag", "children"];
-const COMBOS: Array<Parts> = Array.from({ length: 16 }, (_, i) => ({
-  input: Boolean(i & 8),
-  icon: Boolean(i & 4),
-  cardTag: Boolean(i & 2),
-  children: Boolean(i & 1),
-  titleTag: true,
-})).reverse();
-const label = (parts: Parts) => OPTIONAL.map(k => (parts[k] ? `+${k}` : `−${k}`)).join(" ");
+function combos(c: Case): Array<Flags> {
+  const n = c.optional.length;
+  return Array.from({ length: 2 ** n }, (_, i) =>
+    Object.fromEntries([
+      ...c.optional.map((k, bit) => [k, Boolean(i & (1 << (n - 1 - bit)))]),
+      ...c.extras.map(k => [k, true]),
+    ]),
+  ).reverse();
+}
 
 export function App() {
   const [key, setKey] = useState(() => {
     const fromUrl = new URLSearchParams(location.search).get("variant") ?? "A";
-    return KEYS.includes(fromUrl) ? fromUrl : "A";
+    return caseOf(fromUrl) ? fromUrl : "A";
   });
-  const [playground, setPlayground] = useState<Parts>(COMBOS[0]!);
+  const current = CASES[caseOf(key)]!;
+  const keys = Object.keys(current.variants);
+  const [playground, setPlayground] = useState<Flags>({});
 
+  const select = (next: string) => {
+    history.replaceState(null, "", `?variant=${next}`);
+    setKey(next);
+  };
   const go = (step: number) =>
-    setKey(current => {
-      const next = KEYS[(KEYS.indexOf(current) + step + KEYS.length) % KEYS.length]!;
-      history.replaceState(null, "", `?variant=${next}`);
-      return next;
-    });
+    select(keys[(keys.indexOf(key) + step + keys.length) % keys.length]!);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -95,15 +151,29 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  });
 
-  const variant = VARIANTS[key]!;
-  const { PreferenceCard } = variant;
+  const variant = current.variants[key]!;
+  const { Render } = variant;
   const css = variant.grids.map(g => g.css).join("\n\n");
+  const flags = { ...combos(current)[0], ...playground };
+  const label = (f: Flags) => current.optional.map(k => (f[k] ? `+${k}` : `−${k}`)).join(" ");
 
   return (
     <div className="page">
       <header>
+        <nav className="cases">
+          {Object.entries(CASES).map(([id, c]) => (
+            <button
+              aria-pressed={c === current}
+              key={id}
+              onClick={() => select(Object.keys(c.variants)[0]!)}
+              type="button"
+            >
+              {c.title}
+            </button>
+          ))}
+        </nav>
         <h1>
           Variant {key}: {variant.title}
         </h1>
@@ -126,11 +196,11 @@ export function App() {
       <main>
         <h2>Playground: drag the corner to resize</h2>
         <div style={{ display: "flex", gap: 12, marginBottom: 8 }}>
-          {(["input", "icon", "titleTag", "cardTag", "children"] as const).map(k => (
+          {[...current.optional, ...current.extras].map(k => (
             <label key={k}>
               <input
-                checked={playground[k]}
-                onChange={e => setPlayground({ ...playground, [k]: e.target.checked })}
+                checked={flags[k] ?? false}
+                onChange={e => setPlayground({ ...flags, [k]: e.target.checked })}
                 type="checkbox"
               />{" "}
               {k}
@@ -138,22 +208,17 @@ export function App() {
           ))}
         </div>
         <div className="resizable" data-testid="playground">
-          <PreferenceCard {...playground} />
+          <Render {...flags} />
         </div>
 
-        {[300, 560].map(width => (
+        {current.widths.map(width => (
           <section key={width}>
             <h2>Every combination of optional parts at {width}px</h2>
             <div className="matrix" style={{ ["--w" as string]: `${width}px` }}>
-              {COMBOS.map(parts => (
-                <div
-                  className="cell"
-                  data-combo={label(parts)}
-                  data-width={width}
-                  key={label(parts)}
-                >
-                  <div className="cell-label">{label(parts)}</div>
-                  <PreferenceCard {...parts} />
+              {combos(current).map(f => (
+                <div className="cell" data-combo={label(f)} data-width={width} key={label(f)}>
+                  <div className="cell-label">{label(f)}</div>
+                  <Render {...f} />
                 </div>
               ))}
             </div>
