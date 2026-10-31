@@ -21,7 +21,8 @@
   "scripts": {
     "test": "vitest run --project unit",
     "test:browser": "vitest run --project browser",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prototype": "vite prototype --port 5199 --strictPort"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
