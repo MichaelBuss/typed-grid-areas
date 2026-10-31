@@ -309,7 +309,34 @@ describe("validateGridConfig", () => {
   });
 
   describe("cell validation", () => {
-    it.each(["photo+", "+badge", "photo++badge", ".+badge", "photo+photo"])(
+    it("should accept a layer over empty cells", () => {
+      const config: GridConfig<string> = {
+        areas: ["photo", "badge"],
+        layouts: [{ layout: [["photo", ".+badge"]] }],
+      };
+
+      expect(validateGridConfig(config)).toHaveLength(0);
+    });
+
+    it("should report a layer over empty cells that isn't a rectangle as a layer", () => {
+      const config: GridConfig<string> = {
+        areas: ["photo", "badge"],
+        layouts: [
+          {
+            layout: [
+              [".+badge", ".+badge"],
+              ["photo", ".+badge"],
+            ],
+          },
+        ],
+      };
+
+      expect(validateGridConfig(config)).toEqual([
+        expect.stringContaining(`Layer "badge" isn't a rectangle`),
+      ]);
+    });
+
+    it.each(["photo+", "+badge", "photo++badge", "photo+.", "photo+photo"])(
       "should warn about the malformed cell %s",
       cell => {
         const config: GridConfig<string> = {

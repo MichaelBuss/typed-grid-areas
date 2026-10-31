@@ -6,6 +6,7 @@ import {
   TrackSize,
   GridConfig,
 } from "./types";
+import { cellAreas, parseCell } from "./engine/cells";
 
 /**
  * Creates a normalized key from a condition (when + unless) for comparison.
@@ -125,17 +126,23 @@ interface ValidateCellsOptions {
 }
 
 /**
- * The area names in a cell: `"photo+badge"` is the base `photo` with the
- * layer `badge` drawn over it.
+ * Whether a cell is well formed: a base (an area name or `.`) followed by
+ * any layers (area names), joined by `+`, each name at most once.
  */
-function cellAreas(cell: string): Array<string> {
-  return cell === "." ? [] : cell.split("+");
+function isWellFormed(cell: string): boolean {
+  const { base, layers } = parseCell(cell);
+  const names = cellAreas(cell);
+  return (
+    base !== "" &&
+    layers.every(layer => layer !== "" && layer !== ".") &&
+    new Set(names).size === names.length
+  );
 }
 
 /**
- * Validates a layout's cells: every cell is `.`, an area name, or area names
- * joined by `+` (a base and the layers over it), each name is an area of
- * the grid, and every area and layer covers a rectangle of cells.
+ * Validates a layout's cells: every cell is `.`, an area name, or a base
+ * (an area name or `.`) and the layers over it joined by `+`, each name is
+ * an area of the grid, and every area and layer covers a rectangle of cells.
  */
 function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<string> {
   const errors: Array<string> = [];
@@ -144,25 +151,25 @@ function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<
 
   layout.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
-      const names = cellAreas(cell);
-      if (names.some(name => name === "" || name === ".") || new Set(names).size !== names.length) {
+      if (!isWellFormed(cell)) {
         errors.push(
-          `${context}: Malformed cell "${cell}" at row ${rowIndex}, column ${colIndex}. A cell is ".", an area name, or area names joined by "+" (each at most once).`,
+          `${context}: Malformed cell "${cell}" at row ${rowIndex}, column ${colIndex}. A cell is ".", an area name, or a base (an area name or ".") and area names layered over it, joined by "+" (each at most once).`,
         );
         return;
       }
-      names.forEach((name, index) => {
+      const { base } = parseCell(cell);
+      for (const name of cellAreas(cell)) {
         if (!areaSet.has(name)) {
           errors.push(
             `${context}: Unknown area name "${name}" at row ${rowIndex}, column ${colIndex}. Valid areas are: ${areas.join(", ")}.`,
           );
-          return;
+          continue;
         }
         const entry = covered.get(name) ?? { cells: [], asBase: false };
         entry.cells.push([rowIndex, colIndex]);
-        entry.asBase ||= index === 0;
+        entry.asBase ||= name === base;
         covered.set(name, entry);
-      });
+      }
     });
   });
 
