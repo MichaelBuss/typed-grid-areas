@@ -104,7 +104,9 @@ describe("changeset version", () => {
 
 describe("the release script's dry run after it", () => {
   it("would publish both packages, each with its own tag", async () => {
+    // Every other package (each further adapter) already has its current version on npm.
     const npm: Record<string, NpmVersions> = {
+      ...Object.fromEntries(readWorkspaces(root).map(({ name, version }) => [name, [version]])),
       "typed-grid-areas": ["1.4.2"],
       "@typed-grid-areas/react": ["0.3.0"],
     };

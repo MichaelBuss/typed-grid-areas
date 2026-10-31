@@ -24,5 +24,10 @@
     "prettier": "^3.9.8",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
+  },
+  "overrides": {
+    "vitest-browser-preact": {
+      "preact": "^11.0.0"
+    }
   }
 }
