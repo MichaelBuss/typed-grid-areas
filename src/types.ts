@@ -22,6 +22,17 @@ export const CONTAINER_BREAKPOINTS = {
 export type ContainerBreakpoint = keyof typeof CONTAINER_BREAKPOINTS;
 
 /**
+ * A breakpoint at an arbitrary width, in Tailwind's arbitrary-value syntax:
+ * `"@[27rem]"` switches when the grid is given at least 27rem.
+ */
+export type ArbitraryBreakpoint = `@[${string}]`;
+
+/**
+ * A breakpoint key: a named Tailwind size (`"@sm"`) or an arbitrary length (`"@[27rem]"`).
+ */
+export type BreakpointKey = ContainerBreakpoint | ArbitraryBreakpoint;
+
+/**
  * Empty cell marker for grid-template-areas.
  *
  * In CSS, a "." represents an empty/unnamed cell in the grid.
@@ -84,7 +95,7 @@ export type LayoutConfig<TAreaName extends string> = {
   /** Per-area alignment while this layout applies. */
   align?: AreaAlignments<TAreaName>;
   /** Responsive breakpoint overrides */
-  breakpoints?: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<TAreaName>>>;
+  breakpoints?: Partial<Record<BreakpointKey, BreakpointLayoutConfig<TAreaName>>>;
 };
 
 /**
@@ -151,4 +162,17 @@ export type GridAreasResult<TAreaName extends string> = {
   css: string;
   /** Data attribute to add to the container element for CSS scoping */
   containerProps: { "data-grid-id": string };
+  /**
+   * Props for the grid's own size container: a wrapper element around the grid
+   * that its breakpoints measure. Only set when the definition has breakpoints;
+   * grids without breakpoints get no wrapper.
+   */
+  sizeContainerProps?: SizeContainerProps;
+};
+
+/**
+ * Props for the wrapper element that is a grid's own size container.
+ */
+export type SizeContainerProps = {
+  style: { containerType: "inline-size"; containerName: string };
 };

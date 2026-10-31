@@ -6,8 +6,10 @@ export { validateGridSlots } from "./validateGridSlots";
 export {
   CONTAINER_BREAKPOINTS,
   type Alignment,
+  type ArbitraryBreakpoint,
   type AreaAlignment,
   type AreaAlignments,
+  type BreakpointKey,
   type BreakpointLayoutConfig,
   type ContainerBreakpoint,
   type EmptyCell,
@@ -18,6 +20,7 @@ export {
   type GridStyles,
   type LayoutConfig,
   type NestedStyles,
+  type SizeContainerProps,
   type SlotProps,
   type StyleValue,
   type TrackSize,

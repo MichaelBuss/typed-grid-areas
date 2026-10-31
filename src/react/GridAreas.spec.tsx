@@ -9,6 +9,11 @@ const cardGrid = createGrid()
   .layout({ layout: [["icon", "info"]] })
   .build();
 
+const responsiveGrid = createGrid()
+  .areas(["icon", "info"])
+  .layout({ layout: [["icon"], ["info"]], breakpoints: { "@sm": { layout: [["icon", "info"]] } } })
+  .build();
+
 function Card({ asChild = false }: { asChild?: boolean }) {
   const gridAreas = useGridAreas(cardGrid);
 
@@ -39,7 +44,35 @@ describe("GridAreas", () => {
     expect(grid).toHaveAttribute("data-grid-id");
     expect(grid.className).toBe("gap-4");
     expect(grid.style.display).toBe("grid");
-    expect(grid.style.containerType).toBe("inline-size");
+  });
+
+  it("renders a grid without breakpoints with no wrapper, and not as a size container", () => {
+    const { container, getByTestId } = render(<Card />);
+
+    const grid = getByTestId("grid");
+    expect(grid.parentElement).toBe(container);
+    expect(grid.style.containerType).toBe("");
+  });
+
+  it("wraps a grid with breakpoints in its own named size container", () => {
+    function Responsive() {
+      const gridAreas = useGridAreas(responsiveGrid);
+      return (
+        <GridAreas {...gridAreas} data-testid="grid">
+          {slots => <span {...slots.icon} />}
+        </GridAreas>
+      );
+    }
+
+    const { container, getByTestId } = render(<Responsive />);
+
+    const wrapper = getByTestId("grid").parentElement;
+    expect(wrapper?.parentElement).toBe(container);
+    expect(wrapper?.style.containerType).toBe("inline-size");
+    expect(wrapper?.style.containerName).not.toBe("");
+    expect(container.querySelector("style")).toHaveTextContent(
+      `@container ${wrapper?.style.containerName} (min-width: 24rem)`,
+    );
   });
 
   it("renders the slots returned by the render prop", () => {

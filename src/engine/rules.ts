@@ -33,22 +33,41 @@ export type Arrangement = {
  */
 export type Rule = {
   condition: Condition;
-  /** Present for an arrangement that only applies from this breakpoint up. */
-  breakpoint?: ContainerBreakpoint;
+  /**
+   * Present for an arrangement that only applies once the grid is given at
+   * least this width (a CSS length).
+   */
+  minWidth?: string;
   arrangement: Arrangement;
 };
 
-function isContainerBreakpoint(value: string): value is ContainerBreakpoint {
-  return value in CONTAINER_BREAKPOINTS;
+/**
+ * Resolves a breakpoint key to the width it switches at: a named Tailwind
+ * size (`"@sm"` -> `"24rem"`) or an arbitrary length (`"@[27rem]"` -> `"27rem"`).
+ * Returns undefined for anything else.
+ */
+export function breakpointWidth(key: string): string | undefined {
+  if (key in CONTAINER_BREAKPOINTS) {
+    return CONTAINER_BREAKPOINTS[key as ContainerBreakpoint];
+  }
+  return /^@\[(.+)\]$/.exec(key)?.[1];
 }
 
-const BREAKPOINT_ORDER = Object.keys(CONTAINER_BREAKPOINTS);
-
 /**
- * Orders breakpoints from narrowest to widest; no breakpoint ranks lowest.
+ * Orders widths from narrowest to widest; no width ranks lowest. Lengths in
+ * px, rem and em are compared (at 16px to the rem); any other length ranks
+ * after all of those.
  */
-export function breakpointRank(breakpoint: ContainerBreakpoint | undefined): number {
-  return breakpoint === undefined ? -1 : BREAKPOINT_ORDER.indexOf(breakpoint);
+export function widthRank(width: string | undefined): number {
+  if (width === undefined) {
+    return -1;
+  }
+  const match = /^(\d*\.?\d+)(px|rem|em)$/.exec(width.trim());
+  if (match === null) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+  const value = Number(match[1]);
+  return match[2] === "px" ? value : value * 16;
 }
 
 /**
@@ -75,18 +94,15 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
       },
     });
 
-    const breakpoints = Object.keys(layoutConfig.breakpoints ?? {})
-      .filter(isContainerBreakpoint)
-      .sort((a, b) => breakpointRank(a) - breakpointRank(b));
-
-    for (const breakpoint of breakpoints) {
-      const breakpointConfig = layoutConfig.breakpoints?.[breakpoint];
-      if (breakpointConfig === undefined) {
+    const breakpointRules: Array<Rule> = [];
+    for (const [key, breakpointConfig] of Object.entries(layoutConfig.breakpoints ?? {})) {
+      const minWidth = breakpointWidth(key);
+      if (minWidth === undefined || breakpointConfig === undefined) {
         continue;
       }
-      rules.push({
+      breakpointRules.push({
         condition,
-        breakpoint,
+        minWidth,
         arrangement: {
           cells: breakpointConfig.layout,
           rows: breakpointConfig.rows,
@@ -95,6 +111,8 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
         },
       });
     }
+    breakpointRules.sort((a, b) => widthRank(a.minWidth) - widthRank(b.minWidth));
+    rules.push(...breakpointRules);
   }
 
   return rules;

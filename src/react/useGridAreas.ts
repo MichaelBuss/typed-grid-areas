@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { gridId } from "../engine/gridId";
-import { createSlots, generateCss } from "../generateCss";
+import { createSlots, generateCss, hasBreakpoints, sizeContainerName } from "../generateCss";
 import { GridAreasResult, GridConfig } from "../types";
 import { validateGridConfig } from "../validateGridConfig";
 
@@ -71,6 +71,8 @@ export function useGridAreas<TAreaName extends string>(
   config: GridConfig<TAreaName>,
 ): GridAreasResult<TAreaName> {
   return useMemo(() => {
+    const id = gridId(config);
+
     // Config validation (dev only)
     if (process.env.NODE_ENV === "development") {
       const errors = validateGridConfig(config);
@@ -83,7 +85,10 @@ export function useGridAreas<TAreaName extends string>(
     return {
       slots: createSlots(config.areas),
       css: generateCss(config),
-      containerProps: { "data-grid-id": gridId(config) },
+      containerProps: { "data-grid-id": id },
+      sizeContainerProps: hasBreakpoints(config)
+        ? { style: { containerType: "inline-size", containerName: sizeContainerName(id) } }
+        : undefined,
     };
   }, [config]);
 }

@@ -1,6 +1,6 @@
 import {
   BreakpointLayoutConfig,
-  ContainerBreakpoint,
+  BreakpointKey,
   GridLayout,
   LayoutConfig,
   TrackSize,
@@ -198,7 +198,7 @@ function validateWhenClause({
 }
 
 interface ValidateBreakpointsOptions {
-  breakpoints: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<string>>> | undefined;
+  breakpoints: Partial<Record<BreakpointKey, BreakpointLayoutConfig<string>>> | undefined;
   areas: ReadonlyArray<string>;
   layoutIndex: number;
 }
@@ -224,6 +224,9 @@ function validateBreakpoints({
   const errors: Array<string> = [];
 
   for (const [breakpoint, config] of Object.entries(breakpoints)) {
+    if (config === undefined) {
+      continue;
+    }
     const context = `Layout ${layoutIndex}, breakpoint "${breakpoint}"`;
 
     errors.push(

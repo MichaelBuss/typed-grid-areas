@@ -111,7 +111,7 @@ describe("generateCss and createSlots", () => {
       const result = testGrid(config);
 
       expect(result.css).toContain("grid-template-areas: 'information'");
-      expect(result.css).toContain("@container (min-width: 24rem)");
+      expect(result.css).toContain("(min-width: 24rem)");
       expect(result.css).toContain("grid-template-areas: 'icon information'");
     });
 
@@ -133,7 +133,7 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      expect(result.css).toContain("@container (min-width: 24rem)");
+      expect(result.css).toContain("(min-width: 24rem)");
       expect(result.css).toContain("grid-template-areas: 'icon information secondTag'");
     });
 
@@ -151,9 +151,9 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      expect(result.css).toContain("@container (min-width: 24rem)");
+      expect(result.css).toContain("(min-width: 24rem)");
       expect(result.css).toContain("grid-template-areas: 'a b'");
-      expect(result.css).toContain("@container (min-width: 32rem)");
+      expect(result.css).toContain("(min-width: 32rem)");
       expect(result.css).toContain("grid-template-areas: 'b a'");
     });
   });
@@ -230,7 +230,7 @@ describe("generateCss and createSlots", () => {
 
       expect(result.css).toContain("grid-template-rows: auto 1fr");
       expect(result.css).toContain("grid-template-columns: 1fr");
-      expect(result.css).toContain("@container (min-width: 24rem)");
+      expect(result.css).toContain("(min-width: 24rem)");
       expect(result.css).toContain("grid-template-rows: 1fr");
       expect(result.css).toContain("grid-template-columns: min-content 1fr");
     });
@@ -263,9 +263,11 @@ describe("generateCss and createSlots", () => {
 
       // Breakpoint should reset rows to none (since not provided) and have new columns
       // This ensures base rows don't cascade into the breakpoint
-      expect(result.css).toMatch(/@container \(min-width: 24rem\) \{[^}]*grid-template-rows: none/);
       expect(result.css).toMatch(
-        /@container \(min-width: 24rem\) \{[^}]*grid-template-columns: min-content 1fr auto/,
+        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-rows: none/,
+      );
+      expect(result.css).toMatch(
+        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-columns: min-content 1fr auto/,
       );
     });
 
@@ -288,9 +290,11 @@ describe("generateCss and createSlots", () => {
       const result = testGrid(config);
 
       // Breakpoint should reset columns to none (since not provided) and have new rows
-      expect(result.css).toMatch(/@container \(min-width: 28rem\) \{[^}]*grid-template-rows: 1fr/);
       expect(result.css).toMatch(
-        /@container \(min-width: 28rem\) \{[^}]*grid-template-columns: none/,
+        /@container \S+ \(min-width: 28rem\) \{[^}]*grid-template-rows: 1fr/,
+      );
+      expect(result.css).toMatch(
+        /@container \S+ \(min-width: 28rem\) \{[^}]*grid-template-columns: none/,
       );
     });
 
@@ -311,9 +315,11 @@ describe("generateCss and createSlots", () => {
 
       // Breakpoints are self-contained: they always explicitly set rows/columns to none
       // This ensures consistent behavior and prevents any inherited values from cascading
-      expect(result.css).toMatch(/@container \(min-width: 24rem\) \{[^}]*grid-template-rows: none/);
       expect(result.css).toMatch(
-        /@container \(min-width: 24rem\) \{[^}]*grid-template-columns: none/,
+        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-rows: none/,
+      );
+      expect(result.css).toMatch(
+        /@container \S+ \(min-width: 24rem\) \{[^}]*grid-template-columns: none/,
       );
     });
 
@@ -373,7 +379,7 @@ describe("generateCss and createSlots", () => {
       expect(css).toContain("grid-template-areas: 'icon secondTag' 'information information'");
 
       // Verify breakpoint override for conditional layout
-      expect(css).toContain("@container (min-width: 24rem)");
+      expect(css).toContain("(min-width: 24rem)");
       expect(css).toContain("grid-template-areas: 'icon information secondTag'");
     });
 
@@ -424,7 +430,7 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      expect(result.css).toContain("@container (min-width: 24rem)");
+      expect(result.css).toContain("(min-width: 24rem)");
       expect(result.css).toContain("grid-template-areas: 'a b'");
     });
 

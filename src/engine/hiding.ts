@@ -1,6 +1,5 @@
-import { ContainerBreakpoint } from "../types";
 import { placeAreas } from "./placement";
-import { breakpointRank, Condition, Rule } from "./rules";
+import { Condition, Rule, widthRank } from "./rules";
 
 /**
  * Hides one area while a rule applies and none of the later rules that
@@ -16,10 +15,10 @@ export type HideRule = {
   condition: Condition;
   /** Conditions of later rules that show the area; none of them may hold. */
   except: ReadonlyArray<Condition>;
-  /** Applies from this breakpoint up (from zero width when absent). */
-  from?: ContainerBreakpoint;
-  /** Applies below this breakpoint (with no upper limit when absent). */
-  until?: ContainerBreakpoint;
+  /** Applies once the grid is given at least this width (from zero when absent). */
+  from?: string;
+  /** Applies while the grid is given less than this width (no limit when absent). */
+  until?: string;
 };
 
 function isUnconditional({ when, unless }: Condition): boolean {
@@ -50,24 +49,19 @@ export function toHideRules(
           !later.condition.unless.includes(area),
       );
 
-      // Each later breakpoint at which another shower switches on starts a new width range.
-      const ownRank = breakpointRank(rule.breakpoint);
-      const lowerBounds: Array<ContainerBreakpoint | undefined> = [rule.breakpoint];
+      // Each wider breakpoint at which another shower switches on starts a new width range.
+      const lowerBounds: Array<string | undefined> = [rule.minWidth];
       for (const shower of [...showers].sort(
-        (a, b) => breakpointRank(a.breakpoint) - breakpointRank(b.breakpoint),
+        (a, b) => widthRank(a.minWidth) - widthRank(b.minWidth),
       )) {
-        if (
-          breakpointRank(shower.breakpoint) > ownRank &&
-          !lowerBounds.includes(shower.breakpoint)
-        ) {
-          lowerBounds.push(shower.breakpoint);
+        const rank = widthRank(shower.minWidth);
+        if (rank > widthRank(lowerBounds[lowerBounds.length - 1])) {
+          lowerBounds.push(shower.minWidth);
         }
       }
 
       lowerBounds.forEach((from, boundIndex) => {
-        const active = showers.filter(
-          shower => breakpointRank(shower.breakpoint) <= breakpointRank(from),
-        );
+        const active = showers.filter(shower => widthRank(shower.minWidth) <= widthRank(from));
         if (active.some(shower => isUnconditional(shower.condition))) {
           return;
         }

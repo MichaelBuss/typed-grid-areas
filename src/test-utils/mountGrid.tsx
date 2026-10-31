@@ -10,6 +10,11 @@ interface MountGridOptions<TAreaName extends string> {
   present: ReadonlyArray<TAreaName>;
   /** Consumer classes to put on individual slots. */
   slotClassNames?: Partial<Record<TAreaName, string>>;
+  /**
+   * If set, the wrapper sits inside an unrelated size container
+   * (`container-type: inline-size`) of this width in px.
+   */
+  ancestorContainerWidth?: number;
 }
 
 interface MountedGrid<TAreaName extends string> {
@@ -57,12 +62,20 @@ function GridHarness<TAreaName extends string>({
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
-  { width, present, slotClassNames }: MountGridOptions<TAreaName>,
+  { width, present, slotClassNames, ancestorContainerWidth }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
-  const { container } = await render(
+  const sized = (
     <div style={{ width }}>
       <GridHarness config={config} present={present} slotClassNames={slotClassNames} />
-    </div>,
+    </div>
+  );
+
+  const { container } = await render(
+    ancestorContainerWidth === undefined ? (
+      sized
+    ) : (
+      <div style={{ width: ancestorContainerWidth, containerType: "inline-size" }}>{sized}</div>
+    ),
   );
 
   const grid = container.querySelector<HTMLElement>("[data-testid=grid]");
