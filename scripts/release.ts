@@ -189,12 +189,15 @@ export async function releaseCli(): Promise<number> {
 
   process.stdout.write(`Publishing ${name}@${version} to npm with provenance.\n`);
   const publish = sh("npm", ["publish", "--provenance", "--access", "public"]);
+  // Pass npm's own output through, success included: it is the only place
+  // that says whether the version went live or was staged for approval.
+  process.stdout.write(publish.stdout);
+  process.stderr.write(publish.stderr);
   if (publish.status !== 0 && isNpmAlreadyPublished(publish.stderr)) {
     process.stdout.write(
       `npm already has ${name}@${version} (a prior run got there first); skipping.\n`,
     );
   } else if (publish.status !== 0) {
-    process.stderr.write(publish.stderr);
     if (isNpmSetupError(publish.stderr)) {
       const instructions = npmSetupInstructions(name, version);
       process.stdout.write(`\n${instructions}\n`);
