@@ -894,6 +894,101 @@ slot isn't rendered or it has a direct child that isn't one of its slots,
 once per distinct set of problems, after mount and after each update.
 Production builds and server rendering log nothing.
 
+## Rendering with Preact: `@typed-grid-areas/preact`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/preact
+```
+
+`@typed-grid-areas/preact` is a native Preact adapter (no `preact/compat`)
+for Preact 11 (`preact` `^11.0.0`; checked with 11.1). Its API is the React
+adapter's: `createGridComponent(definition, { nest })` returns `<Card>`,
+with a slot component per area (`<Card.icon>`), each taking anything a
+`div` takes (`class` or `className`, `style`, `ref`, …):
+
+```tsx preact
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/preact";
+
+const Card = createGridComponent(
+  defineLayout({
+    areas: ["icon?", "information", "cardTag?"],
+    layouts: [
+      {
+        template: "icon information cardTag",
+        columns: "min-content minmax(0, 1fr) auto",
+      },
+    ],
+  }),
+);
+
+function Example({ tag }: { tag?: string }) {
+  return (
+    <Card class="gap-2">
+      <Card.icon>★</Card.icon>
+      <Card.information>Weekly digest</Card.information>
+      {tag && <Card.cardTag>{tag}</Card.cardTag>}
+    </Card>
+  );
+}
+```
+
+The rendered DOM, `nest`, and the development warnings are the React
+adapter's ([Rendering with React](#rendering-with-react-grid-components)).
+
+**Your own element as a slot: `asChild`.** On a slot or on the grid,
+`asChild` renders your single child element instead of a `div`. Classes
+(`class` and `className`) from both are joined, `style` objects merge (a
+string style is appended after the slot's), a handler on both runs the
+child's then the slot's, and both refs are set. The slot's `data-area` (or
+the grid's `data-grid-id`) always wins; any other prop of the child wins.
+
+```tsx preact
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/preact";
+
+const Row = createGridComponent(
+  defineLayout({ areas: ["input", "content"], layouts: [{ template: "input content" }] }),
+);
+
+function Example() {
+  return (
+    <Row>
+      <Row.input asChild class="p-4">
+        <label for="notify">
+          <input id="notify" type="checkbox" />
+        </label>
+      </Row.input>
+      <Row.content>Notify me</Row.content>
+    </Row>
+  );
+}
+```
+
+**Where the CSS goes.** In the browser, each definition's CSS goes into one
+`<style data-typed-grid-areas>` in `<head>`, inserted while the first
+instance renders and kept for the page's lifetime; nothing to set up.
+Preact has no way to reach `<head>` from the server, so a server render
+collects it with `createGridStyleSheet()`, a new one per request, and puts
+it in `<head>` itself:
+
+```tsx preact
+import { renderToString } from "preact-render-to-string";
+import { createGridStyleSheet } from "@typed-grid-areas/preact";
+
+function App() {
+  return <main>…</main>;
+}
+
+const sheet = createGridStyleSheet();
+const body = renderToString(sheet.collect(<App />));
+const html = `<!doctype html><html><head>${sheet}</head><body>${body}</body></html>`;
+```
+
+When the page hydrates, the grids reuse the server's style tags. In
+development, a grid rendered on the server outside a sheet warns that its
+CSS is missing.
+
 ## Without React: `typed-grid-areas/adapter`
 
 The core has no React dependency. To render grids in another framework, build
