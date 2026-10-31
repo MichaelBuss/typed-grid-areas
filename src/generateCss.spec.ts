@@ -1,5 +1,6 @@
 import { defineLayout } from "./defineLayout";
-import { createSlots, generateCss } from "./generateCss";
+import { generateCss } from "./generateCss";
+import { createSlots } from "./markup";
 import { GridConfig } from "./types";
 
 function testGrid<TAreaName extends string>(config: GridConfig<TAreaName>) {

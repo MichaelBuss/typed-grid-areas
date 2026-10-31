@@ -1,6 +1,7 @@
 export { defineLayout, type ArrangementInput, type LayoutInput } from "./defineLayout";
 export { gridId } from "./engine/gridId";
-export { createSlots, generateCss } from "./generateCss";
+export { generateCss } from "./generateCss";
+export { createSlots } from "./markup";
 export { validateGridConfig } from "./validateGridConfig";
 export {
   CONTAINER_BREAKPOINTS,

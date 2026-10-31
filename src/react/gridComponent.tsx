@@ -1,7 +1,8 @@
 import { Slot } from "@radix-ui/react-slot";
 import { ComponentPropsWithRef, ReactNode, useCallback, useEffect, useRef } from "react";
 import { gridId } from "../engine/gridId";
-import { generateCss, hasBreakpoints, sizeContainerName } from "../generateCss";
+import { generateCss } from "../generateCss";
+import { hasBreakpoints, sizeContainerName } from "../markup";
 import { isDevelopment } from "../isDevelopment";
 import { GridConfig } from "../types";
 import { slotWarnings } from "./slotWarnings";
