@@ -105,8 +105,6 @@ describe("changeset version", () => {
 describe("the release script's dry run after it", () => {
   it("would publish both packages, each with its own tag", async () => {
     const npm: Record<string, NpmVersions> = {
-      // Every other package already has its current version on npm.
-      ...Object.fromEntries(readWorkspaces(root).map(({ name, version }) => [name, [version]])),
       "typed-grid-areas": ["1.4.2"],
       "@typed-grid-areas/react": ["0.3.0"],
     };
@@ -114,7 +112,9 @@ describe("the release script's dry run after it", () => {
     const status = await releaseCli({
       root,
       dryRun: true,
-      npmVersions: async name => npm[name] ?? "unpublished",
+      // Every other workspace (the other adapters) as published at its current version.
+      npmVersions: async name =>
+        npm[name] ?? [readWorkspaces(root).find(workspace => workspace.name === name)!.version],
       write: text => {
         output += text;
       },
