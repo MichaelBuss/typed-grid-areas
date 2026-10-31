@@ -55,7 +55,7 @@ function toArrangement<TAreaName extends string>(
   arrangement: ArrangementInput<TAreaName>,
 ): BreakpointLayoutConfig<TAreaName> {
   return {
-    layout: parseTemplate(arrangement.template) as BreakpointLayoutConfig<TAreaName>["layout"],
+    cells: parseTemplate(arrangement.template) as BreakpointLayoutConfig<TAreaName>["cells"],
     rows: arrangement.rows === undefined ? undefined : parseTracks(arrangement.rows),
     columns: arrangement.columns === undefined ? undefined : parseTracks(arrangement.columns),
     align: arrangement.align,

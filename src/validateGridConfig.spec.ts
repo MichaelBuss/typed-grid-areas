@@ -6,7 +6,7 @@ describe("validateGridConfig", () => {
     it("should warn when areas array is empty", () => {
       const config: GridConfig<string> = {
         areas: [],
-        layouts: [{ layout: [["test"]] }],
+        layouts: [{ cells: [["test"]] }],
       };
 
       const errors = validateGridConfig(config);
@@ -30,7 +30,7 @@ describe("validateGridConfig", () => {
     it("should warn when layout contains unknown area name", () => {
       const config: GridConfig<"icon"> = {
         areas: ["icon"],
-        layouts: [{ layout: [["icon", "unknown" as any]] }],
+        layouts: [{ cells: [["icon", "unknown" as any]] }],
       };
 
       const errors = validateGridConfig(config);
@@ -41,7 +41,7 @@ describe("validateGridConfig", () => {
     it("should allow empty cell marker '.'", () => {
       const config: GridConfig<"icon"> = {
         areas: ["icon"],
-        layouts: [{ layout: [["icon", "."]] }],
+        layouts: [{ cells: [["icon", "."]] }],
       };
 
       const errors = validateGridConfig(config);
@@ -55,7 +55,7 @@ describe("validateGridConfig", () => {
         layouts: [
           {
             when: ["icon", "unknown" as "icon"],
-            layout: [["icon"]],
+            cells: [["icon"]],
           },
         ],
       };
@@ -70,7 +70,7 @@ describe("validateGridConfig", () => {
     it("should warn when 'unless' clause contains unknown area name", () => {
       const config: GridConfig<"icon"> = {
         areas: ["icon"],
-        layouts: [{ unless: ["unknown" as "icon"], layout: [["icon"]] }],
+        layouts: [{ unless: ["unknown" as "icon"], cells: [["icon"]] }],
       };
 
       const errors = validateGridConfig(config);
@@ -87,7 +87,7 @@ describe("validateGridConfig", () => {
         areas: ["icon", "info"],
         layouts: [
           {
-            layout: [
+            cells: [
               ["icon", "info"],
               ["icon", "info"],
             ],
@@ -108,7 +108,7 @@ describe("validateGridConfig", () => {
         areas: ["icon", "info"],
         layouts: [
           {
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
             columns: ["48px"], // Only 1 column specified, but layout has 2
           },
         ],
@@ -126,7 +126,7 @@ describe("validateGridConfig", () => {
         areas: ["icon", "info", "tag"],
         layouts: [
           {
-            layout: [
+            cells: [
               ["icon", "info"],
               ["tag"], // Only 1 column, first row has 2
             ],
@@ -146,7 +146,7 @@ describe("validateGridConfig", () => {
     it("should accept a 'when' area the layout leaves out, which it hides", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
-        layouts: [{ layout: [["icon", "info"]] }, { when: ["icon", "info"], layout: [["icon"]] }],
+        layouts: [{ cells: [["icon", "info"]] }, { when: ["icon", "info"], cells: [["icon"]] }],
       };
 
       expect(validateGridConfig(config)).toHaveLength(0);
@@ -159,10 +159,10 @@ describe("validateGridConfig", () => {
         areas: ["icon", "info"],
         layouts: [
           {
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
             breakpoints: {
               "@md": {
-                layout: [
+                cells: [
                   ["icon", "info"],
                   ["icon", "info"],
                 ],
@@ -184,10 +184,10 @@ describe("validateGridConfig", () => {
         areas: ["icon", "info"],
         layouts: [
           {
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
             breakpoints: {
               "@lg": {
-                layout: [["icon", "unknown" as "info"]],
+                cells: [["icon", "unknown" as "info"]],
               },
             },
           },
@@ -206,9 +206,9 @@ describe("validateGridConfig", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
-          { layout: [["info"]] },
-          { when: ["icon"], unless: ["tag"], layout: [["icon", "info"]] },
-          { when: ["icon"], unless: ["tag"], layout: [["info", "icon"]] },
+          { cells: [["info"]] },
+          { when: ["icon"], unless: ["tag"], cells: [["icon", "info"]] },
+          { when: ["icon"], unless: ["tag"], cells: [["info", "icon"]] },
         ],
       };
 
@@ -224,11 +224,11 @@ describe("validateGridConfig", () => {
         layouts: [
           {
             when: ["icon", "info"],
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
           },
           {
             when: ["icon", "info"],
-            layout: [["info", "icon"]],
+            cells: [["info", "icon"]],
           },
         ],
       };
@@ -247,11 +247,11 @@ describe("validateGridConfig", () => {
         layouts: [
           {
             when: ["icon", "info", "tag"],
-            layout: [["icon", "info", "tag"]],
+            cells: [["icon", "info", "tag"]],
           },
           {
             when: ["tag", "info", "icon"],
-            layout: [["tag", "info", "icon"]],
+            cells: [["tag", "info", "icon"]],
           },
         ],
       };
@@ -267,11 +267,11 @@ describe("validateGridConfig", () => {
         layouts: [
           {
             when: ["icon", "info"],
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
           },
           {
             when: ["icon", "tag"],
-            layout: [["icon", "tag"]],
+            cells: [["icon", "tag"]],
           },
         ],
       };
@@ -285,8 +285,8 @@ describe("validateGridConfig", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
-          { when: ["icon"], layout: [["icon", "info"]] },
-          { when: ["icon"], unless: ["tag"], layout: [["info", "icon"]] },
+          { when: ["icon"], cells: [["icon", "info"]] },
+          { when: ["icon"], unless: ["tag"], cells: [["info", "icon"]] },
         ],
       };
 
@@ -298,7 +298,7 @@ describe("validateGridConfig", () => {
     it("should not warn for multiple base layouts without a condition", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
-        layouts: [{ layout: [["icon"]] }, { layout: [["info"]] }],
+        layouts: [{ cells: [["icon"]] }, { cells: [["info"]] }],
       };
 
       const errors = validateGridConfig(config);
@@ -312,7 +312,7 @@ describe("validateGridConfig", () => {
     it("should accept a layer over empty cells", () => {
       const config: GridConfig<string> = {
         areas: ["photo", "badge"],
-        layouts: [{ layout: [["photo", ".+badge"]] }],
+        layouts: [{ cells: [["photo", ".+badge"]] }],
       };
 
       expect(validateGridConfig(config)).toHaveLength(0);
@@ -323,7 +323,7 @@ describe("validateGridConfig", () => {
         areas: ["photo", "badge"],
         layouts: [
           {
-            layout: [
+            cells: [
               [".+badge", ".+badge"],
               ["photo", ".+badge"],
             ],
@@ -341,7 +341,7 @@ describe("validateGridConfig", () => {
       cell => {
         const config: GridConfig<string> = {
           areas: ["photo", "badge"],
-          layouts: [{ layout: [[cell]] }],
+          layouts: [{ cells: [[cell]] }],
         };
 
         expect(validateGridConfig(config)).toEqual([
@@ -353,7 +353,7 @@ describe("validateGridConfig", () => {
     it("should warn about an unknown area in a layered cell", () => {
       const config: GridConfig<string> = {
         areas: ["photo", "badge"],
-        layouts: [{ layout: [["photo+badgee"]] }],
+        layouts: [{ cells: [["photo+badgee"]] }],
       };
 
       expect(validateGridConfig(config)).toEqual([
@@ -366,10 +366,10 @@ describe("validateGridConfig", () => {
         areas: ["a", "b"],
         layouts: [
           {
-            layout: [["a", "b"]],
+            cells: [["a", "b"]],
             breakpoints: {
               "@sm": {
-                layout: [
+                cells: [
                   ["a", "a"],
                   ["a", "b"],
                 ],
@@ -388,8 +388,8 @@ describe("validateGridConfig", () => {
       const config: GridConfig<string> = {
         areas: ["photo", "logo"],
         layouts: [
-          { layout: [["photo+logo", "photo"]] },
-          { when: ["logo"], layout: [["photo", "logo"]] },
+          { cells: [["photo+logo", "photo"]] },
+          { when: ["logo"], cells: [["photo", "logo"]] },
         ],
       };
 
@@ -402,15 +402,15 @@ describe("validateGridConfig", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
-          { layout: [["info"]] },
+          { cells: [["info"]] },
           {
             when: ["icon", "info"],
-            layout: [["icon", "info"]],
+            cells: [["icon", "info"]],
             columns: ["48px", "1fr"],
           },
           {
             when: ["icon", "info", "tag"],
-            layout: [
+            cells: [
               ["icon", "tag"],
               ["icon", "info"],
             ],

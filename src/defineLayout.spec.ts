@@ -87,20 +87,20 @@ describe("defineLayout", () => {
 
     expect(layout.layouts).toEqual([
       {
-        layout: [
+        cells: [
           ["icon", "cardTag"],
           ["information", "information"],
         ],
         align: { cardTag: { justify: "end" } },
         breakpoints: {
           "@sm": {
-            layout: [["icon", "information", "cardTag"]],
+            cells: [["icon", "information", "cardTag"]],
             columns: ["min-content", "minmax(0, 1fr)", "auto"],
             align: { icon: { align: "center" } },
           },
         },
       },
-      { when: ["icon"], unless: ["cardTag"], layout: [["icon", "information"]] },
+      { when: ["icon"], unless: ["cardTag"], cells: [["icon", "information"]] },
     ]);
   });
 

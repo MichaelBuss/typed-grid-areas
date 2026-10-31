@@ -56,7 +56,7 @@ function isCountable(tracks: ReadonlyArray<TrackSize>): boolean {
 }
 
 interface ValidateLayoutDimensionsOptions {
-  layout: GridLayout<string>;
+  cells: GridLayout<string>;
   rows: Array<TrackSize> | undefined;
   columns: Array<TrackSize> | undefined;
   context: string;
@@ -66,27 +66,27 @@ interface ValidateLayoutDimensionsOptions {
  * Validates a grid layout's dimensions against rows/columns arrays.
  *
  * @param options - Validation options
- * @param options.layout - The 2D grid layout
+ * @param options.cells - The layout's cells, row by row
  * @param options.rows - Optional row track sizes
  * @param options.columns - Optional column track sizes
  * @param options.context - Context string for error messages
  * @returns {Array<string>} Array of error messages
  */
 function validateLayoutDimensions({
-  layout,
+  cells,
   rows,
   columns,
   context,
 }: ValidateLayoutDimensionsOptions): Array<string> {
   const errors: Array<string> = [];
 
-  const firstRow = layout[0];
+  const firstRow = cells[0];
   if (firstRow === undefined) {
     errors.push(`${context}: Layout has no rows.`);
     return errors;
   }
 
-  const rowCount = layout.length;
+  const rowCount = cells.length;
   const firstRowLength = firstRow.length;
 
   // Check rows array length
@@ -104,8 +104,8 @@ function validateLayoutDimensions({
   }
 
   // Check for inconsistent column counts across rows
-  for (let i = 1; i < layout.length; i++) {
-    const row = layout[i];
+  for (let i = 1; i < cells.length; i++) {
+    const row = cells[i];
     if (row === undefined) {
       continue;
     }
@@ -120,7 +120,7 @@ function validateLayoutDimensions({
 }
 
 interface ValidateCellsOptions {
-  layout: GridLayout<string>;
+  cells: GridLayout<string>;
   areas: ReadonlyArray<string>;
   context: string;
 }
@@ -144,12 +144,12 @@ function isWellFormed(cell: string): boolean {
  * (an area name or `.`) and the layers over it joined by `+`, each name is
  * an area of the grid, and every area and layer covers a rectangle of cells.
  */
-function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<string> {
+function validateCells({ cells, areas, context }: ValidateCellsOptions): Array<string> {
   const errors: Array<string> = [];
   const areaSet = new Set(areas);
-  const covered = new Map<string, { cells: Array<[number, number]>; asBase: boolean }>();
+  const covered = new Map<string, { positions: Array<[number, number]>; asBase: boolean }>();
 
-  layout.forEach((row, rowIndex) => {
+  cells.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
       if (!isWellFormed(cell)) {
         errors.push(
@@ -165,22 +165,22 @@ function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<
           );
           continue;
         }
-        const entry = covered.get(name) ?? { cells: [], asBase: false };
-        entry.cells.push([rowIndex, colIndex]);
+        const entry = covered.get(name) ?? { positions: [], asBase: false };
+        entry.positions.push([rowIndex, colIndex]);
         entry.asBase ||= name === base;
         covered.set(name, entry);
       }
     });
   });
 
-  for (const [name, { cells, asBase }] of covered) {
-    const rows = cells.map(([rowIndex]) => rowIndex);
-    const cols = cells.map(([, colIndex]) => colIndex);
+  for (const [name, { positions, asBase }] of covered) {
+    const rows = positions.map(([rowIndex]) => rowIndex);
+    const cols = positions.map(([, colIndex]) => colIndex);
     const top = Math.min(...rows);
     const bottom = Math.max(...rows);
     const left = Math.min(...cols);
     const right = Math.max(...cols);
-    if ((bottom - top + 1) * (right - left + 1) !== cells.length) {
+    if ((bottom - top + 1) * (right - left + 1) !== positions.length) {
       errors.push(
         `${context}: ${asBase ? "Area" : "Layer"} "${name}" isn't a rectangle, so it will cover rows ${top}-${bottom}, columns ${left}-${right} (its bounding box).`,
       );
@@ -224,13 +224,13 @@ function validateBreakpoints({
 
     errors.push(
       ...validateLayoutDimensions({
-        layout: config.layout,
+        cells: config.cells,
         rows: config.rows,
         columns: config.columns,
         context,
       }),
     );
-    errors.push(...validateCells({ layout: config.layout, areas, context }));
+    errors.push(...validateCells({ cells: config.cells, areas, context }));
   }
 
   return errors;
@@ -315,13 +315,13 @@ export function validateGridConfig<TAreaName extends string>(
 
     errors.push(
       ...validateLayoutDimensions({
-        layout: layoutConfig.layout,
+        cells: layoutConfig.cells,
         rows: layoutConfig.rows,
         columns: layoutConfig.columns,
         context,
       }),
     );
-    errors.push(...validateCells({ layout: layoutConfig.layout, areas, context }));
+    errors.push(...validateCells({ cells: layoutConfig.cells, areas, context }));
     errors.push(...validateConditionAreas("when", layoutConfig.when, areas, context));
     errors.push(...validateConditionAreas("unless", layoutConfig.unless, areas, context));
     errors.push(

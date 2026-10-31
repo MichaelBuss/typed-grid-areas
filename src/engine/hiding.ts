@@ -42,33 +42,35 @@ export function toHideRules(
         continue;
       }
 
-      const showers = rules.filter(
+      const laterRulesShowingArea = rules.filter(
         (later, laterIndex) =>
           laterIndex > index &&
           placed[laterIndex]?.has(area) === true &&
           !later.condition.unless.includes(area),
       );
 
-      // Each wider breakpoint at which another shower switches on starts a new width range.
+      // Each wider breakpoint at which another of them switches on starts a new width range.
       const lowerBounds: Array<string | undefined> = [rule.minWidth];
-      for (const shower of [...showers].sort(
+      for (const later of [...laterRulesShowingArea].sort(
         (a, b) => widthRank(a.minWidth) - widthRank(b.minWidth),
       )) {
-        const rank = widthRank(shower.minWidth);
+        const rank = widthRank(later.minWidth);
         if (rank > widthRank(lowerBounds[lowerBounds.length - 1])) {
-          lowerBounds.push(shower.minWidth);
+          lowerBounds.push(later.minWidth);
         }
       }
 
       lowerBounds.forEach((from, boundIndex) => {
-        const active = showers.filter(shower => widthRank(shower.minWidth) <= widthRank(from));
-        if (active.some(shower => isUnconditional(shower.condition))) {
+        const active = laterRulesShowingArea.filter(
+          later => widthRank(later.minWidth) <= widthRank(from),
+        );
+        if (active.some(later => isUnconditional(later.condition))) {
           return;
         }
         hideRules.push({
           area,
           condition: rule.condition,
-          except: active.map(shower => shower.condition),
+          except: active.map(later => later.condition),
           from,
           until: lowerBounds[boundIndex + 1],
         });

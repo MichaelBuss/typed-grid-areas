@@ -91,8 +91,8 @@ export type AreaAlignments<TAreaName extends string> = Partial<Record<TAreaName,
  * from a template, after checking the template at compile time.
  */
 export type LayoutConfig<TAreaName extends string> = {
-  /** The grid layout to apply. Use "." for empty cells. */
-  layout: GridLayout<TAreaName>;
+  /** The arrangement's cells, row by row. "." is an empty cell; "a+b" draws layer b over a. */
+  cells: GridLayout<TAreaName>;
   /** Grid row track sizes. */
   rows?: Array<TrackSize>;
   /** Grid column track sizes. */
@@ -111,7 +111,8 @@ export type LayoutConfig<TAreaName extends string> = {
  * Breakpoint layout override - can include different layout and/or track sizes
  */
 export type BreakpointLayoutConfig<TAreaName extends string> = {
-  layout: GridLayout<TAreaName>;
+  /** The arrangement's cells at this breakpoint, row by row. */
+  cells: GridLayout<TAreaName>;
   rows?: Array<TrackSize>;
   columns?: Array<TrackSize>;
   /** Per-area alignment at this breakpoint. Not inherited from the layout. */

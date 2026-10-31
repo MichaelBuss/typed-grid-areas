@@ -90,7 +90,7 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
     layoutRules.push({
       condition,
       arrangement: {
-        cells: layoutConfig.layout,
+        cells: layoutConfig.cells,
         rows: layoutConfig.rows,
         columns: layoutConfig.columns,
         align: layoutConfig.align,
@@ -107,7 +107,7 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
         condition,
         minWidth,
         arrangement: {
-          cells: breakpointConfig.layout,
+          cells: breakpointConfig.cells,
           rows: breakpointConfig.rows,
           columns: breakpointConfig.columns,
           align: breakpointConfig.align,
