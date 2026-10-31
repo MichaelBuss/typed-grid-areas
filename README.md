@@ -595,6 +595,98 @@ export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
 }
 ```
 
+## Rendering with Vue: `@typed-grid-areas/vue`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/vue
+```
+
+`@typed-grid-areas/vue` needs `vue` 3.5 or later. It has the React
+adapter's shape: `createGridComponent(definition, { nest })` returns the
+grid's component, with a member component per area that templates use as a
+tag (`<Card.input>`):
+
+```vue
+<script setup lang="ts">
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/vue";
+
+defineProps<{ selectable: boolean }>();
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
+);
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+</script>
+
+<template>
+  <Card class="gap-4" aria-label="Card">
+    <Card.input v-if="selectable" as-child>
+      <label><input type="checkbox" /></label>
+    </Card.input>
+    <Card.content class="p-4">
+      <Card.content.icon>★</Card.content.icon>
+      <Card.content.title>Title</Card.content.title>
+    </Card.content>
+  </Card>
+</template>
+```
+
+- **`<Card>`** renders the grid, a `div` taking `class`, `style` and any other
+  attribute (inside its own size container when the definition has
+  breakpoints; your attributes still go on the grid). **`<Card.input>`** is
+  the slot for the `input` area, a `div` marked `data-area="input"`.
+  **`<Card.content>`** is both the `content` slot and the nested grid, so
+  `<Card.content.icon>` is one of its slots. Leave an optional area out with
+  `v-if`; slots must be direct children of their grid.
+- **Bind grid components in `<script setup>`** (or return them from
+  `setup()`): Vue resolves member tags like `<Card.input>` only from there.
+  Registering them under `components:` (Options API) and in-DOM templates
+  aren't supported. Run `vue-tsc` to type-check templates: `<Card.inputt>`
+  and `<Card.content.iconn>` are type errors.
+- **`as-child`** (on slots and on the grid) renders your own single child
+  element instead of a `div`, the way Reka UI's `as-child` does: the slot's
+  attributes are merged into the child's (the child's own win, classes and
+  styles combine, event handlers both run), it always gets the slot's
+  `data-area` (or the grid's `data-grid-id`), and its own `ref` still
+  reaches it.
+- **Area names Vue reserves** on a component (`length`, `props`, `emits`,
+  `slots`, `inheritAttrs`, `displayName`, `compatConfig`, and any starting
+  with `__`) can't be members: `createGridComponent` rejects them, as a type
+  error and at runtime.
+
+**CSS.** In the browser, each grid puts its definition's CSS into `<head>`
+once (a `<style data-typed-grid-areas>`), however many instances render, and
+leaves it there. Vue has no API for `<head>` on the server, so when you
+server-render, add the grids' style tags to your page's `<head>` in your
+server entry with `renderGridStyles`:
+
+```js
+import { renderToString } from "vue/server-renderer";
+import { renderGridStyles } from "@typed-grid-areas/vue";
+
+/** @param {import("vue").App} app the app from `createSSRApp` */
+export async function render(app) {
+  const ctx = {};
+  const html = await renderToString(app, ctx);
+  return { html, head: renderGridStyles(ctx) };
+}
+```
+
+It returns one tag per definition rendered with that `ctx`, and hydration
+reuses them instead of adding a second. Without it, server-rendered grids
+still work: their CSS is inserted on hydration, so the page lays out once
+the app's script runs.
+
+**Development warnings.** In development (`process.env.NODE_ENV ===
+"development"`), a grid warns on the console after it mounts and after each
+update when a required area's slot isn't rendered, or when it has a direct
+child that isn't one of its slots. Production builds and server rendering
+log nothing.
+
 ## Rendering with Svelte: `@typed-grid-areas/svelte`
 
 ```sh
