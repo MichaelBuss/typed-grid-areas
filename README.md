@@ -1078,6 +1078,128 @@ When the page hydrates, the grids reuse the server's style tags. In
 development, a grid rendered on the server outside a sheet warns that its
 CSS is missing.
 
+## Rendering with Lit: grid template functions
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/lit
+```
+
+`@typed-grid-areas/lit` needs `lit` 3. `createGrid(definition)` turns a
+definition into a template function; each area is a member of it, typed as
+the area's name. Create grids at module level, once per definition:
+
+```ts lit
+import { css, html, LitElement, nothing } from "lit";
+import { defineLayout } from "typed-grid-areas";
+import { createGrid, gridStyles } from "@typed-grid-areas/lit";
+
+const Content = createGrid(
+  defineLayout({
+    areas: ["icon?", "title"],
+    layouts: [{ template: "icon title", columns: "min-content minmax(0, 1fr)" }],
+  }),
+);
+
+const Card = createGrid(
+  defineLayout({
+    areas: ["input?", "content"],
+    layouts: [{ template: "input content", columns: "auto minmax(0, 1fr)" }],
+  }),
+  { nest: { content: Content } },
+);
+
+class PreferenceCard extends LitElement {
+  static styles = [
+    gridStyles(Card),
+    css`
+      .gap {
+        gap: 1rem;
+      }
+    `,
+  ];
+  static properties = { selectable: { type: Boolean } };
+  declare selectable: boolean;
+
+  constructor() {
+    super();
+    this.selectable = false;
+  }
+
+  render() {
+    return Card(
+      html`
+        ${
+          this.selectable
+            ? html`<label data-area=${Card.input}><input type="checkbox" /></label>`
+            : nothing
+        }
+        ${Card.content(
+          html`
+            <span data-area=${Card.content.icon}>★</span>
+            <div data-area=${Card.content.title}>Weekly digest</div>
+          `,
+          { class: "p-4" },
+        )}
+      `,
+      { class: "gap" },
+    );
+  }
+}
+
+customElements.define("preference-card", PreferenceCard);
+```
+
+- **`Card(content, { class, style, ref })`** renders the grid: a `div` with
+  the definition's `data-grid-id`, with `content` as its slots. When the
+  definition has breakpoints the grid sits inside its own size container;
+  the options still go on the grid. Lit can't spread arbitrary attributes,
+  so the grid takes only `class`, `style` (text, or an object as `styleMap`
+  takes it) and `ref` (as Lit's `ref` directive takes it): for other
+  attributes or event listeners on the grid, use `ref`.
+- **`Card.input`** is the area's name, `"input"`, typed as that literal.
+  A slot is any element with `data-area=${Card.input}`: your own `<label>`,
+  `<img>` or `<button>` is the slot itself, with nothing to opt into and no
+  wrapper. `Card.inptu` is a type error. A slot here is an element with
+  `data-area`, never a `<slot>`.
+- **`nest`** makes the area's member the nested grid's template function:
+  `Card.content(…)` renders `Content` as the `content` slot of `Card`, and
+  `Card.content.icon` reaches its areas.
+
+Slots must be **direct children** of their grid, in the grid's own DOM:
+grids render in light DOM, wherever your template is (usually your
+component's shadow root), since the generated CSS's child selectors can't see
+through a shadow boundary into `<slot>`ted children. Leave an optional
+area's slot out with an ordinary conditional (`nothing`) to make it absent.
+
+### CSS, server rendering and development warnings
+
+Each grid puts its definition's CSS in the root it renders in, after each
+update:
+
+- **In a shadow root**, one shared constructable style sheet per definition
+  is adopted into it, once per shadow root rather than once per page. Your
+  component's own `static styles` still beat the grid's layered CSS, and an
+  area its layout leaves out stays hidden whatever `display` its slot sets.
+- **In the document**, a `<style data-typed-grid-areas>` goes into `<head>`,
+  once per definition.
+
+`gridStyles(Card)` returns the CSS of `Card` and the grids nested in it, as a
+`CSSResult` for `static styles`. In the browser it's optional (a grid already
+there isn't adopted again). **Server rendering needs it**: with
+`@lit-labs/ssr`, Lit's server renderer, the CSS reaches each component's
+declarative shadow root only through `static styles`, and hydration with
+`@lit-labs/ssr-client` takes over from there. Grids rendered on the server
+outside any shadow root need their style tags in `<head>`: see
+`gridStyleTags` [below](#without-react-typed-grid-areasadapter).
+
+In development (`process.env.NODE_ENV === "development"`), a grid warns on
+the console after an update when a required area's slot isn't rendered, or
+when it has a direct child that isn't one of its slots, once per distinct
+set of problems.
+
+Supported: Lit 3, and `@lit-labs/ssr` 4 (still labelled pre-release by the
+Lit team) for server rendering.
+
 ## Without React: `typed-grid-areas/adapter`
 
 The core has no React dependency. To render grids in another framework, build
