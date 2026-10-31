@@ -36,7 +36,8 @@ export type GridComponent<TAreaName extends string, TNest = {}> = ((
   readonly [K in TAreaName]: K extends keyof TNest ? TNest[K] : SlotComponent;
 };
 
-// biome-ignore lint: any grid component, whatever its areas
+/** Any grid component, whatever its areas. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyGridComponent = GridComponent<any, any>;
 
 /** Options of `createGridComponent`. */
