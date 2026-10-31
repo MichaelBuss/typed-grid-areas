@@ -19,8 +19,8 @@ interface MountedDesign {
 
 /**
  * Mounts a complete design (a rendered grid component, with real content and
- * nested grids) into a real browser at a given width, and exposes where the
- * browser actually laid every part out.
+ * nested grids) into a real browser at a given width, and exposes its slots
+ * and where the browser actually laid out each slot or other element.
  */
 export async function mountDesign(
   design: ReactNode,

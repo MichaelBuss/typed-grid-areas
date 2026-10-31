@@ -1,12 +1,13 @@
 # typed-grid-areas
 
-Type-safe CSS grid layouts that rearrange themselves based on which parts are rendered and how much room they get.
+Type-safe CSS grid layouts that rearrange themselves based on which slots are rendered and how much room they get.
 
 ## Language
 
 **Grid**:
 One declared layout surface: a set of areas plus the layouts that arrange them.
 _Avoid_: Grid areas (as a noun for the whole thing), template
+_Note_: `defineLayout` and its `LayoutDefinition` define a whole grid (its areas and all its layouts), not one layout; the API name is fixed by the spec.
 
 **Area**:
 A named region of a grid that exactly one slot fills.

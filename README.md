@@ -1,8 +1,8 @@
 # typed-grid-areas
 
-Type-safe, declarative CSS grid layouts for components whose parts come and
+Type-safe, declarative CSS grid layouts for components whose slots come and
 go. Describe a grid once, as its areas and a few text templates, and the
-library works out the layout for every combination of rendered parts, at
+library works out the layout for every combination of present slots, at
 every breakpoint, as generated CSS: no `:has()` rules or layout JavaScript
 of your own. Everything that names an area is checked at compile time.
 

@@ -34,7 +34,7 @@ describe("layers in a real browser", () => {
 type IdCardArea = (typeof idCard.areas)[number];
 
 /**
- * The ID card from issue #4. Where its parts land in every combination is
+ * The ID card from issue #4. Where its slots land in every combination is
  * covered by the acceptance spec; these check how layered content restyles.
  */
 describe("the ID card", () => {

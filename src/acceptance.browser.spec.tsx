@@ -1,7 +1,7 @@
 /**
  * Acceptance for issue #4: the two target designs, described with the public
- * API only and rendered with real content, place every part correctly in
- * every combination of their optional parts, on a narrow and a wide card.
+ * API only and rendered with real content, place every slot correctly in
+ * every combination of their optional areas, on a narrow and a wide card.
  */
 import { generateCss, GridConfig } from "./index";
 import { createGridComponent } from "./react";
@@ -14,22 +14,22 @@ const WIDE = 560;
 const right = (rect: Rect) => rect.x + rect.width;
 const bottom = (rect: Rect) => rect.y + rect.height;
 
-/** Every subset of `parts`, smallest first. */
-function combinations<T>(parts: ReadonlyArray<T>): Array<Array<T>> {
+/** Every subset of `items`, smallest first. */
+function combinations<T>(items: ReadonlyArray<T>): Array<Array<T>> {
   const result: Array<Array<T>> = [[]];
-  for (const part of parts) {
-    result.push(...result.map(combination => [...combination, part]));
+  for (const item of items) {
+    result.push(...result.map(combination => [...combination, item]));
   }
   return result;
 }
 
-const label = (parts: ReadonlyArray<string>) =>
-  parts.length === 0 ? "nothing optional" : parts.join(", ");
+const label = (present: ReadonlyArray<string>) =>
+  present.length === 0 ? "nothing optional" : present.join(", ");
 
 /**
- * Asserts that named parts sit in the given rows: each row below the one
- * before it, its parts left to right on a shared top edge, and together
- * spanning the full width the parts take up.
+ * Asserts that named slots sit in the given rows: each row below the one
+ * before it, its slots left to right on a shared top edge, and together
+ * spanning the full width the slots take up.
  */
 function expectRows(rects: Record<string, Rect>, rows: ReadonlyArray<ReadonlyArray<string>>) {
   const all = rows.flat().map(name => rects[name]!);
@@ -37,22 +37,22 @@ function expectRows(rects: Record<string, Rect>, rows: ReadonlyArray<ReadonlyArr
   const rightEdge = Math.max(...all.map(right));
 
   rows.forEach((row, index) => {
-    const parts = row.map(name => rects[name]!);
-    const first = parts[0]!;
-    const last = parts[parts.length - 1]!;
+    const slots = row.map(name => rects[name]!);
+    const first = slots[0]!;
+    const last = slots[slots.length - 1]!;
     expect(first.x, `${row.join(" ")} starts at the left edge`).toBeCloseTo(left, 1);
     expect(right(last), `${row.join(" ")} ends at the right edge`).toBeCloseTo(rightEdge, 1);
-    parts.forEach((part, i) => {
-      expect(part.y, `${row[i]} is level with ${row[0]}`).toBeCloseTo(first.y, 1);
+    slots.forEach((slot, i) => {
+      expect(slot.y, `${row[i]} is level with ${row[0]}`).toBeCloseTo(first.y, 1);
       if (i > 0) {
-        expect(part.x, `${row[i]} is right of ${row[i - 1]}`).toBeGreaterThanOrEqual(
-          right(parts[i - 1]!),
+        expect(slot.x, `${row[i]} is right of ${row[i - 1]}`).toBeGreaterThanOrEqual(
+          right(slots[i - 1]!),
         );
       }
     });
     const next = rows[index + 1];
     if (next !== undefined) {
-      const rowBottom = Math.max(...parts.map(bottom));
+      const rowBottom = Math.max(...slots.map(bottom));
       for (const name of next) {
         expect(rects[name]!.y, `${name} is below ${row.join(" ")}`).toBeGreaterThanOrEqual(
           rowBottom,
@@ -70,8 +70,8 @@ describe("PreferenceCard", () => {
 
   type Optional = "input" | "icon" | "cardTag" | "children";
 
-  function Preference({ parts }: { parts: ReadonlyArray<Optional> }) {
-    const has = (part: Optional) => parts.includes(part);
+  function Preference({ present }: { present: ReadonlyArray<Optional> }) {
+    const has = (area: Optional) => present.includes(area);
     return (
       <PreferenceCard>
         {has("input") && (
@@ -119,7 +119,7 @@ describe("PreferenceCard", () => {
   }
 
   /** The rows of the content grid the ticket specifies, top to bottom. */
-  function contentRows(has: (part: Optional) => boolean, width: number): Array<Array<string>> {
+  function contentRows(has: (area: Optional) => boolean, width: number): Array<Array<string>> {
     const rows: Array<Array<string>> =
       has("icon") && has("cardTag")
         ? width === WIDE
@@ -135,13 +135,13 @@ describe("PreferenceCard", () => {
 
   describe.each(
     combinations<Optional>(["input", "icon", "cardTag", "children"]).map(
-      parts => [label(parts), parts] as const,
+      present => [label(present), present] as const,
     ),
-  )("with %s", (_, parts) => {
-    const has = (part: Optional) => parts.includes(part);
+  )("with %s", (_, present) => {
+    const has = (area: Optional) => present.includes(area);
 
-    it.each([NARROW, WIDE])("places every part at %ipx", async width => {
-      const card = await mountDesign(<Preference parts={parts} />, { width });
+    it.each([NARROW, WIDE])("places every slot at %ipx", async width => {
+      const card = await mountDesign(<Preference present={present} />, { width });
       const bounds = card.bounds();
       const content = card.rect(card.slot("content"));
 
@@ -196,8 +196,8 @@ describe("ID card", () => {
   const qrUrl = svg(60, 60, '<rect width="60" height="60" fill="#000"/>');
   const fill = { width: "100%", height: "100%", objectFit: "cover" } as const;
 
-  function Id({ parts }: { parts: ReadonlyArray<Optional> }) {
-    const has = (part: Optional) => parts.includes(part);
+  function Id({ present }: { present: ReadonlyArray<Optional> }) {
+    const has = (area: Optional) => present.includes(area);
     return (
       <IdCard>
         <IdCard.photo asChild>
@@ -223,12 +223,14 @@ describe("ID card", () => {
   }
 
   describe.each(
-    combinations<Optional>(["logo", "qr", "badge"]).map(parts => [label(parts), parts] as const),
-  )("with %s", (_, parts) => {
-    const has = (part: Optional) => parts.includes(part);
+    combinations<Optional>(["logo", "qr", "badge"]).map(
+      present => [label(present), present] as const,
+    ),
+  )("with %s", (_, present) => {
+    const has = (area: Optional) => present.includes(area);
 
     it("puts the logo, badge and identity in the photo's corners on a narrow card", async () => {
-      const card = await mountDesign(<Id parts={parts} />, { width: NARROW });
+      const card = await mountDesign(<Id present={present} />, { width: NARROW });
       const rect = (area: string) => card.rect(card.slot(area));
       const photo = rect("photo");
       expect(photo).toMatchObject({ x: 0, y: 0, width: NARROW });
@@ -264,7 +266,7 @@ describe("ID card", () => {
     });
 
     it("gives the photo a column of its own on a wide card (@md)", async () => {
-      const card = await mountDesign(<Id parts={parts} />, { width: WIDE });
+      const card = await mountDesign(<Id present={present} />, { width: WIDE });
       const rect = (area: string) => card.rect(card.slot(area));
       const photo = rect("photo");
       const identity = rect("identity");
