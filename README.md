@@ -205,13 +205,14 @@ defineLayout({
 });
 ```
 
-An area a layout's template leaves out is **hidden** (`display: none`) while
-that layout applies.
+An area a layout's template leaves out is **hidden** (`display: none
+!important`) while that layout applies.
 
 All generated CSS sits in the `typed-grid-areas` cascade layer, so your own
-unlayered classes on a slot (say `justify-self`) always win. The one
-exception is hiding: it is `!important`, so a `display` class on a slot
-can't bring back an area the current layout leaves out.
+unlayered classes on the grid or a slot (say `justify-self`) always win. The
+one exception is hiding: it is `!important`, so a `display` class on a slot
+can't bring back an area the current layout leaves out
+([ADR 0003](docs/adr/0003-hidden-areas-are-important.md)).
 
 ## Breakpoints
 

@@ -257,7 +257,7 @@ function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): stri
 function hideRuleToCss(scope: Scope, { area, condition, except, from, until }: HideRule): string {
   const notShown = except.map(shower => `:not(${conditionCompound(shower)})`).join("");
   const slot = `:where(${scope.grid}${conditionCompound(condition)}${notShown}) > :where(${areaSelector(area)})`;
-  // Important, so a consumer's own `display` on the slot can't bring it back.
+  // Important, so a consumer's own `display` on the slot can't bring it back (ADR 0003).
   return inWidthRange(`${slot} { display: none !important; }`, scope, from, until);
 }
 
