@@ -1,7 +1,7 @@
 /**
  * Type-checks every `ts` and `tsx` code block in the README against the
- * source, each as its own module, with `typed-grid-areas` and
- * `typed-grid-areas/react` resolving to `src/`.
+ * source, each as its own module, with `typed-grid-areas`,
+ * `typed-grid-areas/react` and `typed-grid-areas/adapter` resolving to `src/`.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -48,6 +48,7 @@ describe("the README", () => {
           paths: {
             "typed-grid-areas": [join(root, "src", "index.ts")],
             "typed-grid-areas/react": [join(root, "src", "react", "index.ts")],
+            "typed-grid-areas/adapter": [join(root, "src", "adapter", "index.ts")],
           },
         },
       }),

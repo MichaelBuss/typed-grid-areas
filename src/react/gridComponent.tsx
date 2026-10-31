@@ -1,11 +1,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { ComponentPropsWithRef, ReactNode, useCallback, useEffect, useRef } from "react";
-import { gridId } from "../engine/gridId.ts";
-import { generateCss } from "../generateCss.ts";
-import { hasBreakpoints, sizeContainerName } from "../markup.ts";
-import { isDevelopment } from "../isDevelopment.ts";
+import { createSlotCheck, gridMarkup, isDevelopment } from "../adapter/index.ts";
 import { GridConfig } from "../types.ts";
-import { slotWarnings } from "./slotWarnings.ts";
 
 /**
  * Props of a slot component (`<Card.icon>`) and of a grid's root component
@@ -57,11 +53,7 @@ type RootProps = GridComponentProps & {
 };
 
 function createRoot(config: GridConfig<string>) {
-  const id = gridId(config);
-  const css = generateCss(config);
-  const sizeContainer = hasBreakpoints(config)
-    ? ({ containerType: "inline-size", containerName: sizeContainerName(id) } as const)
-    : undefined;
+  const markup = gridMarkup(config);
 
   return function Root({ asChild = false, style, ref, "data-area": area, ...props }: RootProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
@@ -77,55 +69,35 @@ function createRoot(config: GridConfig<string>) {
       [ref],
     );
 
-    // In development, check the slots after every commit, warning once per
-    // distinct set of problems rather than on every render.
-    const lastWarnings = useRef("");
+    // In development, check the slots after every commit.
+    const checkSlots = useRef<ReturnType<typeof createSlotCheck>>(undefined);
     useEffect(() => {
       if (!isDevelopment() || gridRef.current === null) {
         return;
       }
-      const warnings = slotWarnings(gridRef.current, config);
-      const key = warnings.join("\n");
-      if (key !== lastWarnings.current) {
-        lastWarnings.current = key;
-        for (const warning of warnings) {
-          // eslint-disable-next-line no-console
-          console.warn(`typed-grid-areas: ${warning}`);
-        }
+      checkSlots.current ??= createSlotCheck(config, {
+        strayChildRemedy: "make it a slot with asChild",
+      });
+      for (const warning of checkSlots.current(gridRef.current)) {
+        // eslint-disable-next-line no-console
+        console.warn(warning);
       }
     });
 
+    const { sizeContainer, grid: gridElement } = markup.elements(area);
     const Comp = asChild ? Slot : "div";
-    const grid = (
-      <Comp
-        {...props}
-        ref={composedRef}
-        data-area={sizeContainer === undefined ? area : undefined}
-        data-grid-id={id}
-        style={style}
-      />
-    );
+    const grid = <Comp {...props} ref={composedRef} {...gridElement.attributes} style={style} />;
 
     return (
       <>
         {/* React 19 hoists this into <head> and emits each href once. */}
-        <style href={`typed-grid-areas-${id}`} precedence="typed-grid-areas">
-          {css}
+        <style href={markup.cssKey} precedence="typed-grid-areas">
+          {markup.css}
         </style>
         {sizeContainer === undefined ? (
           grid
         ) : (
-          // A grid with breakpoints sits inside its own size container, which
-          // is then the outermost element: an outer grid's area goes there.
-          <div
-            data-area={area}
-            style={{
-              ...sizeContainer,
-              // Lets the grid fill the wrapper in both axes, as it would its cell.
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr)",
-            }}
-          >
+          <div {...sizeContainer.attributes} style={sizeContainer.style}>
             {grid}
           </div>
         )}

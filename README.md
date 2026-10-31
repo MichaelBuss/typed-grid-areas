@@ -591,34 +591,71 @@ export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
 }
 ```
 
-## Without React: `createSlots` and `generateCss`
+## Without React: `typed-grid-areas/adapter`
 
-The core has no React dependency. `createSlots(areas)`,
-`generateCss(definition)` and `gridId(definition)` are what a renderer for
-another framework builds on:
+The core has no React dependency. To render grids in another framework, build
+on `typed-grid-areas/adapter`: it says exactly what to render for a
+definition, so your adapter renders the same DOM the React one does.
 
 ```ts
-import { createSlots, defineLayout, generateCss, gridId } from "typed-grid-areas";
+import { defineLayout } from "typed-grid-areas";
+import {
+  createSlotCheck,
+  gridMarkup,
+  gridStyleTags,
+  insertGridStyle,
+  isDevelopment,
+} from "typed-grid-areas/adapter";
 
 const cardGrid = defineLayout({
-  areas: ["icon", "info"],
-  layouts: [{ template: "icon info" }],
+  areas: ["icon?", "info"],
+  layouts: [{ template: "icon info", breakpoints: { "@sm": { template: "info icon" } } }],
 });
 
-const slots = createSlots(cardGrid.areas);
-// { icon: { "data-area": "icon" }, info: { "data-area": "info" } }
+// Once per definition.
+const markup = gridMarkup(cardGrid);
 
-const css = generateCss(cardGrid);
-// CSS string, scoped to [data-grid-id="<gridId(cardGrid)>"]
+// Per instance. Pass the outer grid's area when this grid fills one.
+const { sizeContainer, grid } = markup.elements("content");
+// sizeContainer: undefined without breakpoints; otherwise the element that
+//   wraps the grid: { attributes: { "data-area": "content" }, style, styleText }
+// grid.attributes: { "data-grid-id": markup.id }, plus the outer "data-area"
+//   when there's no size container
 
-const gridAttributes = { "data-grid-id": gridId(cardGrid) };
+markup.slot("info"); // { "data-area": "info" }, for each direct child of the grid
+
+// The CSS, once per page: in the browser...
+insertGridStyle(document, cardGrid);
+// ...or in server-rendered <head>.
+const head = gridStyleTags([cardGrid]);
+
+// In development, after each render: what to warn about the grid's slots.
+const checkSlots = createSlotCheck(cardGrid, {
+  strayChildRemedy: "make it a slot with asChild",
+});
+const gridElement = document.querySelector(`[data-grid-id="${markup.id}"]`);
+if (isDevelopment() && gridElement !== null) {
+  checkSlots(gridElement).forEach(warning => console.warn(warning));
+}
 ```
 
-Put the CSS in a `<style>` element once per definition, give the grid
-element the `data-grid-id` attribute (the CSS makes it a grid), and spread a
-slot's attributes onto each of its direct children. A definition with
-breakpoints also needs the grid wrapped in its own size container (see
-[Breakpoints](#breakpoints)), named `grid-<gridId>`.
+- **Elements.** Render the size container (when there is one) with its
+  attributes and style, the grid inside it with its attributes, and each slot
+  as a direct child of the grid with its attributes. The CSS makes the grid a
+  grid and places the slots (see [Breakpoints](#breakpoints) for why a grid
+  with breakpoints has its own size container).
+- **CSS.** `markup.css` belongs on the page once per definition, before its
+  grids lay out. `insertGridStyle` puts a `<style data-typed-grid-areas="<grid
+id>">` in `<head>` (ahead of the page's other styles, reusing a tag the
+  server rendered), and `gridStyleTags` renders those tags as an HTML string.
+  A framework with its own way to emit a style once can key it by
+  `markup.cssKey` instead.
+- **Slot check.** One check per grid instance; it reports a set of problems
+  once. `strayChildRemedy` says how your framework makes an element a slot.
+  Gate it on your framework's development flag, or on `isDevelopment()`.
+
+The main entry's `createSlots`, `generateCss` and `gridId` remain for
+rendering by hand.
 
 ## Development
 
