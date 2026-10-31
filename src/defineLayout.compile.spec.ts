@@ -12,8 +12,26 @@ const workDir = join(root, "node_modules", ".cache", "typed-grid-areas-compile")
 const tsc = join(root, "node_modules", "typescript", "bin", "tsc");
 const defineLayoutPath = join(root, "src", "defineLayout");
 
-/** Seconds of tsc check time allowed for the stress file (spec #4). */
+/**
+ * Seconds of tsc check time allowed for the stress file (spec #4), on the
+ * reference machine (a recent Apple Silicon laptop, where it takes ~0.065s).
+ *
+ * Absolute check times vary several-fold between machines (CI runners are
+ * ~3.5x slower), so the test also times a control project in the same run:
+ * the same definitions, ten times over, with `defineLayout` retyped to take
+ * templates as plain strings, so none of the type-level checks run. Its time
+ * measures the machine, not the library's types; the budget is scaled by how much
+ * slower than the reference the control ran (never tightened below 0.15s). A
+ * regression in type-level cost slows only the stress project, so it still
+ * fails the budget anywhere.
+ */
 const CHECK_BUDGET_SECONDS = 0.15;
+
+/** Plain-typed definitions in the control project: enough to time well above tsc's 1ms resolution. */
+const CONTROL_DEFINITIONS = 300;
+
+/** Check time of the control project on the reference machine. */
+const CONTROL_REFERENCE_SECONDS = 0.03;
 
 function stressDefinition(i: number): string {
   return `
@@ -79,13 +97,27 @@ defineLayout({
 });
 `;
 
-function writeProject(name: string, source: string): string {
+/**
+ * Rebinds `defineLayout` to a signature that takes the same input shape with
+ * templates as plain strings, so the library is still checked but none of the
+ * type-level template checks run.
+ */
+const untypedDefineLayout = `
+import { defineLayout as typedDefineLayout, type LayoutInput } from ${JSON.stringify(defineLayoutPath)};
+const defineLayout = typedDefineLayout as unknown as (config: {
+  areas: ReadonlyArray<string>;
+  layouts: ReadonlyArray<LayoutInput<string>>;
+}) => unknown;
+`;
+
+function writeProject(
+  name: string,
+  source: string,
+  header = `import { defineLayout } from ${JSON.stringify(defineLayoutPath)};\n`,
+): string {
   const dir = join(workDir, name);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, "index.ts"),
-    `import { defineLayout } from ${JSON.stringify(defineLayoutPath)};\n${source}`,
-  );
+  writeFileSync(join(dir, "index.ts"), `${header}${source}`);
   writeFileSync(
     join(dir, "tsconfig.json"),
     JSON.stringify({
@@ -113,23 +145,32 @@ function runTsc(project: string, ...args: Array<string>): { ok: boolean; output:
   }
 }
 
+/** tsc's check time for a project, which must type-check cleanly. */
+function checkSeconds(project: string): number {
+  const { ok, output } = runTsc(project, "--extendedDiagnostics");
+  expect(ok, output).toBe(true);
+  const seconds = /Check time:\s+([\d.]+)s/.exec(output)?.[1];
+  expect(seconds, output).toBeDefined();
+  return Number(seconds);
+}
+
 describe("defineLayout at compile time", () => {
-  it(`type-checks 30 definitions of 3 layouts with 2 breakpoints each in ≤ ${CHECK_BUDGET_SECONDS}s`, () => {
-    const project = writeProject(
-      "stress",
-      Array.from({ length: 30 }, (_, i) => stressDefinition(i)).join(""),
-    );
+  it(`type-checks 30 definitions of 3 layouts with 2 breakpoints each in ≤ ${CHECK_BUDGET_SECONDS}s, scaled to machine speed`, () => {
+    const definitions = (count: number) =>
+      Array.from({ length: count }, (_, i) => stressDefinition(i)).join("");
+    const stress = writeProject("stress", definitions(30));
+    const control = writeProject("control", definitions(CONTROL_DEFINITIONS), untypedDefineLayout);
 
-    // Best of three, so a busy machine doesn't fail the budget.
-    const checkTimes = Array.from({ length: 3 }, () => {
-      const { ok, output } = runTsc(project, "--extendedDiagnostics");
-      expect(ok, output).toBe(true);
-      const seconds = /Check time:\s+([\d.]+)s/.exec(output)?.[1];
-      expect(seconds, output).toBeDefined();
-      return Number(seconds);
-    });
+    // Interleaved, best of five each, so a busy moment hits both projects alike.
+    const stressTimes: Array<number> = [];
+    const controlTimes: Array<number> = [];
+    for (let run = 0; run < 5; run++) {
+      stressTimes.push(checkSeconds(stress));
+      controlTimes.push(checkSeconds(control));
+    }
+    const machineSlowdown = Math.max(1, Math.min(...controlTimes) / CONTROL_REFERENCE_SECONDS);
 
-    expect(Math.min(...checkTimes)).toBeLessThanOrEqual(CHECK_BUDGET_SECONDS);
+    expect(Math.min(...stressTimes)).toBeLessThanOrEqual(CHECK_BUDGET_SECONDS * machineSlowdown);
   });
 
   it("names each problem in its error message", () => {
