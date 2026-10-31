@@ -8,6 +8,8 @@ interface MountGridOptions<TAreaName extends string> {
   width: number;
   /** The slots to render; every other area is left absent. */
   present: ReadonlyArray<TAreaName>;
+  /** Consumer classes to put on individual slots. */
+  slotClassNames?: Partial<Record<TAreaName, string>>;
 }
 
 interface MountedGrid<TAreaName extends string> {
@@ -15,14 +17,18 @@ interface MountedGrid<TAreaName extends string> {
   templateAreas: () => string;
   /** A slot's bounding rect, relative to the grid container's top-left corner. */
   rect: (area: TAreaName) => { x: number; y: number; width: number; height: number };
+  /** A rendered slot's DOM element. */
+  slot: (area: TAreaName) => HTMLElement;
 }
 
 function GridHarness<TAreaName extends string>({
   config,
   present,
+  slotClassNames,
 }: {
   config: GridConfig<TAreaName>;
   present: ReadonlyArray<TAreaName>;
+  slotClassNames?: Partial<Record<TAreaName, string>>;
 }) {
   const gridAreas = useGridAreas(config);
 
@@ -31,7 +37,12 @@ function GridHarness<TAreaName extends string>({
       {slots => (
         <>
           {present.map(area => (
-            <div key={area} {...slots[area]} style={{ ...slots[area].style, minHeight: 10 }} />
+            <div
+              key={area}
+              {...slots[area]}
+              className={slotClassNames?.[area]}
+              style={{ minHeight: 10 }}
+            />
           ))}
         </>
       )}
@@ -46,11 +57,11 @@ function GridHarness<TAreaName extends string>({
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
-  { width, present }: MountGridOptions<TAreaName>,
+  { width, present, slotClassNames }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
   await render(
     <div style={{ width }}>
-      <GridHarness config={config} present={present} />
+      <GridHarness config={config} present={present} slotClassNames={slotClassNames} />
     </div>,
   );
 
@@ -59,16 +70,21 @@ export async function mountGrid<TAreaName extends string>(
     throw new Error("mountGrid: grid container was not rendered");
   }
 
+  const slot = (area: TAreaName): HTMLElement => {
+    const element = grid.querySelector<HTMLElement>(`:scope > [data-area=${area}]`);
+    if (element === null) {
+      throw new Error(`mountGrid: slot "${area}" was not rendered`);
+    }
+    return element;
+  };
+
   return {
     templateAreas: () => getComputedStyle(grid).gridTemplateAreas,
     rect: area => {
-      const slot = grid.querySelector(`:scope > [data-slot=${area}]`);
-      if (slot === null) {
-        throw new Error(`mountGrid: slot "${area}" was not rendered`);
-      }
       const gridRect = grid.getBoundingClientRect();
-      const { x, y, width, height } = slot.getBoundingClientRect();
+      const { x, y, width, height } = slot(area).getBoundingClientRect();
       return { x: x - gridRect.x, y: y - gridRect.y, width, height };
     },
+    slot,
   };
 }

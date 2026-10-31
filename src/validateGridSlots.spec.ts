@@ -3,8 +3,7 @@ import { validateGridSlots } from "./validateGridSlots";
 describe("validateGridSlots", () => {
   type ChildConfig = {
     tagName: string;
-    dataSlot?: string;
-    gridArea?: string;
+    area?: string;
   };
 
   function createMockContainer(children: Array<ChildConfig>): HTMLElement {
@@ -12,11 +11,8 @@ describe("validateGridSlots", () => {
 
     for (const child of children) {
       const element = document.createElement(child.tagName);
-      if (child.dataSlot !== undefined) {
-        element.setAttribute("data-slot", child.dataSlot);
-      }
-      if (child.gridArea !== undefined) {
-        element.style.gridArea = child.gridArea;
+      if (child.area !== undefined) {
+        element.setAttribute("data-area", child.area);
       }
       container.appendChild(element);
     }
@@ -25,10 +21,10 @@ describe("validateGridSlots", () => {
   }
 
   describe("unwired children detection", () => {
-    it("should warn when child is missing both data-slot and gridArea", () => {
+    it("should warn when child has no data-area", () => {
       const container = createMockContainer([
-        { tagName: "div", dataSlot: "icon", gridArea: "icon" },
-        { tagName: "span" }, // Missing both
+        { tagName: "div", area: "icon" },
+        { tagName: "span" },
       ]);
 
       const warnings = validateGridSlots(container, ["icon", "info"]);
@@ -37,11 +33,19 @@ describe("validateGridSlots", () => {
       expect(warnings).toContainEqual(expect.stringContaining("<span> at index 1"));
     });
 
+    it("should not treat the old data-slot attribute as a slot", () => {
+      const container = document.createElement("div");
+      const legacy = document.createElement("div");
+      legacy.setAttribute("data-slot", "icon");
+      container.appendChild(legacy);
+
+      const warnings = validateGridSlots(container, ["icon"]);
+
+      expect(warnings).toContainEqual(expect.stringContaining("without slot props"));
+    });
+
     it("should warn for multiple unwired children", () => {
-      const container = createMockContainer([
-        { tagName: "div" }, // Missing both
-        { tagName: "span" }, // Missing both
-      ]);
+      const container = createMockContainer([{ tagName: "div" }, { tagName: "span" }]);
 
       const warnings = validateGridSlots(container, ["icon", "info"]);
 
@@ -63,79 +67,21 @@ describe("validateGridSlots", () => {
     });
   });
 
-  describe("partial slot props detection", () => {
-    it("should warn when child has data-slot but missing gridArea", () => {
-      const container = createMockContainer([{ tagName: "div", dataSlot: "icon" }]); // Missing gridArea
-
-      const warnings = validateGridSlots(container, ["icon"]);
-
-      expect(warnings).toContainEqual(expect.stringContaining("incomplete slot props"));
-      expect(warnings).toContainEqual(expect.stringContaining('data-slot="icon"'));
-      expect(warnings).toContainEqual(expect.stringContaining("missing style.gridArea"));
-    });
-
-    it("should warn when child has gridArea but missing data-slot", () => {
-      const container = createMockContainer([{ tagName: "div", gridArea: "icon" }]); // Missing data-slot
-
-      const warnings = validateGridSlots(container, ["icon"]);
-
-      expect(warnings).toContainEqual(expect.stringContaining("incomplete slot props"));
-      expect(warnings).toContainEqual(expect.stringContaining('style.gridArea="icon"'));
-      expect(warnings).toContainEqual(expect.stringContaining("missing data-slot"));
-    });
-
-    it("should include hint about using full slot props spread", () => {
-      const container = createMockContainer([{ tagName: "div", dataSlot: "icon" }]);
-
-      const warnings = validateGridSlots(container, ["icon"]);
-
-      expect(warnings).toContainEqual(
-        expect.stringContaining("spread the full slot props {...slots.name}"),
-      );
-    });
-  });
-
-  describe("mismatched slot values detection", () => {
-    it("should warn when data-slot and gridArea values don't match", () => {
-      const container = createMockContainer([
-        { tagName: "div", dataSlot: "icon", gridArea: "info" },
-      ]);
-
-      const warnings = validateGridSlots(container, ["icon", "info"]);
-
-      expect(warnings).toContainEqual(expect.stringContaining("mismatched slot values"));
-      expect(warnings).toContainEqual(expect.stringContaining('data-slot="icon"'));
-      expect(warnings).toContainEqual(expect.stringContaining('style.gridArea="info"'));
-    });
-
-    it("should include hint about consistency", () => {
-      const container = createMockContainer([
-        { tagName: "div", dataSlot: "icon", gridArea: "info" },
-      ]);
-
-      const warnings = validateGridSlots(container, ["icon", "info"]);
-
-      expect(warnings).toContainEqual(expect.stringContaining("should have the same value"));
-    });
-  });
-
   describe("unknown slot detection", () => {
     it("should warn when child has unknown slot name", () => {
       const container = createMockContainer([
-        { tagName: "div", dataSlot: "icon", gridArea: "icon" },
-        { tagName: "span", dataSlot: "unknown", gridArea: "unknown" },
+        { tagName: "div", area: "icon" },
+        { tagName: "span", area: "unknown" },
       ]);
 
       const warnings = validateGridSlots(container, ["icon", "info"]);
 
       expect(warnings).toContainEqual(expect.stringContaining("unknown slot names"));
-      expect(warnings).toContainEqual(expect.stringContaining('data-slot="unknown"'));
+      expect(warnings).toContainEqual(expect.stringContaining('data-area="unknown"'));
     });
 
     it("should list valid slot names in warning", () => {
-      const container = createMockContainer([
-        { tagName: "div", dataSlot: "badname", gridArea: "badname" },
-      ]);
+      const container = createMockContainer([{ tagName: "div", area: "badname" }]);
 
       const warnings = validateGridSlots(container, ["icon", "info", "tag"]);
 
@@ -146,10 +92,10 @@ describe("validateGridSlots", () => {
   });
 
   describe("valid configurations", () => {
-    it("should return empty array when all children have valid complete slots", () => {
+    it("should return empty array when all children are valid slots", () => {
       const container = createMockContainer([
-        { tagName: "div", dataSlot: "icon", gridArea: "icon" },
-        { tagName: "span", dataSlot: "info", gridArea: "info" },
+        { tagName: "div", area: "icon" },
+        { tagName: "span", area: "info" },
       ]);
 
       const warnings = validateGridSlots(container, ["icon", "info"]);

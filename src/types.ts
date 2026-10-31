@@ -87,12 +87,11 @@ export type GridConfig<TAreaName extends string> = {
 /**
  * Slot props object for spreading on elements.
  *
- * Includes both the data-slot attribute (for CSS :has() selectors)
- * and the style with gridArea (for grid placement).
+ * The data-area attribute is what the generated CSS uses both to detect which
+ * slots are present and to place them.
  */
 export type SlotProps = {
-  "data-slot": string;
-  style: { gridArea: string };
+  "data-area": string;
 };
 
 /**

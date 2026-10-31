@@ -45,8 +45,8 @@ describe("GridAreas", () => {
   it("renders the slots returned by the render prop", () => {
     const { getByText } = render(<Card />);
 
-    expect(getByText("icon")).toHaveAttribute("data-slot", "icon");
-    expect(getByText("info")).toHaveAttribute("data-slot", "info");
+    expect(getByText("icon")).toHaveAttribute("data-area", "icon");
+    expect(getByText("info")).toHaveAttribute("data-area", "info");
   });
 
   it("renders asChild as the single element returned by the render prop instead of a div", () => {

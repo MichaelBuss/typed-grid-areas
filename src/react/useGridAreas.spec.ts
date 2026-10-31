@@ -20,18 +20,9 @@ describe("useGridAreas", () => {
     const { result } = renderHook(() => useGridAreas(testGridConfig));
 
     // Verify slots are generated
-    expect(result.current.slots.icon).toEqual({
-      "data-slot": "icon",
-      style: { gridArea: "icon" },
-    });
-    expect(result.current.slots.info).toEqual({
-      "data-slot": "info",
-      style: { gridArea: "info" },
-    });
-    expect(result.current.slots.tag).toEqual({
-      "data-slot": "tag",
-      style: { gridArea: "tag" },
-    });
+    expect(result.current.slots.icon).toEqual({ "data-area": "icon" });
+    expect(result.current.slots.info).toEqual({ "data-area": "info" });
+    expect(result.current.slots.tag).toEqual({ "data-area": "tag" });
 
     // Verify CSS is generated
     expect(result.current.css).toContain("grid-template-areas");

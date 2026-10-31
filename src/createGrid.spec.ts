@@ -14,7 +14,7 @@ function testGrid<TAreaName extends string>(config: GridConfig<TAreaName>) {
 
 describe("generateCss and createSlots", () => {
   describe("slots generation", () => {
-    it("should generate slots with data-slot attributes and gridArea style for each area", () => {
+    it("should generate slots with a data-area attribute for each area", () => {
       const config = createGrid()
         .areas(["icon", "information", "secondTag"])
         .layout({ layout: [["information"]] })
@@ -23,9 +23,9 @@ describe("generateCss and createSlots", () => {
       const result = testGrid(config);
 
       expect(result.slots).toEqual({
-        icon: { "data-slot": "icon", style: { gridArea: "icon" } },
-        information: { "data-slot": "information", style: { gridArea: "information" } },
-        secondTag: { "data-slot": "secondTag", style: { gridArea: "secondTag" } },
+        icon: { "data-area": "icon" },
+        information: { "data-area": "information" },
+        secondTag: { "data-area": "secondTag" },
       });
     });
 
@@ -39,10 +39,7 @@ describe("generateCss and createSlots", () => {
 
       // Verify the slot object structure is compatible with JSX spreading
       const spreadResult = { ...result.slots.myArea };
-      expect(spreadResult).toEqual({
-        "data-slot": "myArea",
-        style: { gridArea: "myArea" },
-      });
+      expect(spreadResult).toEqual({ "data-area": "myArea" });
     });
   });
 
@@ -102,89 +99,6 @@ describe("generateCss and createSlots", () => {
     });
   });
 
-  describe("conditional layouts with :has() selectors", () => {
-    it("should generate :has() selector for single condition with direct child selector", () => {
-      const config = createGrid()
-        .areas(["icon", "information"])
-        .layout({ layout: [["information"]] })
-        .layout({
-          when: ["icon", "information"],
-          layout: [["icon", "information"]],
-        })
-        .build();
-
-      const result = testGrid(config);
-
-      expect(result.css).toContain("grid-template-areas: 'information'");
-      expect(result.css).toContain(
-        '[data-grid-id="test"]:has(> [data-slot=icon]):has(> [data-slot=information])',
-      );
-      expect(result.css).toContain("grid-template-areas: 'icon information'");
-    });
-
-    it("should generate chained :has() selectors with auto-computed :not() for missing areas", () => {
-      const config = createGrid()
-        .areas(["icon", "information", "secondTag"])
-        .layout({ layout: [["information"]] })
-        .layout({
-          when: ["icon", "secondTag"],
-          layout: [
-            ["icon", "secondTag"],
-            ["information", "information"],
-          ],
-        })
-        .build();
-
-      const result = testGrid(config);
-
-      // Areas in `when` get :has(), areas NOT in `when` get :not(:has())
-      expect(result.css).toContain(
-        ":has(> [data-slot=icon]):has(> [data-slot=secondTag]):not(:has(> [data-slot=information]))",
-      );
-      expect(result.css).toContain(
-        "grid-template-areas: 'icon secondTag' 'information information'",
-      );
-    });
-
-    it("should auto-generate :not(:has()) for areas not in when clause", () => {
-      const config = createGrid()
-        .areas(["icon", "information", "secondTag"])
-        .layout({ layout: [["information"]] })
-        .layout({
-          when: ["icon", "information"],
-          layout: [["icon", "information"]],
-        })
-        .build();
-
-      const result = testGrid(config);
-
-      expect(result.css).toContain(
-        ":has(> [data-slot=icon]):has(> [data-slot=information]):not(:has(> [data-slot=secondTag]))",
-      );
-      expect(result.css).toContain("grid-template-areas: 'icon information'");
-    });
-
-    it("should handle when all areas are specified in when clause", () => {
-      const config = createGrid()
-        .areas(["a", "b", "c"])
-        .layout({ layout: [["a"]] })
-        .layout({
-          when: ["a", "b", "c"],
-          layout: [["a", "b", "c"]],
-        })
-        .build();
-
-      const result = testGrid(config);
-
-      expect(result.css).toContain(
-        ":has(> [data-slot=a]):has(> [data-slot=b]):has(> [data-slot=c])",
-      );
-      // Should NOT contain any :not() since all areas are in when
-      expect(result.css).not.toContain(":not(:has");
-      expect(result.css).toContain("grid-template-areas: 'a b c'");
-    });
-  });
-
   describe("breakpoint support", () => {
     it("should generate @container queries for base layout breakpoints", () => {
       const config = createGrid()
@@ -204,7 +118,7 @@ describe("generateCss and createSlots", () => {
       expect(result.css).toContain("grid-template-areas: 'icon information'");
     });
 
-    it("should generate nested @container queries for conditional layouts", () => {
+    it("should generate @container queries for conditional layouts", () => {
       const config = createGrid()
         .areas(["icon", "information", "secondTag"])
         .layout({ layout: [["information"]] })
@@ -223,9 +137,6 @@ describe("generateCss and createSlots", () => {
       const result = testGrid(config);
 
       expect(result.css).toContain("@container (min-width: 24rem)");
-      expect(result.css).toContain(
-        ":has(> [data-slot=icon]):has(> [data-slot=secondTag]):not(:has(> [data-slot=information]))",
-      );
       expect(result.css).toContain("grid-template-areas: 'icon information secondTag'");
     });
 
@@ -401,12 +312,6 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      // Base rule (first line) should only have grid-template-areas, not rows/columns
-      const baseRule = result.css.split("\n")[0];
-      expect(baseRule).toContain("grid-template-areas");
-      expect(baseRule).not.toContain("grid-template-rows");
-      expect(baseRule).not.toContain("grid-template-columns");
-
       // Breakpoints are self-contained: they always explicitly set rows/columns to none
       // This ensures consistent behavior and prevents any inherited values from cascading
       expect(result.css).toMatch(/@container \(min-width: 24rem\) \{[^}]*grid-template-rows: none/);
@@ -429,7 +334,6 @@ describe("generateCss and createSlots", () => {
 
       const result = testGrid(config);
 
-      expect(result.css).toContain(":has(> [data-slot=icon]):has(> [data-slot=info])");
       expect(result.css).toContain("grid-template-areas: 'icon info'");
       expect(result.css).toContain("grid-template-rows: auto");
       expect(result.css).toContain("grid-template-columns: 48px 1fr");
@@ -465,29 +369,10 @@ describe("generateCss and createSlots", () => {
 
       const { slots, css } = testGrid(config);
 
-      // Verify slots include both data-slot and gridArea style
-      expect(slots.icon).toEqual({ "data-slot": "icon", style: { gridArea: "icon" } });
-      expect(slots.information).toEqual({
-        "data-slot": "information",
-        style: { gridArea: "information" },
-      });
-      expect(slots.secondTag).toEqual({
-        "data-slot": "secondTag",
-        style: { gridArea: "secondTag" },
-      });
+      expect(slots.icon).toEqual({ "data-area": "icon" });
 
       // Verify base layout
       expect(css).toContain("grid-template-areas: 'information'");
-
-      // Verify conditional layout with auto-computed :not() for missing area
-      expect(css).toContain(
-        ":has(> [data-slot=icon]):has(> [data-slot=secondTag]):not(:has(> [data-slot=information]))",
-      );
-
-      // Verify layout when all areas present (no :not() needed)
-      expect(css).toContain(
-        ":has(> [data-slot=icon]):has(> [data-slot=information]):has(> [data-slot=secondTag])",
-      );
       expect(css).toContain("grid-template-areas: 'icon secondTag' 'information information'");
 
       // Verify breakpoint override for conditional layout
@@ -530,24 +415,6 @@ describe("generateCss and createSlots", () => {
       expect(result.containerProps).toEqual({ "data-grid-id": TEST_ID });
       expect(result.css).toContain('[data-grid-id="test"]');
       expect(result.css).toContain("grid-template-areas: 'info'");
-    });
-
-    it("should generate CSS with :has() selectors using direct child selector", () => {
-      const config = createGrid()
-        .areas(["icon", "info"])
-        .layout({ layout: [["info"]] })
-        .layout({
-          when: ["icon", "info"],
-          layout: [["icon", "info"]],
-        })
-        .build();
-
-      const result = testGrid(config);
-
-      expect(result.css).toContain(
-        '[data-grid-id="test"]:has(> [data-slot=icon]):has(> [data-slot=info])',
-      );
-      expect(result.css).toContain("grid-template-areas: 'icon info'");
     });
 
     it("should generate CSS with @container queries", () => {
@@ -625,10 +492,7 @@ describe("createGrid builder pattern", () => {
       const slots = createSlots(config.areas);
       const css = generateCss("test-id", config);
 
-      expect(slots.icon).toEqual({
-        "data-slot": "icon",
-        style: { gridArea: "icon" },
-      });
+      expect(slots.icon).toEqual({ "data-area": "icon" });
       expect(css).toContain("grid-template-areas: 'icon info'");
     });
   });

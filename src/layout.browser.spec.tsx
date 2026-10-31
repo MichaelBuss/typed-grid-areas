@@ -56,6 +56,15 @@ describe("grid layout in a real browser", () => {
     expect(withoutIcon.templateAreas()).toBe('"info tag"');
   });
 
+  it("marks slots with data-area and keeps placement out of inline styles", async () => {
+    const grid = await mountGrid(cardGrid, { width: 200, present: ["info", "tag"] });
+
+    expect(grid.slot("info").getAttribute("data-area")).toBe("info");
+    expect(grid.slot("info").hasAttribute("data-slot")).toBe(false);
+    expect(grid.slot("info").style.gridArea).toBe("");
+    expect(grid.rect("tag")).toMatchObject({ x: 100, width: 100 });
+  });
+
   // Expected failure until https://github.com/MichaelBuss/typed-grid-areas/issues/6 is fixed:
   // the grid is its own `container-type: inline-size` element, so its `@container`
   // queries look for an ancestor container instead of measuring the grid itself.
