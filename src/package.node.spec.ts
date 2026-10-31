@@ -1,6 +1,6 @@
 /**
  * Builds the package the way `npm pack` does and checks what a consumer gets:
- * the tarball's files, both entry points importing on stock Node, and their
+ * the tarball's files, every entry point importing on stock Node, and their
  * types resolving for a Node ESM TypeScript project.
  */
 import { execFileSync } from "node:child_process";
@@ -44,6 +44,8 @@ describe("the packed package", () => {
         "dist/index.d.ts",
         "dist/react/index.js",
         "dist/react/index.d.ts",
+        "dist/adapter/index.js",
+        "dist/adapter/index.d.ts",
       ]),
     );
     expect(paths.filter(path => !path.startsWith("dist/")).sort()).toEqual([
@@ -59,20 +61,21 @@ describe("the packed package", () => {
     expect(files.filter(file => /spec|test-utils|test-setup/.test(file))).toEqual([]);
   });
 
-  it("imports both entry points on stock Node", () => {
+  it("imports every entry point on stock Node", () => {
     // A child process, since Vitest's own resolver forgives what Node's doesn't.
     const script = `
       const core = await import(${JSON.stringify(pathToFileURL(join(dist, "index.js")).href)});
       const react = await import(${JSON.stringify(pathToFileURL(join(dist, "react", "index.js")).href)});
-      console.log(typeof core.defineLayout, typeof react.createGridComponent);
+      const adapter = await import(${JSON.stringify(pathToFileURL(join(dist, "adapter", "index.js")).href)});
+      console.log(typeof core.defineLayout, typeof react.createGridComponent, typeof adapter.gridMarkup);
     `;
     const output = execFileSync(process.execPath, ["--input-type=module", "-e", script], {
       encoding: "utf8",
     });
-    expect(output.trim()).toBe("function function");
+    expect(output.trim()).toBe("function function function");
   });
 
-  it("resolves both entry points' types for a Node ESM TypeScript consumer", () => {
+  it("resolves every entry point's types for a Node ESM TypeScript consumer", () => {
     rmSync(consumer, { recursive: true, force: true });
     mkdirSync(join(consumer, "node_modules"), { recursive: true });
     symlinkSync(root, join(consumer, "node_modules", "typed-grid-areas"), "dir");
@@ -96,6 +99,7 @@ describe("the packed package", () => {
       join(consumer, "consumer.ts"),
       `import { defineLayout } from "typed-grid-areas";
 import { createGridComponent } from "typed-grid-areas/react";
+import { gridMarkup, type GridMarkup } from "typed-grid-areas/adapter";
 
 const Card = createGridComponent(
   defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
@@ -103,6 +107,13 @@ const Card = createGridComponent(
 Card.title;
 // @ts-expect-error: the definition has no "body" area.
 Card.body;
+
+const markup: GridMarkup<"icon" | "title"> = gridMarkup(
+  defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
+);
+markup.slot("title");
+// @ts-expect-error: the definition has no "body" area.
+markup.slot("body");
 `,
     );
 

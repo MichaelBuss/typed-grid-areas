@@ -20,6 +20,10 @@
     "./react": {
       "types": "./dist/react/index.d.ts",
       "default": "./dist/react/index.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter/index.d.ts",
+      "default": "./dist/adapter/index.js"
     }
   },
   "files": [
