@@ -1,6 +1,6 @@
 {
   "name": "typed-grid-areas",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
   "type": "module",
   "license": "MIT",
