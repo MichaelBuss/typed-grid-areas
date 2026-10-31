@@ -11,14 +11,8 @@ as typed slot components (`<Card>`, `<Card.icon>`).
 
 ## Install
 
-Not published. Consume it as a local path or git dependency:
-
-```json
-{
-  "dependencies": {
-    "typed-grid-areas": "github:MichaelBuss/typed-grid-areas"
-  }
-}
+```sh
+npm i typed-grid-areas
 ```
 
 `react` (19 or later) is an optional peer dependency, only needed for the
@@ -629,9 +623,13 @@ breakpoints also needs the grid wrapped in its own size container (see
 ## Development
 
 ```sh
-just test          # unit tests (happy-dom), including the compile-budget check
+just test          # unit tests (happy-dom), the release scripts and the packed package
 just test-browser  # in-browser layout tests (Chromium via Playwright)
 just typecheck     # tsc --noEmit, including the type tests
+just build         # compile src/ into dist/, as npm pack does
 ```
 
-or via npm directly: `npm test`, `npm run typecheck`.
+or via npm directly: `npm test`, `npm run typecheck`, `npm run build`.
+
+A change to the package carries a changeset (`npm run changeset`); see
+[docs/agents/release.md](docs/agents/release.md) for how releases ship.

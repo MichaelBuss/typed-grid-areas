@@ -1,6 +1,6 @@
-import { defineLayout } from "./defineLayout";
-import { idCardGrid as idCard } from "./test-utils/designs";
-import { mountGrid } from "./test-utils/mountGrid";
+import { defineLayout } from "./defineLayout.ts";
+import { idCardGrid as idCard } from "./test-utils/designs.ts";
+import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 describe("layers in a real browser", () => {
   it("places a layer over the cells it shares with its base", async () => {

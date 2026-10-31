@@ -6,8 +6,8 @@ import {
   GridConfig,
   GridLayout,
   TrackSize,
-} from "../types";
-import { withDerivedRules } from "./derive";
+} from "../types.ts";
+import { withDerivedRules } from "./derive.ts";
 
 /**
  * When a rule applies: areas that must be present and areas that must be

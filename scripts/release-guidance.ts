@@ -1,0 +1,292 @@
+#!/usr/bin/env node
+// The release-guidance comment: one comment per PR, updated in place, that
+// tells a human (or an AFK agent) what will ship, at which bump kind, whether
+// a changeset is present, and whether the body closes an issue. Informational
+// only — it never fails a PR.
+//
+// What ships is what `npm pack` puts in the tarball: package.json and the
+// entries of its `files`. A `files` entry that is the build's output
+// directory ships the sources the build compiles into it, so a PR that
+// changes those sources changes what ships.
+
+import { realpathSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+export type Shipped = {
+  include: readonly string[];
+  exclude: readonly string[];
+};
+
+/** The parts of tsconfig.build.json that decide what lands in its output directory. */
+export type Build = {
+  outDir: string;
+  include: readonly string[];
+  exclude: readonly string[];
+};
+
+export type BumpKind = "patch" | "minor" | "major";
+
+export type ChangesetEntry = {
+  package: string;
+  kind: BumpKind;
+  note: string;
+};
+
+function normalize(path: string): string {
+  return path.replaceAll("\\", "/").replace(/^\.\//, "").replace(/\/$/, "");
+}
+
+/** A path names itself and, when it's a directory, everything under it. */
+function andBelow(path: string): string[] {
+  const normalized = normalize(path);
+  return normalized.includes("*") ? [normalized] : [normalized, `${normalized}/**`];
+}
+
+export function shippedPaths(files: readonly string[], build: Build): Shipped {
+  const include = ["package.json"];
+  const exclude: string[] = [];
+  for (const entry of files) {
+    if (normalize(entry) === normalize(build.outDir)) {
+      include.push(...build.include.flatMap(andBelow));
+      exclude.push(...build.exclude.flatMap(andBelow));
+    } else {
+      include.push(...andBelow(entry));
+    }
+  }
+  return { include, exclude };
+}
+
+export function globMatch(pattern: string, file: string): boolean {
+  const normalized = normalize(file);
+  let rest = pattern;
+  let source = "^";
+  while (rest.length > 0) {
+    if (rest.startsWith("**/")) {
+      source += "(?:.*/)?";
+      rest = rest.slice(3);
+      continue;
+    }
+    if (rest === "**") {
+      source += ".*";
+      rest = "";
+      continue;
+    }
+    if (rest.startsWith("**")) {
+      source += ".*";
+      rest = rest.slice(2);
+      continue;
+    }
+    if (rest.startsWith("*")) {
+      source += "[^/]*";
+      rest = rest.slice(1);
+      continue;
+    }
+    const ch = rest.at(0);
+    if (ch === undefined) {
+      break;
+    }
+    source += /[.+^${}()|[\]\\]/.test(ch) ? `\\${ch}` : ch;
+    rest = rest.slice(1);
+  }
+  return new RegExp(`${source}$`).test(normalized);
+}
+
+export function isShippedPath(file: string, shipped: Shipped): boolean {
+  const normalized = normalize(file);
+  const included = shipped.include.some(pattern => globMatch(pattern, normalized));
+  if (!included) {
+    return false;
+  }
+  return !shipped.exclude.some(pattern => globMatch(pattern, normalized));
+}
+
+export function parseChangeset(content: string): ChangesetEntry[] {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(content);
+  if (match === null) {
+    return [];
+  }
+  const [, frontmatter = "", body = ""] = match;
+  // @changesets/changelog-github reads these lines as links, not as the note.
+  const note = body.replace(/^\s*(?:pr|pull|pull\s+request|commit|author|user):.*$/gim, "").trim();
+  const entries: ChangesetEntry[] = [];
+  for (const line of frontmatter.split(/\r?\n/)) {
+    const entry = /^\s*["']?([^"':]+)["']?:\s*(patch|minor|major)\s*$/.exec(line);
+    if (entry !== null) {
+      entries.push({
+        package: entry[1]!.trim(),
+        kind: entry[2] as BumpKind,
+        note,
+      });
+    }
+  }
+  return entries;
+}
+
+export function closesIssue(body: string): boolean {
+  return /\b(closes?|closed|fixes?|fixed|resolves?|resolved)\s*:?\s+#\d+/i.test(body);
+}
+
+export type Guidance = {
+  headline: string;
+  markdown: string;
+};
+
+export function guidance(input: {
+  changedFiles: readonly string[];
+  shipped: Shipped;
+  package: string;
+  changesets: readonly ChangesetEntry[];
+  closesIssue: boolean;
+}): Guidance {
+  const packageFiles = input.changedFiles.filter(file => isShippedPath(file, input.shipped));
+  const own = input.changesets.filter(entry => entry.package === input.package);
+  const lines: string[] = [];
+
+  if (packageFiles.length === 0) {
+    lines.push("**No shipped files change in this PR.**");
+  } else {
+    lines.push(`**Shipped files change:** ${formatFiles(packageFiles)}`);
+  }
+
+  if (own.length > 0) {
+    lines.push("");
+    lines.push("**Changeset** (what the release notes will say):");
+    lines.push("");
+    for (const entry of own) {
+      lines.push(`- \`${entry.package}\`: **${entry.kind}** — ${entry.note}`);
+    }
+  } else if (packageFiles.length === 0) {
+    lines.push("**No changeset**, and none needed.");
+  } else {
+    lines.push("");
+    lines.push(
+      "**No changeset yet — none of these changes will ship when this merges.** Add one with `npm run changeset`, and write a note worth reading in a changelog. Assumed bump for a fix-shaped PR is **patch**; set it explicitly: `patch` for fixes, `minor` for new features, `major` for breaking changes.",
+    );
+  }
+
+  if (input.closesIssue) {
+    lines.push("");
+    lines.push("The body closes an issue, so the release notes can link it.");
+  } else {
+    lines.push("");
+    lines.push(
+      "Nudge: the body doesn't close an issue. If this PR resolves one, adding `Closes #123` (its real number) links the release notes and the tracker together — never a gate, just a kindness to future readers.",
+    );
+  }
+
+  const markdown = lines.join("\n");
+  const headline =
+    packageFiles.length === 0
+      ? "No shipped files change in this PR"
+      : own.length > 0
+        ? `Changeset: ${own.map(entry => `${entry.kind} for ${entry.package}`).join("; ")}`
+        : "Shipped files change without a changeset";
+  return {
+    headline,
+    markdown,
+  };
+}
+
+function formatFiles(files: readonly string[]): string {
+  if (files.length <= 8) {
+    return files.join(", ");
+  }
+  const shown = files.slice(0, 8).join(", ");
+  return `${shown}, and ${files.length - 8} more`;
+}
+
+function isCliEntry(): boolean {
+  const argv1 = process.argv[1];
+  if (argv1 === undefined) {
+    return false;
+  }
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(argv1);
+  } catch {
+    return import.meta.url === pathToFileURL(resolve(argv1)).href;
+  }
+}
+
+function flag(argv: readonly string[], name: string): string | undefined {
+  const index = argv.indexOf(name);
+  if (index === -1) {
+    return undefined;
+  }
+  return argv[index + 1];
+}
+
+async function writeGithubOutput(result: Guidance): Promise<void> {
+  const path = process.env.GITHUB_OUTPUT;
+  if (path === undefined) {
+    return;
+  }
+  const block = [
+    `headline=${result.headline}`,
+    "detail<<EOF",
+    result.headline,
+    "EOF",
+    "markdown<<EOF",
+    result.markdown,
+    "EOF",
+    "",
+  ].join("\n");
+  await writeFile(path, block, { flag: "a" });
+}
+
+export async function releaseGuidanceCli(argv: readonly string[]): Promise<number> {
+  const changedPath = flag(argv, "--changed-files");
+  const body = flag(argv, "--pr-body") ?? process.env.PR_BODY ?? "";
+  if (changedPath === undefined) {
+    process.stderr.write(
+      "Usage: node scripts/release-guidance.ts --changed-files changed.txt [--pr-body body.md]\n",
+    );
+    return 1;
+  }
+  const pkg = JSON.parse(await readFile("package.json", "utf8")) as {
+    name: string;
+    files: string[];
+  };
+  const build = JSON.parse(await readFile("tsconfig.build.json", "utf8")) as {
+    compilerOptions: { outDir: string };
+    include: string[];
+    exclude: string[];
+  };
+  const shipped = shippedPaths(pkg.files, {
+    outDir: build.compilerOptions.outDir,
+    include: build.include,
+    exclude: build.exclude,
+  });
+  const changedFiles = (await readFile(changedPath, "utf8"))
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line !== "");
+  const changesets: ChangesetEntry[] = [];
+  for (const file of changedFiles) {
+    if (!/^\.changeset\/[^/]+\.md$/.test(file) || file.endsWith("README.md")) {
+      continue;
+    }
+    let content: string;
+    try {
+      content = await readFile(file, "utf8");
+    } catch {
+      continue;
+    }
+    changesets.push(...parseChangeset(content));
+  }
+  const result = guidance({
+    changedFiles,
+    shipped,
+    package: pkg.name,
+    changesets,
+    closesIssue: closesIssue(body),
+  });
+  await writeGithubOutput(result);
+  process.stdout.write(`${result.markdown}\n`);
+  return 0;
+}
+
+if (isCliEntry()) {
+  process.exitCode = await releaseGuidanceCli(process.argv.slice(2));
+}

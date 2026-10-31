@@ -19,8 +19,17 @@ export default defineConfig({
           name: "unit",
           environment: "happy-dom",
           include: ["src/**/*.spec.{ts,tsx}"],
-          exclude: ["src/**/*.browser.spec.{ts,tsx}"],
+          exclude: ["src/**/*.browser.spec.{ts,tsx}", "src/**/*.node.spec.ts"],
           setupFiles: ["src/test-setup.ts"],
+        },
+      },
+      {
+        // The release scripts and the packed package, outside any DOM.
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: ["scripts/**/*.spec.ts", "src/**/*.node.spec.ts"],
         },
       },
       {

@@ -1,6 +1,6 @@
-import { defineLayout } from "../defineLayout";
-import { GridConfig } from "../types";
-import { breakpointWidth, Rule, toRules, widthRank } from "./rules";
+import { defineLayout } from "../defineLayout.ts";
+import { GridConfig } from "../types.ts";
+import { breakpointWidth, Rule, toRules, widthRank } from "./rules.ts";
 
 /**
  * The arrangement that applies when exactly `present` slots are rendered and

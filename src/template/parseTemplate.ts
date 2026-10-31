@@ -1,4 +1,4 @@
-import { GridLayout } from "../types";
+import { GridLayout } from "../types.ts";
 
 /**
  * Parses a text template into its cells: rows are separated by newlines or

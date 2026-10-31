@@ -2,8 +2,8 @@
  * Compile-time checks of grid components. Each `@ts-expect-error` must stay
  * an error, so `just typecheck` fails if a check goes missing.
  */
-import { defineLayout } from "../defineLayout";
-import { createGridComponent } from "./gridComponent";
+import { defineLayout } from "../defineLayout.ts";
+import { createGridComponent } from "./gridComponent.tsx";
 
 const ContentGrid = createGridComponent(
   defineLayout({

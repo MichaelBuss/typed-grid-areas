@@ -1,7 +1,7 @@
 import { render } from "vitest-browser-react";
-import { defineLayout } from "../defineLayout";
-import { gridId } from "../engine/gridId";
-import { createGridComponent } from "./gridComponent";
+import { defineLayout } from "../defineLayout.ts";
+import { gridId } from "../engine/gridId.ts";
+import { createGridComponent } from "./gridComponent.tsx";
 
 /** An element's bounding rect, relative to another element's top-left corner. */
 function rectWithin(element: Element, origin: Element) {

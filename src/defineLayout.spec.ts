@@ -1,9 +1,9 @@
-import { defineLayout } from "./defineLayout";
-import { generateCss } from "./generateCss";
+import { defineLayout } from "./defineLayout.ts";
+import { generateCss } from "./generateCss.ts";
 
 describe("defineLayout", () => {
   it("replaces the createGrid builder in the public exports", async () => {
-    const exports = await import("./index");
+    const exports = await import("./index.ts");
 
     expect(exports).toHaveProperty("defineLayout");
     expect(exports).not.toHaveProperty("createGrid");

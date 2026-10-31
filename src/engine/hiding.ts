@@ -1,5 +1,5 @@
-import { placeAreas } from "./placement";
-import { Condition, Rule, widthRank } from "./rules";
+import { placeAreas } from "./placement.ts";
+import { Condition, Rule, widthRank } from "./rules.ts";
 
 /**
  * Hides one area while a rule applies and none of the later rules that

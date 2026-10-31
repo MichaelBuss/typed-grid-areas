@@ -1,5 +1,5 @@
-import { generateCss } from "./generateCss";
-import { preferenceCardGrid, preferenceContentGrid } from "./test-utils/designs";
+import { generateCss } from "./generateCss.ts";
+import { preferenceCardGrid, preferenceContentGrid } from "./test-utils/designs.ts";
 
 describe("generated CSS size", () => {
   /**

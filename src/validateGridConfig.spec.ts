@@ -1,5 +1,5 @@
-import { GridConfig } from "./types";
-import { validateGridConfig } from "./validateGridConfig";
+import { GridConfig } from "./types.ts";
+import { validateGridConfig } from "./validateGridConfig.ts";
 
 describe("validateGridConfig", () => {
   describe("empty config validation", () => {

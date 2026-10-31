@@ -4,7 +4,7 @@
  * fails if an error goes missing or moves. The exact error text is checked
  * in `defineLayout.compile.spec.ts`.
  */
-import { defineLayout } from "./defineLayout";
+import { defineLayout } from "./defineLayout.ts";
 
 const areas = ["icon?", "information", "cardTag?", "badge?"] as const;
 

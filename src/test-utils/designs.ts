@@ -3,7 +3,7 @@
  * The browser acceptance spec renders them; the CSS budget check measures
  * them. Keep the README's examples in step with these.
  */
-import { defineLayout } from "../index";
+import { defineLayout } from "../index.ts";
 
 /**
  * PreferenceCard, outer grid: an optional input panel beside the content
