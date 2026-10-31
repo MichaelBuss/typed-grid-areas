@@ -171,7 +171,8 @@ describe("defineLayout at compile time", () => {
     const machineSlowdown = Math.max(1, Math.min(...controlTimes) / CONTROL_REFERENCE_SECONDS);
 
     expect(Math.min(...stressTimes)).toBeLessThanOrEqual(CHECK_BUDGET_SECONDS * machineSlowdown);
-  });
+    // Ten tsc runs take longer than Vitest's default 5s timeout on CI runners.
+  }, 60_000);
 
   it("names each problem in its error message", () => {
     const { ok, output } = runTsc(writeProject("mistakes", mistakes));
