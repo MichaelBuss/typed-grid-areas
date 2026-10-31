@@ -23,8 +23,12 @@ describe("shipped paths", () => {
   it("count each package's package.json, and the repo's README.md and LICENSE for every package", () => {
     expect(shipping("packages/core/package.json")).toEqual(["typed-grid-areas"]);
     expect(shipping("packages/react/package.json")).toEqual(["@typed-grid-areas/react"]);
-    expect(shipping("README.md")).toEqual(["typed-grid-areas", "@typed-grid-areas/react"]);
-    expect(shipping("LICENSE")).toEqual(["typed-grid-areas", "@typed-grid-areas/react"]);
+    const everyPackage = packages.map(({ name }) => name);
+    expect(everyPackage).toEqual(
+      expect.arrayContaining(["typed-grid-areas", "@typed-grid-areas/react"]),
+    );
+    expect(shipping("README.md")).toEqual(everyPackage);
+    expect(shipping("LICENSE")).toEqual(everyPackage);
   });
 
   it("leave out the sources the builds exclude", () => {
@@ -32,6 +36,12 @@ describe("shipped paths", () => {
     expect(shipping("packages/react/src/gridComponent.browser.spec.tsx")).toEqual([]);
     expect(shipping("packages/react/src/test-utils/mountGrid.tsx")).toEqual([]);
     expect(shipping("packages/react/src/test-setup.ts")).toEqual([]);
+  });
+
+  it("count the source a source-published package lists in files, and nothing else of it", () => {
+    expect(shipping("packages/octane/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/octane"]);
+    expect(shipping("packages/octane/src/render.browser.spec.tsx")).toEqual([]);
+    expect(shipping("packages/octane/src/test-utils/RenderedAs.tsrx")).toEqual([]);
   });
 
   it("never count a private workspace", () => {

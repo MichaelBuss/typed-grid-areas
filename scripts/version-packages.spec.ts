@@ -108,6 +108,13 @@ describe("the release script's dry run after it", () => {
       "typed-grid-areas": ["1.4.2"],
       "@typed-grid-areas/react": ["0.3.0"],
     };
+    // Every other public workspace is already on npm at its version, so the dry run skips it.
+    for (const { dir } of readWorkspaces(root)) {
+      const { name, version, private: isPrivate } = read<Manifest>(join(dir, "package.json"));
+      if (!isPrivate) {
+        npm[name] ??= [version];
+      }
+    }
     let output = "";
     const status = await releaseCli({
       root,
