@@ -1200,6 +1200,85 @@ set of problems.
 Supported: Lit 3, and `@lit-labs/ssr` 4 (still labelled pre-release by the
 Lit team) for server rendering.
 
+## Rendering with Octane: `@typed-grid-areas/octane` (experimental)
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/octane
+```
+
+`@typed-grid-areas/octane` renders a definition as typed slot components in
+[Octane](https://octanejs.dev), natively (not through Octane's React
+compatibility layer). It is **experimental until Octane 1.0**: it supports
+the current Octane minor only, **Octane 0.16** (`octane@^0.16.0`), and each
+new Octane minor needs a release of the adapter.
+
+The package ships its source (`.tsx`), not a build: your app's Octane
+bundler plugin (`@octanejs/vite-plugin`, Rspack, Rsbuild) compiles it like
+your own components, and plain `tsc` type-checks it.
+
+```tsrx
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/octane";
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
+);
+
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+
+export function Example(props: { selectable: boolean }) @{
+  <Card class="gap-4" render={<section />}>
+    @if (props.selectable) {
+      <Card.input render={<label for="notify" />}><input id="notify" type="checkbox" /></Card.input>
+    }
+    <Card.content>
+      <Card.content.icon>{'★'}</Card.content.icon>
+      <Card.content.title>{'Notify me'}</Card.content.title>
+    </Card.content>
+  </Card>
+}
+```
+
+- **The API is React's** (see [Rendering with React](#rendering-with-react-grid-components)):
+  `createGridComponent(definition, { nest })`, `<Card>` for the grid, a
+  static slot component per area (`<Card.input>`, and `<Card.content.icon>`
+  through `nest`), each taking `class`, `style`, `ref`, `children` and any
+  other `div` props. Member tags work in `.tsx` and `.tsrx`, including
+  inside `@if`; a misspelled area is a type error (`tsrx-tsc` checks
+  `.tsrx`).
+- **Your own element as a slot: `render={<el />}`**, on slots and on the
+  grid, instead of React's `asChild` (Octane's `.tsrx` compiles children to
+  functions, which can't be cloned). The element is rendered with the
+  slot's props merged in: the adapter's `data-area` / `data-grid-id` always
+  win; otherwise the element's own props win; classes compose, styles merge,
+  event handlers chain (the element's first), both refs attach; the slot's
+  children become the element's children.
+- **Optional areas:** leave a slot out with Octane's ordinary conditional
+  (`@if` in `.tsrx`, `{cond && …}` in `.tsx`); the derived layout applies.
+- **CSS:** each definition's CSS goes on the page once, through Octane's
+  `injectStyle`: one `<style data-octane>` tag per definition in `<head>`,
+  however many instances render. Without server rendering there is nothing
+  to do. With it, `renderToString` (and `prerender`) return the CSS in
+  `css`, separate from `html`: put `result.css` before your markup (in
+  `<head>`), as Octane's scoped styles require. A stream
+  (`renderToReadableStream`, `renderToPipeableStream`) leads its shell with
+  it. Hydration adopts the server's tags instead of adding second copies.
+- **Development warnings** are React's: a missing required slot or a stray
+  direct child warns once (after mount, and after an update that introduces
+  it); production and server rendering log nothing.
+
+```ts octane
+// entry-server.ts
+import { renderToString } from "octane/server";
+import { App } from "./App.tsrx";
+
+const { html, css } = renderToString(App);
+const page = `<!doctype html><html><head>${css}</head><body><div id="root">${html}</div></body></html>`;
+```
+
 ## Without React: `typed-grid-areas/adapter`
 
 The core has no React dependency. To render grids in another framework, build
