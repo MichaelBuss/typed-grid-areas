@@ -4,6 +4,7 @@
  * `@ts-expect-error` must stay an error, so `just typecheck` fails if a check
  * goes missing.
  */
+import { useRef } from "octane";
 import { defineLayout } from "typed-grid-areas";
 import { createGridComponent } from "./gridComponent";
 
@@ -58,6 +59,26 @@ describe("grid component type checks", () => {
   it("rejects element props a div doesn't take", () => {
     // @ts-expect-error -- `href` is not a div prop
     void (<Card.input href="/" />);
+  });
+
+  it("takes refs typed for a specific element, as objects and as callbacks", () => {
+    const divRef = useRef<HTMLDivElement | null>(null);
+    const labelRef = useRef<HTMLLabelElement | null>(null);
+    void (
+      <Card ref={divRef}>
+        <Card.input ref={labelRef} render={<label for="notify" />} />
+        <Card.content ref={(element: HTMLDivElement | null) => void element?.dataset}>
+          <Card.content.icon ref={element => void element?.dataset} />
+          <Card.content.information ref={[divRef, (element: HTMLElement | null) => void element]} />
+        </Card.content>
+      </Card>
+    );
+  });
+
+  it("rejects a ref for something that isn't an element", () => {
+    const textRef = useRef<Text | null>(null);
+    // @ts-expect-error -- a slot renders an element, not a text node
+    void (<Card.input ref={textRef} />);
   });
 
   it("takes an element, not a component, as render", () => {
