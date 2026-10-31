@@ -12,7 +12,9 @@ async function settle(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 0));
 }
 
-const missingInfo = expect.stringMatching(/^typed-grid-areas: no slot for the required area "info"/);
+const missingInfo = expect.stringMatching(
+  /^typed-grid-areas: no slot for the required area "info"/,
+);
 const straySpan = expect.stringMatching(
   /^typed-grid-areas: <span> at index \d is a direct child .* make it a slot with a `child` snippet\.$/,
 );

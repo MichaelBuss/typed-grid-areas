@@ -21,7 +21,15 @@ function svelteCheckErrors(dir: string): Array<{ at: string; message: string }> 
   try {
     output = execFileSync(
       process.execPath,
-      [svelteCheck, "--workspace", dir, "--tsconfig", join(dir, "tsconfig.json"), "--output", "machine"],
+      [
+        svelteCheck,
+        "--workspace",
+        dir,
+        "--tsconfig",
+        join(dir, "tsconfig.json"),
+        "--output",
+        "machine",
+      ],
       { encoding: "utf8" },
     );
   } catch (error) {

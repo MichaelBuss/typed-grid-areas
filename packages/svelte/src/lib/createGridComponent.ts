@@ -86,7 +86,10 @@ function withMembers<TComponent extends object>(
 export function createGridComponent<
   TAreaName extends string,
   const TNest extends GridComponentOptions<TAreaName>["nest"] = {},
->(definition: GridConfig<TAreaName>, options: { nest?: TNest } = {}): GridComponent<TAreaName, TNest> {
+>(
+  definition: GridConfig<TAreaName>,
+  options: { nest?: TNest } = {},
+): GridComponent<TAreaName, TNest> {
   const members: Record<string, unknown> = {};
   for (const area of definition.areas) {
     const nested = options.nest?.[area] as (AnyGridComponent & WithMembers) | undefined;

@@ -595,6 +595,104 @@ export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
 }
 ```
 
+## Rendering with Svelte: `@typed-grid-areas/svelte`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/svelte
+```
+
+Needs Svelte 5.57.0 or later, in runes mode. The package ships `.svelte`
+files under the `svelte` export condition, so build with a Svelte-aware
+bundler (Vite with `@sveltejs/vite-plugin-svelte`, or SvelteKit).
+
+`createGridComponent(definition, { nest })` turns a definition into a
+component with one member per area, like the React adapter. A `.svelte`
+file can't be a generic factory, so create grid components in a module: a
+`.ts` file, or a component's `<script module>`:
+
+```svelte
+<script module lang="ts">
+  import { defineLayout } from "typed-grid-areas";
+  import { createGridComponent } from "@typed-grid-areas/svelte";
+
+  const Content = createGridComponent(
+    defineLayout({
+      areas: ["icon?", "information", "cardTag?"],
+      layouts: [
+        {
+          template: "icon information cardTag",
+          columns: "min-content minmax(0, 1fr) auto",
+        },
+      ],
+    }),
+  );
+
+  const Card = createGridComponent(
+    defineLayout({
+      areas: ["input?", "content"],
+      layouts: [{ template: "input content", columns: "auto minmax(0, 1fr)" }],
+    }),
+    { nest: { content: Content } },
+  );
+</script>
+
+<script lang="ts">
+  let { selectable = false, tag }: { selectable?: boolean; tag?: string } = $props();
+</script>
+
+<Card class="gap-2" aria-label="Card">
+  {#if selectable}
+    <Card.input>
+      {#snippet child({ props })}
+        <label {...props}><input type="checkbox" /></label>
+      {/snippet}
+    </Card.input>
+  {/if}
+  <Card.content class="p-4">
+    <Card.content.icon>★</Card.content.icon>
+    <Card.content.information>Weekly digest</Card.content.information>
+    {#if tag}
+      <Card.content.cardTag>{tag}</Card.content.cardTag>
+    {/if}
+  </Card.content>
+</Card>
+```
+
+- **`<Card>`** renders the grid, and **`<Card.icon>`** the slot for the
+  `icon` area, exactly as in React: the same DOM, the same size container
+  for a definition with breakpoints (your attributes still go on the grid),
+  and `<Card.iconn>` is an error in `svelte-check`. Both take any attribute
+  a `div` takes (`class`, `style`, `aria-*`, event handlers) and children.
+- **Optional areas:** leave a slot out with an ordinary `{#if}`; the
+  derived layout for its absence applies. Slots must be direct children of
+  their grid (`{#if}`, `{#each}` and snippets rendered in place are fine).
+- **Your own element as a slot (or the grid):** pass a `child` snippet
+  instead of children, and spread its `props` onto your element, Bits UI's
+  convention: `{#snippet child({ props })}<label {...props}>…</label>{/snippet}`.
+  `props` carries the slot's `data-area` (or the grid's attributes) and
+  every attribute you gave the component.
+- **Nesting:** `nest: { content: Content }` makes `<Card.content>` both the
+  `content` slot and the `Content` grid, reaching its slots as
+  `<Card.content.icon>`.
+
+**Where the CSS goes.** Each definition's CSS is a
+`<style data-typed-grid-areas="<grid id>">` in `<svelte:head>`, rendered by
+exactly one instance of the definition, however many render:
+
+- **With server rendering**, `render()` from `svelte/server` puts it in
+  `head` once per render; SvelteKit puts `head` into the page for you, and
+  with plain `svelte/server` you put it in your HTML's `<head>`. Hydration
+  reuses the server's tag.
+- **Without server rendering**, the first mounted instance adds it to
+  `document.head`; when that instance unmounts another one takes it over,
+  and it goes away with the last instance.
+
+**Development warnings.** Under the `development` export condition (Vite's
+dev server, Vitest), a grid warns on the console when a required area's
+slot isn't rendered or it has a direct child that isn't one of its slots,
+once per distinct set of problems, after mount and after each update.
+Production builds and server rendering log nothing.
+
 ## Without React: `typed-grid-areas/adapter`
 
 The core has no React dependency. To render grids in another framework, build

@@ -112,7 +112,9 @@ describe("the release script's dry run after it", () => {
     const status = await releaseCli({
       root,
       dryRun: true,
-      npmVersions: async name => npm[name] ?? "unpublished",
+      // Every other package (the other adapters) is on npm at its version already.
+      npmVersions: async name =>
+        npm[name] ?? [readWorkspaces(root).find(workspace => workspace.name === name)!.version],
       write: text => {
         output += text;
       },
