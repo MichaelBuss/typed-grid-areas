@@ -806,7 +806,7 @@ npm i typed-grid-areas @typed-grid-areas/lit
 definition into a template function; each area is a member of it, typed as
 the area's name. Create grids at module level, once per definition:
 
-```ts
+```ts lit
 import { css, html, LitElement, nothing } from "lit";
 import { defineLayout } from "typed-grid-areas";
 import { createGrid, gridStyles } from "@typed-grid-areas/lit";

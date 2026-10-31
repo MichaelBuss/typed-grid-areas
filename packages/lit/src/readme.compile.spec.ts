@@ -1,6 +1,6 @@
 /**
- * Type-checks the README's Lit examples (every `ts` code block that imports
- * `@typed-grid-areas/lit`), each as its own module, with
+ * Type-checks the README's Lit examples (every code block fenced `ts lit`,
+ * which other packages' README checks skip), each as its own module, with
  * `@typed-grid-areas/lit` resolving to this package's `src/` and
  * `typed-grid-areas` to the built core, as a consumer gets them.
  */
@@ -20,10 +20,10 @@ const tsc = join(
 
 function litBlocks(): Array<{ code: string; line: number }> {
   const readme = readFileSync(readmePath, "utf8");
-  return Array.from(readme.matchAll(/^```ts\n([\s\S]*?)^```/gm), match => ({
+  return Array.from(readme.matchAll(/^```ts lit\n([\s\S]*?)^```/gm), match => ({
     code: match[1]!,
     line: readme.slice(0, match.index).split("\n").length,
-  })).filter(({ code }) => code.includes('from "@typed-grid-areas/lit"'));
+  }));
 }
 
 describe("the README", () => {
