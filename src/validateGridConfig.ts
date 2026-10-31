@@ -1,29 +1,62 @@
 import {
   BreakpointLayoutConfig,
-  ContainerBreakpoint,
+  BreakpointKey,
   GridLayout,
   LayoutConfig,
   TrackSize,
   GridConfig,
 } from "./types";
+import { cellAreas, parseCell } from "./engine/cells";
 
 /**
- * Creates a normalized key from a when-clause for comparison.
- * Sorts the array alphabetically and joins with a delimiter.
- * Returns empty string for undefined/empty when-clauses.
+ * Creates a normalized key from a condition (when + unless) for comparison.
+ * Order within each list doesn't matter. Returns an empty string for a
+ * layout with no condition.
  *
- * @param when - The when-clause array
+ * @param when - The areas that must be present
+ * @param unless - The areas that must be absent
  * @returns {string} A normalized string key for comparison
  */
-function normalizeWhenClause(when: Array<string> | undefined): string {
-  if (when === undefined || when.length === 0) {
+function normalizeCondition(
+  when: Array<string> | undefined,
+  unless: Array<string> | undefined,
+): string {
+  if ((when === undefined || when.length === 0) && (unless === undefined || unless.length === 0)) {
     return "";
   }
-  return [...when].sort().join("\0");
+  return `${[...(when ?? [])].sort().join("\0")}\u0001${[...(unless ?? [])].sort().join("\0")}`;
+}
+
+/**
+ * Reports names in one half of a condition (`when` or `unless`) that aren't
+ * areas of the grid. A `when` area the layout leaves out is fine: the layout
+ * still applies when it's present, and hides it.
+ */
+function validateConditionAreas(
+  clause: "when" | "unless",
+  names: Array<string> | undefined,
+  areas: ReadonlyArray<string>,
+  context: string,
+): Array<string> {
+  const areaSet = new Set(areas);
+  return (names ?? [])
+    .filter(name => !areaSet.has(name))
+    .map(
+      name =>
+        `${context}: Unknown area "${name}" in '${clause}' clause. Valid areas are: ${areas.join(", ")}.`,
+    );
+}
+
+/**
+ * Whether a track list's length is its track count: not when a track uses
+ * `repeat()`, which stands for any number of tracks.
+ */
+function isCountable(tracks: ReadonlyArray<TrackSize>): boolean {
+  return !tracks.some(track => track.includes("repeat("));
 }
 
 interface ValidateLayoutDimensionsOptions {
-  layout: GridLayout<string>;
+  cells: GridLayout<string>;
   rows: Array<TrackSize> | undefined;
   columns: Array<TrackSize> | undefined;
   context: string;
@@ -33,46 +66,46 @@ interface ValidateLayoutDimensionsOptions {
  * Validates a grid layout's dimensions against rows/columns arrays.
  *
  * @param options - Validation options
- * @param options.layout - The 2D grid layout
+ * @param options.cells - The layout's cells, row by row
  * @param options.rows - Optional row track sizes
  * @param options.columns - Optional column track sizes
  * @param options.context - Context string for error messages
  * @returns {Array<string>} Array of error messages
  */
 function validateLayoutDimensions({
-  layout,
+  cells,
   rows,
   columns,
   context,
 }: ValidateLayoutDimensionsOptions): Array<string> {
   const errors: Array<string> = [];
 
-  const firstRow = layout[0];
+  const firstRow = cells[0];
   if (firstRow === undefined) {
     errors.push(`${context}: Layout has no rows.`);
     return errors;
   }
 
-  const rowCount = layout.length;
+  const rowCount = cells.length;
   const firstRowLength = firstRow.length;
 
   // Check rows array length
-  if (rows !== undefined && rows.length !== rowCount) {
+  if (rows !== undefined && isCountable(rows) && rows.length !== rowCount) {
     errors.push(
       `${context}: rows array length (${rows.length}) doesn't match layout row count (${rowCount}).`,
     );
   }
 
   // Check columns array length
-  if (columns !== undefined && columns.length !== firstRowLength) {
+  if (columns !== undefined && isCountable(columns) && columns.length !== firstRowLength) {
     errors.push(
       `${context}: columns array length (${columns.length}) doesn't match layout column count (${firstRowLength}).`,
     );
   }
 
   // Check for inconsistent column counts across rows
-  for (let i = 1; i < layout.length; i++) {
-    const row = layout[i];
+  for (let i = 1; i < cells.length; i++) {
+    const row = cells[i];
     if (row === undefined) {
       continue;
     }
@@ -86,89 +119,70 @@ function validateLayoutDimensions({
   return errors;
 }
 
-interface ValidateLayoutAreaNamesOptions {
-  layout: GridLayout<string>;
+interface ValidateCellsOptions {
+  cells: GridLayout<string>;
   areas: ReadonlyArray<string>;
   context: string;
 }
 
 /**
- * Validates that all cell names in a layout are valid area names.
- *
- * @param options - Validation options
- * @param options.layout - The 2D grid layout
- * @param options.areas - Valid area names
- * @param options.context - Context string for error messages
- * @returns {Array<string>} Array of error messages
+ * Whether a cell is well formed: a base (an area name or `.`) followed by
+ * any layers (area names), joined by `+`, each name at most once.
  */
-function validateLayoutAreaNames({
-  layout,
-  areas,
-  context,
-}: ValidateLayoutAreaNamesOptions): Array<string> {
+function isWellFormed(cell: string): boolean {
+  const { base, layers } = parseCell(cell);
+  const names = cellAreas(cell);
+  return (
+    base !== "" &&
+    layers.every(layer => layer !== "" && layer !== ".") &&
+    new Set(names).size === names.length
+  );
+}
+
+/**
+ * Validates a layout's cells: every cell is `.`, an area name, or a base
+ * (an area name or `.`) and the layers over it joined by `+`, each name is
+ * an area of the grid, and every area and layer covers a rectangle of cells.
+ */
+function validateCells({ cells, areas, context }: ValidateCellsOptions): Array<string> {
   const errors: Array<string> = [];
   const areaSet = new Set(areas);
+  const covered = new Map<string, { positions: Array<[number, number]>; asBase: boolean }>();
 
-  for (let rowIndex = 0; rowIndex < layout.length; rowIndex++) {
-    const row = layout[rowIndex];
-    if (row === undefined) {
-      continue;
-    }
-    for (let colIndex = 0; colIndex < row.length; colIndex++) {
-      const cell = row[colIndex];
-      if (cell === undefined) {
-        continue;
-      }
-      if (cell !== "." && !areaSet.has(cell)) {
+  cells.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (!isWellFormed(cell)) {
         errors.push(
-          `${context}: Unknown area name "${cell}" at row ${rowIndex}, column ${colIndex}. Valid areas are: ${areas.join(", ")}.`,
+          `${context}: Malformed cell "${cell}" at row ${rowIndex}, column ${colIndex}. A cell is ".", an area name, or a base (an area name or ".") and area names layered over it, joined by "+" (each at most once).`,
         );
+        return;
       }
-    }
-  }
+      const { base } = parseCell(cell);
+      for (const name of cellAreas(cell)) {
+        if (!areaSet.has(name)) {
+          errors.push(
+            `${context}: Unknown area name "${name}" at row ${rowIndex}, column ${colIndex}. Valid areas are: ${areas.join(", ")}.`,
+          );
+          continue;
+        }
+        const entry = covered.get(name) ?? { positions: [], asBase: false };
+        entry.positions.push([rowIndex, colIndex]);
+        entry.asBase ||= name === base;
+        covered.set(name, entry);
+      }
+    });
+  });
 
-  return errors;
-}
-
-interface ValidateWhenClauseOptions {
-  when: Array<string> | undefined;
-  layout: GridLayout<string>;
-  areas: ReadonlyArray<string>;
-  context: string;
-}
-
-/**
- * Validates that all items in a 'when' array are valid area names and appear in the layout.
- *
- * @param options - Validation options
- * @param options.when - Optional when-clause array
- * @param options.layout - The 2D grid layout
- * @param options.areas - Valid area names
- * @param options.context - Context string for error messages
- * @returns {Array<string>} Array of error messages
- */
-function validateWhenClause({
-  when,
-  layout,
-  areas,
-  context,
-}: ValidateWhenClauseOptions): Array<string> {
-  if (when === undefined || when.length === 0) {
-    return [];
-  }
-
-  const errors: Array<string> = [];
-  const areaSet = new Set(areas);
-  const layoutCells = new Set(layout.flat());
-
-  for (const item of when) {
-    if (!areaSet.has(item)) {
+  for (const [name, { positions, asBase }] of covered) {
+    const rows = positions.map(([rowIndex]) => rowIndex);
+    const cols = positions.map(([, colIndex]) => colIndex);
+    const top = Math.min(...rows);
+    const bottom = Math.max(...rows);
+    const left = Math.min(...cols);
+    const right = Math.max(...cols);
+    if ((bottom - top + 1) * (right - left + 1) !== positions.length) {
       errors.push(
-        `${context}: Unknown area "${item}" in 'when' clause. Valid areas are: ${areas.join(", ")}.`,
-      );
-    } else if (!layoutCells.has(item)) {
-      errors.push(
-        `${context}: Area "${item}" is in 'when' clause but doesn't appear in the layout. The layout will never match this condition.`,
+        `${context}: ${asBase ? "Area" : "Layer"} "${name}" isn't a rectangle, so it will cover rows ${top}-${bottom}, columns ${left}-${right} (its bounding box).`,
       );
     }
   }
@@ -177,7 +191,7 @@ function validateWhenClause({
 }
 
 interface ValidateBreakpointsOptions {
-  breakpoints: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<string>>> | undefined;
+  breakpoints: Partial<Record<BreakpointKey, BreakpointLayoutConfig<string>>> | undefined;
   areas: ReadonlyArray<string>;
   layoutIndex: number;
 }
@@ -203,59 +217,65 @@ function validateBreakpoints({
   const errors: Array<string> = [];
 
   for (const [breakpoint, config] of Object.entries(breakpoints)) {
+    if (config === undefined) {
+      continue;
+    }
     const context = `Layout ${layoutIndex}, breakpoint "${breakpoint}"`;
 
     errors.push(
       ...validateLayoutDimensions({
-        layout: config.layout,
+        cells: config.cells,
         rows: config.rows,
         columns: config.columns,
         context,
       }),
     );
-    errors.push(...validateLayoutAreaNames({ layout: config.layout, areas, context }));
+    errors.push(...validateCells({ cells: config.cells, areas, context }));
   }
 
   return errors;
 }
 
 /**
- * Validates that there are no duplicate 'when' clauses across layouts.
- * Two when-clauses are considered duplicates if they contain the same set of areas (order doesn't matter).
- *
- * @param layouts - Array of layout configurations
- * @returns {Array<string>} Array of warning messages
+ * A condition as written, for messages: `when: icon; unless: tag`.
  */
-function validateDuplicateWhenClauses<TAreaName extends string>(
+function describeCondition(
+  when: Array<string> | undefined,
+  unless: Array<string> | undefined,
+): string {
+  return [
+    ...(when?.length ? [`when: ${when.join(", ")}`] : []),
+    ...(unless?.length ? [`unless: ${unless.join(", ")}`] : []),
+  ].join("; ");
+}
+
+/**
+ * Reports layouts whose condition (the same `when` and `unless` areas, in any
+ * order) repeats an earlier layout's: the later one always wins, so the
+ * earlier one never applies. Base layouts have no condition and are skipped.
+ */
+function validateDuplicateConditions<TAreaName extends string>(
   layouts: Array<LayoutConfig<TAreaName>>,
 ): Array<string> {
   const warnings: Array<string> = [];
-  const seenWhenClauses = new Map<string, number>();
+  const seenConditions = new Map<string, number>();
 
-  for (let i = 0; i < layouts.length; i++) {
-    const layoutConfig = layouts[i];
-    if (layoutConfig === undefined) {
-      continue;
+  layouts.forEach(({ when, unless }, i) => {
+    const key = normalizeCondition(when, unless);
+    if (key === "") {
+      return;
     }
 
-    const whenKey = normalizeWhenClause(layoutConfig.when);
-
-    // Skip layouts without when-clauses (base layouts)
-    if (whenKey === "") {
-      continue;
-    }
-
-    const previousIndex = seenWhenClauses.get(whenKey);
+    const previousIndex = seenConditions.get(key);
     if (previousIndex !== undefined) {
-      const whenDisplay = layoutConfig.when?.join(", ") ?? "";
       warnings.push(
-        `Layout ${i} has the same 'when' clause as Layout ${previousIndex}: [${whenDisplay}]. ` +
+        `Layout ${i} has the same condition as Layout ${previousIndex} (${describeCondition(when, unless)}). ` +
           `Layout ${i} will override Layout ${previousIndex} since it appears later.`,
       );
     }
 
-    seenWhenClauses.set(whenKey, i);
-  }
+    seenConditions.set(key, i);
+  });
 
   return warnings;
 }
@@ -275,16 +295,15 @@ export function validateGridConfig<TAreaName extends string>(
 
   // Validate areas array
   if (areas.length === 0) {
-    errors.push("Config has no areas defined. Use .areas([...]) to define at least one area.");
+    errors.push("Config has no areas defined. Define at least one area.");
   }
 
   // Validate layouts array
   if (layouts.length === 0) {
-    errors.push("Config has no layouts defined. Use .layout({...}) to define at least one layout.");
+    errors.push("Config has no layouts defined. Define at least one layout.");
   }
 
-  // Check for duplicate when-clauses
-  errors.push(...validateDuplicateWhenClauses(layouts));
+  errors.push(...validateDuplicateConditions(layouts));
 
   // Validate each layout
   for (let i = 0; i < layouts.length; i++) {
@@ -296,21 +315,15 @@ export function validateGridConfig<TAreaName extends string>(
 
     errors.push(
       ...validateLayoutDimensions({
-        layout: layoutConfig.layout,
+        cells: layoutConfig.cells,
         rows: layoutConfig.rows,
         columns: layoutConfig.columns,
         context,
       }),
     );
-    errors.push(...validateLayoutAreaNames({ layout: layoutConfig.layout, areas, context }));
-    errors.push(
-      ...validateWhenClause({
-        when: layoutConfig.when,
-        layout: layoutConfig.layout,
-        areas,
-        context,
-      }),
-    );
+    errors.push(...validateCells({ cells: layoutConfig.cells, areas, context }));
+    errors.push(...validateConditionAreas("when", layoutConfig.when, areas, context));
+    errors.push(...validateConditionAreas("unless", layoutConfig.unless, areas, context));
     errors.push(
       ...validateBreakpoints({ breakpoints: layoutConfig.breakpoints, areas, layoutIndex: i }),
     );

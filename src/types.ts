@@ -22,6 +22,25 @@ export const CONTAINER_BREAKPOINTS = {
 export type ContainerBreakpoint = keyof typeof CONTAINER_BREAKPOINTS;
 
 /**
+ * A breakpoint at an arbitrary width, in Tailwind's arbitrary-value syntax:
+ * `"@[27rem]"` switches when the grid is given at least 27rem.
+ */
+export type ArbitraryBreakpoint = `@[${string}]`;
+
+/**
+ * A breakpoint key: a named Tailwind size (`"@sm"`) or an arbitrary length (`"@[27rem]"`).
+ */
+export type BreakpointKey = ContainerBreakpoint | ArbitraryBreakpoint;
+
+/**
+ * The name an area declaration declares. Areas are declared by name, with a
+ * `?` suffix marking an optional area: `"icon?"` declares `"icon"`.
+ */
+export type AreaName<TDeclaration extends string> = TDeclaration extends `${infer TName}?`
+  ? TName
+  : TDeclaration;
+
+/**
  * Empty cell marker for grid-template-areas.
  *
  * In CSS, a "." represents an empty/unnamed cell in the grid.
@@ -48,83 +67,89 @@ export type GridLayout<TAreaName extends string> = Array<Array<GridCell<TAreaNam
 export type TrackSize = "1fr" | "min-content" | "auto" | "minmax(0,1fr)" | (string & {});
 
 /**
- * Layout configuration with optional conditions and track sizes.
- * This is the runtime type - compile-time validation is done by the builder.
+ * How an area sits within the cells it covers, along one axis.
+ */
+export type Alignment = "start" | "center" | "end" | "stretch" | "baseline";
+
+/**
+ * Alignment for one area: `justify` is the inline axis (justify-self),
+ * `align` the block axis (align-self). Unset axes use the browser default.
+ */
+export type AreaAlignment = {
+  justify?: Alignment;
+  align?: Alignment;
+};
+
+/**
+ * Per-area alignment for one layout or breakpoint arrangement.
+ */
+export type AreaAlignments<TAreaName extends string> = Partial<Record<TAreaName, AreaAlignment>>;
+
+/**
+ * One layout of a grid definition as the engine takes it: its condition,
+ * cells, track sizes, alignment and breakpoints. `defineLayout` builds it
+ * from a template, after checking the template at compile time.
  */
 export type LayoutConfig<TAreaName extends string> = {
-  /** The grid layout to apply. Use "." for empty cells. */
-  layout: GridLayout<TAreaName>;
+  /** The arrangement's cells, row by row. "." is an empty cell; "a+b" draws layer b over a. */
+  cells: GridLayout<TAreaName>;
   /** Grid row track sizes. */
   rows?: Array<TrackSize>;
   /** Grid column track sizes. */
   columns?: Array<TrackSize>;
   /** Area names that must be present for this layout to apply. */
   when?: Array<TAreaName>;
+  /** Area names that must be absent for this layout to apply. */
+  unless?: Array<TAreaName>;
+  /** Per-area alignment while this layout applies. */
+  align?: AreaAlignments<TAreaName>;
   /** Responsive breakpoint overrides */
-  breakpoints?: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<TAreaName>>>;
+  breakpoints?: Partial<Record<BreakpointKey, BreakpointLayoutConfig<TAreaName>>>;
 };
 
 /**
  * Breakpoint layout override - can include different layout and/or track sizes
  */
 export type BreakpointLayoutConfig<TAreaName extends string> = {
-  layout: GridLayout<TAreaName>;
+  /** The arrangement's cells at this breakpoint, row by row. */
+  cells: GridLayout<TAreaName>;
   rows?: Array<TrackSize>;
   columns?: Array<TrackSize>;
+  /** Per-area alignment at this breakpoint. Not inherited from the layout. */
+  align?: AreaAlignments<TAreaName>;
 };
 
 /**
- * Grid configuration output from the builder.
- * Contains the layout structure - id is generated at render time.
+ * A grid definition as the engine takes it: what `defineLayout` returns. Its
+ * id (`gridId`) is a hash of this content, so equal definitions share CSS.
  */
 export type GridConfig<TAreaName extends string> = {
-  /** Array of area names - selectors are auto-generated as [data-slot=name] */
+  /** Array of area names - slots are matched as [data-area=name] */
   areas: ReadonlyArray<TAreaName>;
+  /**
+   * The areas whose slot may be absent (declared with a `?` suffix). Every
+   * other area is required. Each layout gets a derived layout for every
+   * combination of absent optional areas.
+   */
+  optionalAreas?: ReadonlyArray<TAreaName>;
   /** Layout configurations */
   layouts: Array<LayoutConfig<TAreaName>>;
 };
 
 /**
- * Slot props object for spreading on elements.
- *
- * Includes both the data-slot attribute (for CSS :has() selectors)
- * and the style with gridArea (for grid placement).
+ * A grid definition from `defineLayout`, typed with its area names. It always
+ * lists its optional areas (empty when there are none).
  */
-export type SlotProps = {
-  "data-slot": string;
-  style: { gridArea: string };
+export type LayoutDefinition<TAreaName extends string> = GridConfig<TAreaName> & {
+  optionalAreas: ReadonlyArray<TAreaName>;
 };
 
 /**
- * A single CSS-in-JS style value: a declaration value, a nested selector/at-rule
- * block, or undefined.
- */
-export type StyleValue = string | number | NestedStyles | undefined;
-
-/**
- * Nested styles object for container queries and conditional selectors.
+ * Slot props object for spreading on elements.
  *
- * Framework-agnostic replacement for React's `CSSProperties`, since core has
- * no React dependency.
+ * The data-area attribute is what the generated CSS uses both to detect which
+ * slots are present and to place them.
  */
-export interface NestedStyles {
-  [key: string]: StyleValue;
-}
-
-/**
- * CSS-in-JS compatible styles object with nested selectors
- */
-export type GridStyles = NestedStyles;
-
-/**
- * Result type from useGridAreas hook.
- * Contains everything needed to render a GridAreas component.
- */
-export type GridAreasResult<TAreaName extends string> = {
-  /** Props to spread on elements, keyed by area name. Includes data-slot and style.gridArea */
-  slots: Record<TAreaName, SlotProps>;
-  /** CSS string for use in a <style> tag */
-  css: string;
-  /** Data attribute to add to the container element for CSS scoping */
-  containerProps: { "data-grid-id": string };
+export type SlotProps = {
+  "data-area": string;
 };
