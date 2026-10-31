@@ -19,15 +19,33 @@ export const GRID_STYLE_ATTRIBUTE = "data-typed-grid-areas";
  * styles, so the `typed-grid-areas` cascade layer is declared first.
  */
 export function insertGridStyle(page: Document, definition: GridConfig<string>): HTMLStyleElement {
-  const { id, css } = gridMarkup(definition);
-  const existing = page.querySelector<HTMLStyleElement>(`style[${GRID_STYLE_ATTRIBUTE}="${id}"]`);
+  return insert(page, definition, gridMarkup(definition).css);
+}
+
+/**
+ * `insertGridStyle` for a server's DOM whose document is then serialized as
+ * the page's HTML (Angular's Domino): the CSS is escaped as `gridStyleTags`
+ * escapes it, so the serialized tag is the one `gridStyleTags` renders.
+ */
+export function insertServerGridStyle(
+  page: Document,
+  definition: GridConfig<string>,
+): HTMLStyleElement {
+  return insert(page, definition, escapeCss(gridMarkup(definition).css));
+}
+
+function insert(page: Document, definition: GridConfig<string>, text: string): HTMLStyleElement {
+  const { id } = gridMarkup(definition);
+  // `?? null`: Domino's querySelector returns undefined when nothing matches.
+  const existing =
+    page.querySelector<HTMLStyleElement>(`style[${GRID_STYLE_ATTRIBUTE}="${id}"]`) ?? null;
   if (existing !== null) {
     return existing;
   }
 
   const style = page.createElement("style");
   style.setAttribute(GRID_STYLE_ATTRIBUTE, id);
-  style.textContent = css;
+  style.textContent = text;
 
   const head = page.head;
   const grids = head.querySelectorAll(`style[${GRID_STYLE_ATTRIBUTE}]`);
@@ -35,9 +53,14 @@ export function insertGridStyle(page: Document, definition: GridConfig<string>):
   if (lastGrid !== undefined) {
     lastGrid.after(style);
   } else {
-    head.insertBefore(style, head.querySelector('style, link[rel~="stylesheet" i]'));
+    head.insertBefore(style, head.querySelector('style, link[rel~="stylesheet" i]') ?? null);
   }
   return style;
+}
+
+/** CSS that can't close its style tag: `\/` is `/` to CSS, but no longer an end tag to HTML. */
+function escapeCss(css: string): string {
+  return css.replace(/<\/(style)/gi, "<\\/$1");
 }
 
 /**
@@ -50,9 +73,7 @@ export function gridStyleTags(definitions: Iterable<GridConfig<string>>): string
   for (const definition of definitions) {
     const { id, css } = gridMarkup(definition);
     if (!tags.has(id)) {
-      // `\/` is `/` to CSS, but no longer an end tag to HTML.
-      const text = css.replace(/<\/(style)/gi, "<\\/$1");
-      tags.set(id, `<style ${GRID_STYLE_ATTRIBUTE}="${id}">${text}</style>`);
+      tags.set(id, `<style ${GRID_STYLE_ATTRIBUTE}="${id}">${escapeCss(css)}</style>`);
     }
   }
   return Array.from(tags.values()).join("");

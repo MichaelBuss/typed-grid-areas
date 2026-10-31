@@ -5,8 +5,8 @@ import { Component } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideServerRendering, renderApplication } from "@angular/platform-server";
 import { Window } from "happy-dom";
-import { defineLayout } from "typed-grid-areas";
-import { GRID_STYLE_ATTRIBUTE, gridMarkup } from "typed-grid-areas/adapter";
+import { defineLayout, type GridConfig } from "typed-grid-areas";
+import { GRID_STYLE_ATTRIBUTE, gridMarkup, gridStyleTags } from "typed-grid-areas/adapter";
 import { createGrid, TgaArea, TgaGrid } from "./index.ts";
 import { bootstrap, cardGrid, contentGrid, listGrid, NONCE, PAGE } from "./test-utils/serverApp.ts";
 
@@ -85,32 +85,56 @@ describe("server rendering", () => {
     ]);
   });
 
-  it("keeps CSS containing </style> inside its tag", async () => {
-    const Hostile = createGrid(
-      defineLayout({
-        areas: ["a"],
-        layouts: [{ template: "a", columns: "1fr/*</style><script>alert(1)</script>*/" }],
-      }),
-    );
+  /** Server-renders a page holding only one grid of `definition`, into `document`. */
+  async function renderAlone(definition: GridConfig<"a">, document = PAGE): Promise<string> {
+    const Only = createGrid(definition);
 
     @Component({
       selector: "app-root",
       imports: [TgaGrid, TgaArea],
-      template: `<div [tgaGrid]="Hostile"><p [tgaArea]="Hostile.a">A</p></div>`,
+      template: `<div [tgaGrid]="Only"><p [tgaArea]="Only.a">A</p></div>`,
     })
     class Page {
-      protected readonly Hostile = Hostile;
+      protected readonly Only = Only;
     }
 
-    const rendered = new Window().document as unknown as Document;
-    rendered.write(
-      await renderApplication(
-        context => bootstrapApplication(Page, { providers: [provideServerRendering()] }, context),
-        { document: PAGE, url: "/" },
-      ),
+    return renderApplication(
+      context => bootstrapApplication(Page, { providers: [provideServerRendering()] }, context),
+      { document, url: "/" },
     );
+  }
+
+  it("keeps CSS containing </style> inside its tag, escaped as the core renders it", async () => {
+    const hostile = defineLayout({
+      areas: ["a"],
+      layouts: [{ template: "a", columns: "1fr/*</style><script>alert(1)</script>*/" }],
+    });
+
+    const html = await renderAlone(hostile);
+
+    const rendered = new Window().document as unknown as Document;
+    rendered.write(html);
     expect(rendered.querySelector("script")).toBeNull();
     expect(rendered.head.querySelectorAll(`style[${GRID_STYLE_ATTRIBUTE}]`)).toHaveLength(1);
+    // The same tag the core renders for a server-rendered <head>, so the CSS text
+    // hydration reuses is the one every other adapter puts on the page.
+    expect(html).toContain(gridStyleTags([hostile]));
+  });
+
+  it("puts the CSS ahead of a stylesheet link whatever the case of its rel", async () => {
+    const page =
+      '<!doctype html><html><head><title>Cards</title><link rel="Stylesheet" href="app.css"></head>' +
+      "<body><app-root></app-root></body></html>";
+    const definition = defineLayout({ areas: ["a"], layouts: [{ template: "a" }] });
+
+    const rendered = new Window().document as unknown as Document;
+    rendered.write(await renderAlone(definition, page));
+
+    expect(
+      Array.from(rendered.head.children, element =>
+        element.hasAttribute(GRID_STYLE_ATTRIBUTE) ? "grid" : element.localName,
+      ),
+    ).toEqual(["title", "grid", "link"]);
   });
 
   it("renders without errors", () => {

@@ -102,9 +102,9 @@ const registeredStyles = new WeakMap<object, Set<string>>();
  * `</head>`; in the browser, its style tag in `<head>`, reusing one the
  * server rendered.
  */
-function emitCss(config: GridConfig<string>): void {
+function emitCss(definition: GridConfig<string>): void {
   if (!isServer) {
-    insertGridStyle(document, config);
+    insertGridStyle(document, definition);
     return;
   }
   const assets = (sharedConfig.context as { assets?: object } | undefined)?.assets;
@@ -113,20 +113,20 @@ function emitCss(config: GridConfig<string>): void {
   }
   const registered = registeredStyles.get(assets) ?? new Set<string>();
   registeredStyles.set(assets, registered);
-  const { id } = gridMarkup(config);
+  const { id } = gridMarkup(definition);
   if (registered.has(id)) {
     return;
   }
   registered.add(id);
   // `ssr` marks the tag's HTML as already rendered, so it isn't escaped.
-  useAssets(() => ssr(gridStyleTags([config])) as unknown as JSX.Element);
+  useAssets(() => ssr(gridStyleTags([definition])) as unknown as JSX.Element);
 }
 
-function createRoot(config: GridConfig<string>) {
-  const markup = gridMarkup(config);
+function createRoot(definition: GridConfig<string>) {
+  const markup = gridMarkup(definition);
 
   return function Root(props: ElementProps): JSX.Element {
-    emitCss(config);
+    emitCss(definition);
 
     const [local, others] = splitProps(props, ["as", "ref", "children", "data-area"]);
     const { sizeContainer, grid: gridElement } = markup.elements(local["data-area"]);
@@ -140,7 +140,7 @@ function createRoot(config: GridConfig<string>) {
 
     // In development, check the slots after mount and whenever they change.
     if (!isServer && isDevelopment()) {
-      const checkSlots = createSlotCheck(config, {
+      const checkSlots = createSlotCheck(definition, {
         strayChildRemedy: "make it a slot with `as`",
       });
       createEffect(() => {
@@ -225,9 +225,12 @@ function membersOf(component: object): Record<string, unknown> {
 export function createGridComponent<
   TAreaName extends string,
   const TNest extends GridComponentOptions<TAreaName>["nest"] = {},
->(config: GridConfig<TAreaName>, options: { nest?: TNest } = {}): GridComponent<TAreaName, TNest> {
+>(
+  definition: GridConfig<TAreaName>,
+  options: { nest?: TNest } = {},
+): GridComponent<TAreaName, TNest> {
   const members: Record<string, unknown> = {};
-  for (const area of config.areas) {
+  for (const area of definition.areas) {
     const nested = options.nest?.[area] as ((props: ElementProps) => JSX.Element) | undefined;
     if (nested === undefined) {
       members[area] = createSlotComponent(area);
@@ -240,5 +243,5 @@ export function createGridComponent<
     members[area] = withMembers(NestedRoot, membersOf(nested));
   }
 
-  return withMembers(createRoot(config), members) as unknown as GridComponent<TAreaName, TNest>;
+  return withMembers(createRoot(definition), members) as unknown as GridComponent<TAreaName, TNest>;
 }

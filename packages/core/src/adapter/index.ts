@@ -10,5 +10,10 @@ export {
   type SizeContainerStyle,
 } from "./gridMarkup.ts";
 export { createSlotCheck, type SlotCheckOptions } from "./slotCheck.ts";
-export { GRID_STYLE_ATTRIBUTE, gridStyleTags, insertGridStyle } from "./gridStyles.ts";
+export {
+  GRID_STYLE_ATTRIBUTE,
+  gridStyleTags,
+  insertGridStyle,
+  insertServerGridStyle,
+} from "./gridStyles.ts";
 export { isDevelopment } from "../isDevelopment.ts";

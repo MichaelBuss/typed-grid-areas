@@ -1,7 +1,7 @@
 import { defineLayout } from "../defineLayout.ts";
 import { gridId } from "../engine/gridId.ts";
 import { generateCss } from "../generateCss.ts";
-import { gridStyleTags, insertGridStyle } from "./index.ts";
+import { gridStyleTags, insertGridStyle, insertServerGridStyle } from "./index.ts";
 
 const card = defineLayout({
   areas: ["icon?", "info"],
@@ -77,5 +77,36 @@ describe("insertGridStyle", () => {
     insertGridStyle(target, card);
 
     expect(headOf(target)).toEqual(["meta", "title", `grid ${gridId(card)}`]);
+  });
+});
+
+describe("insertServerGridStyle", () => {
+  it("puts a definition's CSS where insertGridStyle would, once", () => {
+    const target = page(
+      `<meta charset="utf-8">${gridStyleTags([card])}<link rel="Stylesheet" href="app.css">`,
+    );
+
+    const first = insertServerGridStyle(target, list);
+    const second = insertServerGridStyle(target, list);
+
+    expect(second).toBe(first);
+    expect(headOf(target)).toEqual([
+      "meta",
+      `grid ${gridId(card)}`,
+      `grid ${gridId(list)}`,
+      "link Stylesheet",
+    ]);
+  });
+
+  it("serializes as gridStyleTags renders it, with CSS that can't close its tag", () => {
+    const hostile = defineLayout({
+      areas: ["a"],
+      layouts: [{ template: "a", columns: "1fr/*</style><script>alert(1)</script>*/" }],
+    });
+    const target = page();
+
+    insertServerGridStyle(target, hostile);
+
+    expect(target.head.innerHTML).toBe(gridStyleTags([hostile]));
   });
 });

@@ -88,8 +88,8 @@ type WithoutReservedAreas<TAreaName extends string> = [
     };
 
 /** The stateful component behind a grid component: renders the grid and puts its CSS on the page. */
-function createGrid(config: GridConfig<string>) {
-  const markup = gridMarkup(config);
+function createGrid(definition: GridConfig<string>) {
+  const markup = gridMarkup(definition);
 
   return defineComponent({
     name: "Grid",
@@ -100,12 +100,12 @@ function createGrid(config: GridConfig<string>) {
       dataArea: String,
     },
     setup(props, { attrs, slots }) {
-      useGridStyle(config);
+      useGridStyle(definition);
 
       // In development, check the slots after mounting and after every update.
       const gridRef = ref<Element | null>(null);
       if (isDevelopment()) {
-        const checkSlots = createSlotCheck(config, {
+        const checkSlots = createSlotCheck(definition, {
           strayChildRemedy: "make it a slot with as-child",
         });
         const check = () => {
@@ -195,11 +195,11 @@ export function createGridComponent<
   TAreaName extends string,
   const TNest extends GridComponentOptions<TAreaName>["nest"] = {},
 >(
-  config: GridConfig<TAreaName> & WithoutReservedAreas<TAreaName>,
+  definition: GridConfig<TAreaName> & WithoutReservedAreas<TAreaName>,
   options: { nest?: TNest } = {},
 ): GridComponent<TAreaName, TNest> {
   const members: Record<string, unknown> = {};
-  for (const area of config.areas) {
+  for (const area of definition.areas) {
     if (isReserved(area)) {
       throw new Error(
         `typed-grid-areas: the area name "${area}" is reserved by Vue on a component, so it ` +
@@ -207,7 +207,7 @@ export function createGridComponent<
       );
     }
   }
-  for (const area of config.areas) {
+  for (const area of definition.areas) {
     const nested = options.nest?.[area] as (AnyGridComponent & WithMembers) | undefined;
     members[area] =
       nested === undefined
@@ -215,7 +215,7 @@ export function createGridComponent<
         : withMembers(passThrough(nested, { "data-area": area }), nested[MEMBERS] ?? {});
   }
 
-  return withMembers(passThrough(createGrid(config)), members) as unknown as GridComponent<
+  return withMembers(passThrough(createGrid(definition)), members) as unknown as GridComponent<
     TAreaName,
     TNest
   >;
