@@ -28,6 +28,9 @@
   "overrides": {
     "octane": {
       "typescript": "$typescript"
+    },
+    "vitest-browser-preact": {
+      "preact": "^11.0.0"
     }
   }
 }

@@ -105,16 +105,11 @@ describe("changeset version", () => {
 describe("the release script's dry run after it", () => {
   it("would publish both packages, each with its own tag", async () => {
     const npm: Record<string, NpmVersions> = {
+      // Every other package is already on npm at its version.
+      ...Object.fromEntries(readWorkspaces(root).map(({ name, version }) => [name, [version]])),
       "typed-grid-areas": ["1.4.2"],
       "@typed-grid-areas/react": ["0.3.0"],
     };
-    // Every other public workspace is already on npm at its version, so the dry run skips it.
-    for (const { dir } of readWorkspaces(root)) {
-      const { name, version, private: isPrivate } = read<Manifest>(join(dir, "package.json"));
-      if (!isPrivate) {
-        npm[name] ??= [version];
-      }
-    }
     let output = "";
     const status = await releaseCli({
       root,
