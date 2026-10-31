@@ -101,7 +101,7 @@ function createRoot(config: GridConfig<string>) {
         ref={composedRef}
         data-area={sizeContainer === undefined ? area : undefined}
         data-grid-id={id}
-        style={{ display: "grid", ...style }}
+        style={style}
       />
     );
 

@@ -364,8 +364,9 @@ function Example() {
 }
 ```
 
-- **`<Card>`** renders the grid: a `div` with `display: grid` and the
-  definition's `data-grid-id`, taking `className`, `style`, `ref`,
+- **`<Card>`** renders the grid: a `div` with the definition's
+  `data-grid-id`, which the generated CSS gives `display: grid` (layered, so
+  your own class can change it), taking `className`, `style`, `ref`,
   `children` and any other `div` props. When the definition has breakpoints
   the grid sits inside its own size container (a wrapper `div`); your props
   still go on the grid itself.
@@ -619,7 +620,7 @@ const gridAttributes = { "data-grid-id": gridId(cardGrid) };
 ```
 
 Put the CSS in a `<style>` element once per definition, give the grid
-element `display: grid` and the `data-grid-id` attribute, and spread a
+element the `data-grid-id` attribute (the CSS makes it a grid), and spread a
 slot's attributes onto each of its direct children. A definition with
 breakpoints also needs the grid wrapped in its own size container (see
 [Breakpoints](#breakpoints)), named `grid-<gridId>`.

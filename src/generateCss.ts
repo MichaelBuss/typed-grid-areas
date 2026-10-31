@@ -113,15 +113,18 @@ function inWidthRange(css: string, scope: Scope, from?: string, until?: string):
 }
 
 /**
- * Places every area by name, once per definition. Each rule's
- * `grid-template-areas` then decides where that name is, so a rule that
- * applies places every area it names and nothing leaks in from another.
+ * Makes the container a grid and places every area by name, once per
+ * definition. Each rule's `grid-template-areas` then decides where that name
+ * is, so a rule that applies places every area it names and nothing leaks in
+ * from another.
  *
- * Slots aren't layers until a rule makes them one, so `--tga-over` starts at
- * `none` (rather than inheriting, say, from an outer grid's layer).
+ * `display: grid` is layered like the rest, so a consumer's class can change
+ * it. Slots aren't layers until a rule makes them one, so `--tga-over` starts
+ * at `none` (rather than inheriting, say, from an outer grid's layer).
  */
 function placementCss(scope: Scope, areas: ReadonlyArray<string>): string {
   return [
+    `:where(${scope.grid}) { display: grid; }`,
     `:where(${scope.grid}) > :where([data-area]) { --tga-over: none; }`,
     ...areas.map(
       area => `:where(${scope.grid}) > :where(${areaSelector(area)}) { grid-area: ${area}; }`,

@@ -131,6 +131,57 @@ describe("grid components in a real browser", () => {
     expect(rectWithin(label, card)).toMatchObject({ x: 0, width: 40 });
   });
 
+  describe("a consumer class on the grid", () => {
+    const consumerStyle = document.createElement("style");
+    consumerStyle.textContent = ".flex-card { display: flex; }";
+
+    beforeAll(() => {
+      document.head.append(consumerStyle);
+    });
+
+    afterAll(() => {
+      consumerStyle.remove();
+    });
+
+    it.each([
+      ["without breakpoints", { template: "input content" }],
+      [
+        "with breakpoints",
+        { template: "input content", breakpoints: { "@sm": { template: "content input" } } },
+      ],
+    ])("can change the grid's display (%s)", async (_, layout) => {
+      const Card = createGridComponent(
+        defineLayout({ areas: ["input", "content"], layouts: [layout] }),
+      );
+
+      const { container } = await render(
+        <Card data-testid="card" className="flex-card">
+          <Card.input />
+          <Card.content />
+        </Card>,
+      );
+
+      const card = container.querySelector<HTMLElement>("[data-testid=card]")!;
+      expect(getComputedStyle(card).display).toBe("flex");
+    });
+
+    it("leaves the grid a grid when it sets no display", async () => {
+      const Card = createGridComponent(
+        defineLayout({ areas: ["input", "content"], layouts: [{ template: "input content" }] }),
+      );
+
+      const { container } = await render(
+        <Card data-testid="card">
+          <Card.input />
+          <Card.content />
+        </Card>,
+      );
+
+      const card = container.querySelector<HTMLElement>("[data-testid=card]")!;
+      expect(getComputedStyle(card).display).toBe("grid");
+    });
+  });
+
   it("emits a definition's CSS once, however many instances render", async () => {
     const definition = defineLayout({
       areas: ["icon", "info"],
