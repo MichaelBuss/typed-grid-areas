@@ -31,7 +31,7 @@
     "build": "svelte-package -i src/lib -o dist",
     "prepack": "npm run build 1>&2 && cp ../../README.md ../../LICENSE .",
     "postpack": "rm README.md LICENSE",
-    "test": "vitest run --project node",
+    "test": "vitest run --project unit --project node",
     "test:browser": "vitest run --project browser --project browser-development",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings"
   },
