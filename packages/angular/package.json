@@ -1,0 +1,57 @@
+{
+  "name": "@typed-grid-areas/angular",
+  "version": "0.0.0",
+  "description": "Angular adapter for typed-grid-areas: typed grid and slot directives on your own elements.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
+    "directory": "packages/angular"
+  },
+  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "bugs": {
+    "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json -c tsconfig.build.json && node finish-dist.ts",
+    "test": "vitest run --project unit --project node",
+    "test:browser": "vitest run --project browser --project browser-production",
+    "typecheck": "ngc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@angular/core": "^22.0.0"
+  },
+  "dependencies": {
+    "typed-grid-areas": "^0.1.0"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.9.0",
+    "@angular/build": "^22.2.5",
+    "@angular/common": "^22.2.3",
+    "@angular/compiler": "^22.2.3",
+    "@angular/compiler-cli": "^22.2.3",
+    "@angular/core": "^22.2.3",
+    "@angular/platform-browser": "^22.2.3",
+    "@angular/platform-server": "^22.2.3",
+    "@angular/router": "^22.2.3",
+    "@typed-grid-areas/acceptance": "*",
+    "@types/node": "^22.10.5",
+    "@vitest/browser-playwright": "^5.0.1",
+    "happy-dom": "^20.14.6",
+    "ng-packagr": "^22.2.0",
+    "playwright": "^1.64.1",
+    "rxjs": "^7.8.2",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.1",
+    "vitest-browser-angular": "^0.5.1"
+  }
+}

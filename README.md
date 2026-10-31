@@ -595,6 +595,95 @@ export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
 }
 ```
 
+## Rendering with Angular: grid directives
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/angular
+```
+
+`@typed-grid-areas/angular` supports Angular 22 (`@angular/core`
+`^22.0.0`). Instead of components, it gives you three standalone attribute
+directives that go on your own elements, and a typed reference per
+definition that the template names grids and areas through:
+
+```ts angular
+import { Component, input } from "@angular/core";
+import { defineLayout } from "typed-grid-areas";
+import { createGrid, TgaArea, TgaGrid, TgaSizeContainer } from "@typed-grid-areas/angular";
+
+const Content = createGrid(
+  defineLayout({
+    areas: ["icon?", "title"],
+    layouts: [{ template: "title", breakpoints: { "@sm": { template: "icon title" } } }],
+  }),
+);
+
+const Card = createGrid(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+
+@Component({
+  selector: "app-card",
+  imports: [TgaGrid, TgaArea, TgaSizeContainer],
+  template: `
+    <div [tgaGrid]="Card" class="gap-2">
+      @if (selectable()) {
+        <label [tgaArea]="Card.input"><input type="checkbox" /></label>
+      }
+      <div tgaSizeContainer>
+        <div [tgaGrid]="Card.content" class="p-4">
+          <span [tgaArea]="Card.content.icon">★</span>
+          <h2 [tgaArea]="Card.content.title">Title</h2>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class CardComponent {
+  protected readonly Card = Card;
+  readonly selectable = input(false);
+}
+```
+
+- **`createGrid(definition, { nest })`** returns the definition's reference:
+  the grid itself, with one property per area (`Card.input`). An area nested
+  through `nest` is the nested grid's reference (`Card.content`), whose
+  properties are its areas (`Card.content.icon`). Create references at module
+  level and expose them to the template from the component
+  (`protected readonly Card = Card`).
+- **`[tgaGrid]="Card"`** makes the element it's on the grid. It takes a grid
+  reference, so with `strictTemplates`, `[tgaGrid]="Card.input"` doesn't
+  compile.
+- **`[tgaArea]="Card.input"`** makes the element it's on the slot that fills
+  an area. It takes an area reference, not a string, so a misspelled area
+  (`Card.inputt`, `Card.content.iconn`), a plain string or a grid reference
+  doesn't compile. Slots must be direct children of their grid's element;
+  make an optional area absent with `@if`.
+- **`tgaSizeContainer`** marks the element around a grid with breakpoints as
+  its size container (a directive can't wrap its own element). It gets the
+  container styles, and when the grid is nested, the outer grid's
+  `data-area`. Leave it out for grids without breakpoints.
+
+**Your own element as a slot** needs nothing extra: put `[tgaArea]` (or
+`[tgaGrid]`) on any element, including a component's host element
+(`<app-avatar [tgaArea]="Card.content.icon" />`). Your classes and
+attributes stay where you wrote them.
+
+**CSS.** Each definition's CSS goes into a
+`<style data-typed-grid-areas="…">` in the `<head>` of Angular's `DOCUMENT`,
+once, however many instances render, carrying the `CSP_NONCE` value when
+your app provides one. Without server rendering it's inserted when the
+first grid of a definition renders. With server rendering (`@angular/ssr`)
+it's in the rendered `<head>`, and client hydration reuses it rather than
+adding a second copy. Nothing to set up either way.
+
+**Development warnings.** In development mode (`isDevMode()`), in the
+browser, a grid warns on the console after every render when a required
+area's slot is missing, when it has a direct child that isn't one of its
+slots, or when it has breakpoints but its parent isn't its size container.
+Production builds and server rendering log nothing.
+
 ## Rendering with Vue: `@typed-grid-areas/vue`
 
 ```sh
