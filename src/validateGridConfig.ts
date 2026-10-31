@@ -8,18 +8,39 @@ import {
 } from "./types";
 
 /**
- * Creates a normalized key from a when-clause for comparison.
- * Sorts the array alphabetically and joins with a delimiter.
- * Returns empty string for undefined/empty when-clauses.
+ * Creates a normalized key from a condition (when + unless) for comparison.
+ * Order within each list doesn't matter. Returns an empty string for a
+ * layout with no condition.
  *
  * @param when - The when-clause array
+ * @param unless - The unless-clause array
  * @returns {string} A normalized string key for comparison
  */
-function normalizeWhenClause(when: Array<string> | undefined): string {
-  if (when === undefined || when.length === 0) {
+function normalizeCondition(
+  when: Array<string> | undefined,
+  unless: Array<string> | undefined,
+): string {
+  if ((when === undefined || when.length === 0) && (unless === undefined || unless.length === 0)) {
     return "";
   }
-  return [...when].sort().join("\0");
+  return `${[...(when ?? [])].sort().join("\0")}\u0001${[...(unless ?? [])].sort().join("\0")}`;
+}
+
+/**
+ * Reports names in an `unless` clause that aren't areas of the grid.
+ */
+function validateUnlessClause(
+  unless: Array<string> | undefined,
+  areas: ReadonlyArray<string>,
+  context: string,
+): Array<string> {
+  const areaSet = new Set(areas);
+  return (unless ?? [])
+    .filter(item => !areaSet.has(item))
+    .map(
+      item =>
+        `${context}: Unknown area "${item}" in 'unless' clause. Valid areas are: ${areas.join(", ")}.`,
+    );
 }
 
 interface ValidateLayoutDimensionsOptions {
@@ -238,7 +259,7 @@ function validateDuplicateWhenClauses<TAreaName extends string>(
       continue;
     }
 
-    const whenKey = normalizeWhenClause(layoutConfig.when);
+    const whenKey = normalizeCondition(layoutConfig.when, layoutConfig.unless);
 
     // Skip layouts without when-clauses (base layouts)
     if (whenKey === "") {
@@ -311,6 +332,7 @@ export function validateGridConfig<TAreaName extends string>(
         context,
       }),
     );
+    errors.push(...validateUnlessClause(layoutConfig.unless, areas, context));
     errors.push(
       ...validateBreakpoints({ breakpoints: layoutConfig.breakpoints, areas, layoutIndex: i }),
     );

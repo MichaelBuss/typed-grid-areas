@@ -48,6 +48,25 @@ export type GridLayout<TAreaName extends string> = Array<Array<GridCell<TAreaNam
 export type TrackSize = "1fr" | "min-content" | "auto" | "minmax(0,1fr)" | (string & {});
 
 /**
+ * How an area sits within the cells it covers, along one axis.
+ */
+export type Alignment = "start" | "center" | "end" | "stretch" | "baseline";
+
+/**
+ * Alignment for one area: `justify` is the inline axis (justify-self),
+ * `align` the block axis (align-self). Unset axes use the browser default.
+ */
+export type AreaAlignment = {
+  justify?: Alignment;
+  align?: Alignment;
+};
+
+/**
+ * Per-area alignment for one layout or breakpoint arrangement.
+ */
+export type AreaAlignments<TAreaName extends string> = Partial<Record<TAreaName, AreaAlignment>>;
+
+/**
  * Layout configuration with optional conditions and track sizes.
  * This is the runtime type - compile-time validation is done by the builder.
  */
@@ -60,6 +79,10 @@ export type LayoutConfig<TAreaName extends string> = {
   columns?: Array<TrackSize>;
   /** Area names that must be present for this layout to apply. */
   when?: Array<TAreaName>;
+  /** Area names that must be absent for this layout to apply. */
+  unless?: Array<TAreaName>;
+  /** Per-area alignment while this layout applies. */
+  align?: AreaAlignments<TAreaName>;
   /** Responsive breakpoint overrides */
   breakpoints?: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<TAreaName>>>;
 };
@@ -71,6 +94,8 @@ export type BreakpointLayoutConfig<TAreaName extends string> = {
   layout: GridLayout<TAreaName>;
   rows?: Array<TrackSize>;
   columns?: Array<TrackSize>;
+  /** Per-area alignment at this breakpoint. Not inherited from the layout. */
+  align?: AreaAlignments<TAreaName>;
 };
 
 /**

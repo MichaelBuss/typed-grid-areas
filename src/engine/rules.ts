@@ -1,4 +1,5 @@
 import {
+  AreaAlignments,
   CONTAINER_BREAKPOINTS,
   ContainerBreakpoint,
   GridConfig,
@@ -16,12 +17,14 @@ export type Condition = {
 };
 
 /**
- * One concrete arrangement of a grid's areas: the cells plus track sizes.
+ * One concrete arrangement of a grid's areas: the cells plus track sizes and
+ * per-area alignment.
  */
 export type Arrangement = {
   cells: GridLayout<string>;
   rows?: ReadonlyArray<TrackSize>;
   columns?: ReadonlyArray<TrackSize>;
+  align?: AreaAlignments<string>;
 };
 
 /**
@@ -42,6 +45,13 @@ function isContainerBreakpoint(value: string): value is ContainerBreakpoint {
 const BREAKPOINT_ORDER = Object.keys(CONTAINER_BREAKPOINTS);
 
 /**
+ * Orders breakpoints from narrowest to widest; no breakpoint ranks lowest.
+ */
+export function breakpointRank(breakpoint: ContainerBreakpoint | undefined): number {
+  return breakpoint === undefined ? -1 : BREAKPOINT_ORDER.indexOf(breakpoint);
+}
+
+/**
  * Turns a grid definition into its ordered list of rules: each layout's own
  * arrangement, followed by its breakpoint arrangements from narrowest to
  * widest, in the order the layouts were declared.
@@ -50,9 +60,10 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
   const rules: Array<Rule> = [];
 
   for (const layoutConfig of config.layouts) {
-    const when = layoutConfig.when ?? [];
-    const unless = when.length === 0 ? [] : config.areas.filter(area => !when.includes(area));
-    const condition: Condition = { when, unless };
+    const condition: Condition = {
+      when: layoutConfig.when ?? [],
+      unless: layoutConfig.unless ?? [],
+    };
 
     rules.push({
       condition,
@@ -60,12 +71,13 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
         cells: layoutConfig.layout,
         rows: layoutConfig.rows,
         columns: layoutConfig.columns,
+        align: layoutConfig.align,
       },
     });
 
     const breakpoints = Object.keys(layoutConfig.breakpoints ?? {})
       .filter(isContainerBreakpoint)
-      .sort((a, b) => BREAKPOINT_ORDER.indexOf(a) - BREAKPOINT_ORDER.indexOf(b));
+      .sort((a, b) => breakpointRank(a) - breakpointRank(b));
 
     for (const breakpoint of breakpoints) {
       const breakpointConfig = layoutConfig.breakpoints?.[breakpoint];
@@ -79,6 +91,7 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
           cells: breakpointConfig.layout,
           rows: breakpointConfig.rows,
           columns: breakpointConfig.columns,
+          align: breakpointConfig.align,
         },
       });
     }

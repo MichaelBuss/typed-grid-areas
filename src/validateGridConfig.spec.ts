@@ -66,6 +66,19 @@ describe("validateGridConfig", () => {
         expect.stringContaining("Unknown area \"unknown\" in 'when' clause"),
       );
     });
+
+    it("should warn when 'unless' clause contains unknown area name", () => {
+      const config: GridConfig<"icon"> = {
+        areas: ["icon"],
+        layouts: [{ unless: ["unknown" as "icon"], layout: [["icon"]] }],
+      };
+
+      const errors = validateGridConfig(config);
+
+      expect(errors).toContainEqual(
+        expect.stringContaining("Unknown area \"unknown\" in 'unless' clause"),
+      );
+    });
   });
 
   describe("dimension validation", () => {
@@ -255,6 +268,20 @@ describe("validateGridConfig", () => {
             when: ["icon", "tag"],
             layout: [["icon", "tag"]],
           },
+        ],
+      };
+
+      const errors = validateGridConfig(config);
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should not warn when the same when-clause has a different unless-clause", () => {
+      const config: GridConfig<"icon" | "info" | "tag"> = {
+        areas: ["icon", "info", "tag"],
+        layouts: [
+          { when: ["icon"], layout: [["icon", "info"]] },
+          { when: ["icon"], unless: ["tag"], layout: [["info", "icon"]] },
         ],
       };
 

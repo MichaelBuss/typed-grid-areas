@@ -1,4 +1,5 @@
 import {
+  AreaAlignments,
   BreakpointLayoutConfig,
   ContainerBreakpoint,
   EmptyCell,
@@ -70,8 +71,21 @@ type StrictLayoutInput<
   /**
    * Area names that must be present for this layout to apply.
    * Must be a subset of the areas defined in .areas().
+   * Areas named in neither `when` nor `unless` don't affect whether it applies.
    */
   when?: TWhen;
+
+  /**
+   * Area names that must be absent for this layout to apply.
+   * Must be a subset of the areas defined in .areas().
+   */
+  unless?: ReadonlyArray<TAreaName>;
+
+  /**
+   * Per-area alignment while this layout applies. Areas left out use the
+   * browser default.
+   */
+  align?: AreaAlignments<TAreaName>;
 
   /**
    * The grid layout. Each cell must be an area name or "." for empty.
@@ -202,6 +216,8 @@ export function createGrid(): GridAreasBuilderInit {
             rows?: ReadonlyArray<TrackSize>;
             columns?: ReadonlyArray<TrackSize>;
             when?: ReadonlyArray<string>;
+            unless?: ReadonlyArray<string>;
+            align?: typeof config.align;
             breakpoints?: typeof config.breakpoints;
           };
 
@@ -210,6 +226,8 @@ export function createGrid(): GridAreasBuilderInit {
             rows: runtimeConfig.rows ? [...runtimeConfig.rows] : undefined,
             columns: runtimeConfig.columns ? [...runtimeConfig.columns] : undefined,
             when: runtimeConfig.when ? [...runtimeConfig.when] : undefined,
+            unless: runtimeConfig.unless ? [...runtimeConfig.unless] : undefined,
+            align: runtimeConfig.align,
             breakpoints: runtimeConfig.breakpoints,
           });
           return builder;

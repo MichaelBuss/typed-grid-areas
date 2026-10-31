@@ -59,13 +59,13 @@ export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
   { width, present, slotClassNames }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
-  await render(
+  const { container } = await render(
     <div style={{ width }}>
       <GridHarness config={config} present={present} slotClassNames={slotClassNames} />
     </div>,
   );
 
-  const grid = document.querySelector<HTMLElement>("[data-testid=grid]");
+  const grid = container.querySelector<HTMLElement>("[data-testid=grid]");
   if (grid === null) {
     throw new Error("mountGrid: grid container was not rendered");
   }
