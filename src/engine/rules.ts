@@ -1,5 +1,6 @@
 import {
   AreaAlignments,
+  BreakpointLayoutConfig,
   CONTAINER_BREAKPOINTS,
   ContainerBreakpoint,
   GridConfig,
@@ -72,6 +73,18 @@ export function widthRank(width: string | undefined): number {
 }
 
 /**
+ * The arrangement a layout or one of its breakpoints draws.
+ */
+function arrangementOf({
+  cells,
+  rows,
+  columns,
+  align,
+}: BreakpointLayoutConfig<string>): Arrangement {
+  return { cells, rows, columns, align };
+}
+
+/**
  * Turns a grid definition into its ordered list of rules, layout by layout in
  * the order they were declared: each layout's own arrangement, followed by
  * its breakpoint arrangements from narrowest to widest, then the same again
@@ -87,15 +100,7 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
       unless: layoutConfig.unless ?? [],
     };
 
-    layoutRules.push({
-      condition,
-      arrangement: {
-        cells: layoutConfig.cells,
-        rows: layoutConfig.rows,
-        columns: layoutConfig.columns,
-        align: layoutConfig.align,
-      },
-    });
+    layoutRules.push({ condition, arrangement: arrangementOf(layoutConfig) });
 
     const breakpointRules: Array<Rule> = [];
     for (const [key, breakpointConfig] of Object.entries(layoutConfig.breakpoints ?? {})) {
@@ -103,16 +108,7 @@ export function toRules(config: GridConfig<string>): Array<Rule> {
       if (minWidth === undefined || breakpointConfig === undefined) {
         continue;
       }
-      breakpointRules.push({
-        condition,
-        minWidth,
-        arrangement: {
-          cells: breakpointConfig.cells,
-          rows: breakpointConfig.rows,
-          columns: breakpointConfig.columns,
-          align: breakpointConfig.align,
-        },
-      });
+      breakpointRules.push({ condition, minWidth, arrangement: arrangementOf(breakpointConfig) });
     }
     breakpointRules.sort((a, b) => widthRank(a.minWidth) - widthRank(b.minWidth));
     layoutRules.push(...breakpointRules);

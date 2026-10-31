@@ -2,7 +2,7 @@ import { gridId } from "./engine/gridId";
 import { HideRule, toHideRules } from "./engine/hiding";
 import { parseCell } from "./engine/cells";
 import { Placement, placeAreas } from "./engine/placement";
-import { Condition, Rule, toRules } from "./engine/rules";
+import { Arrangement, Condition, Rule, toRules } from "./engine/rules";
 import { GridConfig, SlotProps } from "./types";
 
 /**
@@ -132,25 +132,34 @@ function placementCss(scope: Scope, areas: ReadonlyArray<string>): string {
   ].join("\n");
 }
 
-function isSet(tracks: ReadonlyArray<string> | undefined): tracks is ReadonlyArray<string> {
-  return tracks !== undefined && tracks.length > 0;
-}
-
 /**
  * One declaration of a rule: its own value, or the property's initial value
  * when an earlier rule that can apply at the same time sets it (so that value
  * can't leak in). Omitted when there is nothing that could leak in.
+ *
+ * `valueOf` reads the property's value from any rule's arrangement, so the
+ * same accessor answers both "what does this rule set" and "did an earlier
+ * one set it".
  */
 function declaration(
   property: string,
-  value: string | undefined,
   initial: string,
-  setEarlier: boolean,
+  rule: Rule,
+  earlier: ReadonlyArray<Rule>,
+  valueOf: (arrangement: Arrangement) => string | undefined,
 ): Array<string> {
+  const value = valueOf(rule.arrangement);
   if (value !== undefined) {
     return [`${property}: ${value};`];
   }
-  return setEarlier ? [`${property}: ${initial};`] : [];
+  return earlier.some(other => valueOf(other.arrangement) !== undefined)
+    ? [`${property}: ${initial};`]
+    : [];
+}
+
+/** A track list as one CSS value, or undefined when it sets no tracks. */
+function trackList(tracks: ReadonlyArray<string> | undefined): string | undefined {
+  return tracks !== undefined && tracks.length > 0 ? tracks.join(" ") : undefined;
 }
 
 /**
@@ -200,7 +209,7 @@ function placementsOf(rule: Rule): Map<string, Placement> {
  * the same time; only what they set needs resetting here.
  */
 function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): string {
-  const { cells, rows, columns, align } = rule.arrangement;
+  const { cells } = rule.arrangement;
   const container = conditionSelector(scope.grid, rule.condition);
 
   const lines = [
@@ -208,35 +217,17 @@ function ruleToCss(scope: Scope, rule: Rule, earlier: ReadonlyArray<Rule>): stri
       `grid-template-areas: ${cells
         .map(row => `'${row.map(cell => parseCell(cell).base).join(" ")}'`)
         .join(" ")};`,
-      ...declaration(
-        "grid-template-rows",
-        isSet(rows) ? rows.join(" ") : undefined,
-        "none",
-        earlier.some(other => isSet(other.arrangement.rows)),
-      ),
-      ...declaration(
-        "grid-template-columns",
-        isSet(columns) ? columns.join(" ") : undefined,
-        "none",
-        earlier.some(other => isSet(other.arrangement.columns)),
+      ...declaration("grid-template-rows", "none", rule, earlier, ({ rows }) => trackList(rows)),
+      ...declaration("grid-template-columns", "none", rule, earlier, ({ columns }) =>
+        trackList(columns),
       ),
     ].join(" ")} }`,
   ];
 
   for (const [area, placement] of placementsOf(rule)) {
     const alignment = [
-      ...declaration(
-        "justify-self",
-        align?.[area]?.justify,
-        "auto",
-        earlier.some(other => other.arrangement.align?.[area]?.justify !== undefined),
-      ),
-      ...declaration(
-        "align-self",
-        align?.[area]?.align,
-        "auto",
-        earlier.some(other => other.arrangement.align?.[area]?.align !== undefined),
-      ),
+      ...declaration("justify-self", "auto", rule, earlier, ({ align }) => align?.[area]?.justify),
+      ...declaration("align-self", "auto", rule, earlier, ({ align }) => align?.[area]?.align),
     ];
     const declarations = [
       ...(placement.over !== undefined
