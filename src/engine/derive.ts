@@ -1,6 +1,6 @@
-import { AreaAlignments, GridLayout, TrackSize } from "../types";
-import { cellAreas, formatCell, parseCell } from "./cells";
-import type { Arrangement, Rule } from "./rules";
+import { AreaAlignments, GridLayout, TrackSize } from "../types.ts";
+import { cellAreas, formatCell, parseCell } from "./cells.ts";
+import type { Arrangement, Rule } from "./rules.ts";
 
 /**
  * Where an absent area owned a cell, until the cell is dropped or filled.

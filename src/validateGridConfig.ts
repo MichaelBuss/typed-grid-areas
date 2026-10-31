@@ -5,8 +5,8 @@ import {
   LayoutConfig,
   TrackSize,
   GridConfig,
-} from "./types";
-import { cellAreas, parseCell } from "./engine/cells";
+} from "./types.ts";
+import { cellAreas, parseCell } from "./engine/cells.ts";
 
 /**
  * Creates a normalized key from a condition (when + unless) for comparison.

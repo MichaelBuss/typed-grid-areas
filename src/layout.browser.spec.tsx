@@ -1,7 +1,7 @@
 import { render } from "vitest-browser-react";
-import { defineLayout } from "./defineLayout";
-import { createGridComponent } from "./react/gridComponent";
-import { mountGrid } from "./test-utils/mountGrid";
+import { defineLayout } from "./defineLayout.ts";
+import { createGridComponent } from "./react/gridComponent.tsx";
+import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 const cardGrid = defineLayout({
   areas: ["icon", "info", "tag"],

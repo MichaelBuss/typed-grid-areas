@@ -1,11 +1,11 @@
 import { Slot } from "@radix-ui/react-slot";
 import { ComponentPropsWithRef, ReactNode, useCallback, useEffect, useRef } from "react";
-import { gridId } from "../engine/gridId";
-import { generateCss } from "../generateCss";
-import { hasBreakpoints, sizeContainerName } from "../markup";
-import { isDevelopment } from "../isDevelopment";
-import { GridConfig } from "../types";
-import { slotWarnings } from "./slotWarnings";
+import { gridId } from "../engine/gridId.ts";
+import { generateCss } from "../generateCss.ts";
+import { hasBreakpoints, sizeContainerName } from "../markup.ts";
+import { isDevelopment } from "../isDevelopment.ts";
+import { GridConfig } from "../types.ts";
+import { slotWarnings } from "./slotWarnings.ts";
 
 /**
  * Props of a slot component (`<Card.icon>`) and of a grid's root component

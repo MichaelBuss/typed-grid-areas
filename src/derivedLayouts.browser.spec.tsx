@@ -1,5 +1,5 @@
-import { defineLayout } from "./defineLayout";
-import { mountGrid } from "./test-utils/mountGrid";
+import { defineLayout } from "./defineLayout.ts";
+import { mountGrid } from "./test-utils/mountGrid.tsx";
 
 describe("derived layouts in a real browser", () => {
   const card = defineLayout({

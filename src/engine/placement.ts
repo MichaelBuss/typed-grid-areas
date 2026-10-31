@@ -1,5 +1,5 @@
-import { GridLayout } from "../types";
-import { parseCell } from "./cells";
+import { GridLayout } from "../types.ts";
+import { parseCell } from "./cells.ts";
 
 /**
  * Where an area sits in a layout, as 1-based grid lines (end lines exclusive).

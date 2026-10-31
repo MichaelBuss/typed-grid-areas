@@ -1,4 +1,4 @@
-import { GridConfig } from "../types";
+import { GridConfig } from "../types.ts";
 
 const ids = new WeakMap<GridConfig<string>, string>();
 

@@ -1,10 +1,10 @@
-import { gridId } from "./engine/gridId";
-import { HideRule, toHideRules } from "./engine/hiding";
-import { parseCell } from "./engine/cells";
-import { Placement, placeAreas } from "./engine/placement";
-import { Arrangement, Condition, Rule, toRules } from "./engine/rules";
-import { sizeContainerName } from "./markup";
-import { GridConfig } from "./types";
+import { gridId } from "./engine/gridId.ts";
+import { HideRule, toHideRules } from "./engine/hiding.ts";
+import { parseCell } from "./engine/cells.ts";
+import { Placement, placeAreas } from "./engine/placement.ts";
+import { Arrangement, Condition, Rule, toRules } from "./engine/rules.ts";
+import { sizeContainerName } from "./markup.ts";
+import { GridConfig } from "./types.ts";
 
 /**
  * All generated CSS sits in this cascade layer, so a consumer's own unlayered

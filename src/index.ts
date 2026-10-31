@@ -1,8 +1,8 @@
-export { defineLayout, type ArrangementInput, type LayoutInput } from "./defineLayout";
-export { gridId } from "./engine/gridId";
-export { generateCss } from "./generateCss";
-export { createSlots } from "./markup";
-export { validateGridConfig } from "./validateGridConfig";
+export { defineLayout, type ArrangementInput, type LayoutInput } from "./defineLayout.ts";
+export { gridId } from "./engine/gridId.ts";
+export { generateCss } from "./generateCss.ts";
+export { createSlots } from "./markup.ts";
+export { validateGridConfig } from "./validateGridConfig.ts";
 export {
   CONTAINER_BREAKPOINTS,
   type Alignment,
@@ -20,4 +20,4 @@ export {
   type LayoutDefinition,
   type SlotProps,
   type TrackSize,
-} from "./types";
+} from "./types.ts";

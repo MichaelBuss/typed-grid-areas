@@ -3,10 +3,10 @@
  * API only and rendered with real content, place every slot correctly in
  * every combination of their optional areas, on a narrow and a wide card.
  */
-import { generateCss, GridConfig } from "./index";
-import { createGridComponent } from "./react";
-import { idCardGrid, preferenceCardGrid, preferenceContentGrid } from "./test-utils/designs";
-import { mountDesign, Rect } from "./test-utils/mountDesign";
+import { generateCss, GridConfig } from "./index.ts";
+import { createGridComponent } from "./react/index.ts";
+import { idCardGrid, preferenceCardGrid, preferenceContentGrid } from "./test-utils/designs.ts";
+import { mountDesign, Rect } from "./test-utils/mountDesign.tsx";
 
 const NARROW = 300;
 const WIDE = 560;

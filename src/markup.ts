@@ -3,7 +3,7 @@
  * the slots' attributes, and the grid's own size container when it has
  * breakpoints.
  */
-import { GridConfig, SlotProps } from "./types";
+import { GridConfig, SlotProps } from "./types.ts";
 
 /**
  * Creates a typed slots object from an array of area names.

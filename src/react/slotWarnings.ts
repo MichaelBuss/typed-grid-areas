@@ -1,4 +1,4 @@
-import { GridConfig } from "../types";
+import { GridConfig } from "../types.ts";
 
 /**
  * What's wrong with how a mounted grid's slots are wired: required areas with

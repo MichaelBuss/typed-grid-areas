@@ -5,4 +5,4 @@ export {
   type GridComponentProps,
   type SlotComponent,
   type SlotComponentProps,
-} from "./gridComponent";
+} from "./gridComponent.tsx";

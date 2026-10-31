@@ -6,3 +6,6 @@ test-browser:
 
 typecheck:
     npm run typecheck
+
+build:
+    npm run build

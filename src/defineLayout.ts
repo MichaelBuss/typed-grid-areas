@@ -1,5 +1,5 @@
-import { parseTemplate, parseTracks } from "./template/parseTemplate";
-import { ArrangementCheck } from "./template/templateTypes";
+import { parseTemplate, parseTracks } from "./template/parseTemplate.ts";
+import { ArrangementCheck } from "./template/templateTypes.ts";
 import {
   AreaAlignments,
   AreaName,
@@ -7,9 +7,9 @@ import {
   BreakpointLayoutConfig,
   LayoutConfig,
   LayoutDefinition,
-} from "./types";
-import { isDevelopment } from "./isDevelopment";
-import { validateGridConfig } from "./validateGridConfig";
+} from "./types.ts";
+import { isDevelopment } from "./isDevelopment.ts";
+import { validateGridConfig } from "./validateGridConfig.ts";
 
 /**
  * One arrangement of the areas, as written in a layout or a breakpoint.

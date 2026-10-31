@@ -3,8 +3,8 @@
  * is "development".
  */
 import { render } from "vitest-browser-react";
-import { defineLayout } from "../defineLayout";
-import { createGridComponent } from "./gridComponent";
+import { defineLayout } from "../defineLayout.ts";
+import { createGridComponent } from "./gridComponent.tsx";
 
 describe("grid components", () => {
   describe("in development", () => {

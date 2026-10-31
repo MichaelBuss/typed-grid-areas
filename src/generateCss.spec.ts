@@ -1,7 +1,7 @@
-import { defineLayout } from "./defineLayout";
-import { generateCss } from "./generateCss";
-import { createSlots } from "./markup";
-import { GridConfig } from "./types";
+import { defineLayout } from "./defineLayout.ts";
+import { generateCss } from "./generateCss.ts";
+import { createSlots } from "./markup.ts";
+import { GridConfig } from "./types.ts";
 
 function testGrid<TAreaName extends string>(config: GridConfig<TAreaName>) {
   return {

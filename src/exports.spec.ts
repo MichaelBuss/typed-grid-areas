@@ -1,5 +1,5 @@
-import * as core from "./index";
-import * as react from "./react";
+import * as core from "./index.ts";
+import * as react from "./react/index.ts";
 
 describe("public entry points", () => {
   it("keep the framework-free core", () => {
