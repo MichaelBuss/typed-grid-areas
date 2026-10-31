@@ -204,3 +204,52 @@ describe("derived layouts", () => {
     expect(template(applied(grid, ["icon", "information"]))).toBe("icon information");
   });
 });
+
+describe("derived layouts with layers", () => {
+  it("drops an absent layer from its cells without leaving a hole", () => {
+    const grid = defineLayout({
+      areas: ["photo", "details", "badge?"],
+      layouts: [{ template: "photo photo+badge / details details" }],
+    });
+
+    expect(template(applied(grid, ["photo", "details"]))).toBe("photo photo / details details");
+  });
+
+  it("keeps a column a present layer would otherwise lose", () => {
+    const grid = defineLayout({
+      areas: ["photo", "badge", "details", "qr?"],
+      layouts: [{ template: "photo photo+badge / details qr" }],
+    });
+
+    expect(template(applied(grid, ["photo", "details", "badge"]))).toBe(
+      "photo photo+badge / details details",
+    );
+  });
+
+  it("drops a column when its layers continue into the neighbouring column too", () => {
+    const grid = defineLayout({
+      areas: ["photo", "identity", "details", "qr?"],
+      layouts: [
+        {
+          template: "photo photo / photo+identity photo+identity / details qr",
+          columns: "1fr 60px",
+        },
+      ],
+    });
+
+    const arrangement = applied(grid, ["photo", "identity", "details"]);
+    expect(template(arrangement)).toBe("photo / photo+identity / details");
+    expect(arrangement.columns).toEqual(["1fr"]);
+  });
+
+  it("keeps the layers over a hole when a neighbour grows into it", () => {
+    const grid = defineLayout({
+      areas: ["details", "qr?", "check"],
+      layouts: [{ template: "details qr+check / details details" }],
+    });
+
+    expect(template(applied(grid, ["details", "check"]))).toBe(
+      "details details+check / details details",
+    );
+  });
+});

@@ -1,5 +1,5 @@
-import { render } from "vitest-browser-react";
 import { ReactNode } from "react";
+import { render } from "vitest-browser-react";
 import { createGridComponent, GridComponentProps, SlotComponent } from "../react/gridComponent";
 import { GridConfig } from "../types";
 
@@ -10,6 +10,8 @@ interface MountGridOptions<TAreaName extends string> {
   present: ReadonlyArray<TAreaName>;
   /** Consumer classes to put on individual slots. */
   slotClassNames?: Partial<Record<TAreaName, string>>;
+  /** Content to render inside individual slots (slots are empty otherwise). */
+  slotContent?: Partial<Record<TAreaName, ReactNode>>;
   /**
    * If set, the wrapper sits inside an unrelated size container
    * (`container-type: inline-size`) of this width in px.
@@ -33,7 +35,13 @@ interface MountedGrid<TAreaName extends string> {
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
-  { width, present, slotClassNames, ancestorContainerWidth }: MountGridOptions<TAreaName>,
+  {
+    width,
+    present,
+    slotClassNames,
+    slotContent,
+    ancestorContainerWidth,
+  }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
   const Grid = createGridComponent(config);
   // The root on its own: JSX can't resolve props on a component whose
@@ -44,7 +52,11 @@ export async function mountGrid<TAreaName extends string>(
       <Root data-testid="grid">
         {present.map(area => {
           const Slot: SlotComponent = Grid[area];
-          return <Slot key={area} className={slotClassNames?.[area]} style={{ minHeight: 10 }} />;
+          return (
+            <Slot key={area} className={slotClassNames?.[area]} style={{ minHeight: 10 }}>
+              {slotContent?.[area]}
+            </Slot>
+          );
         })}
       </Root>
     </div>

@@ -187,6 +187,88 @@ Because of inline-size containment, a grid with breakpoints can't take its
 width from its content. That's fine in a `1fr` or stretched track, but it
 collapses to zero width in an `auto` or `min-content` track of a parent grid.
 
+## Layers: `base+layer`
+
+A cell written `base+layer` (or `base+layer+layer…`) is owned by `base` as
+usual, and also has `layer` drawn on top of it. A layer covers the bounding
+rectangle of the cells it appears in and is drawn above its base, whatever
+their order in the DOM. Several layers can share a host, each in its own
+cells, and an area can be a layer in one layout and own cells in another:
+
+```ts
+defineLayout({
+  areas: ["photo", "identity", "details", "logo?", "qr?", "badge?"],
+  layouts: [
+    {
+      template: `
+        photo+logo     photo          photo+badge
+        photo          photo          photo
+        photo+identity photo+identity photo+identity
+        details        details        qr`,
+      rows: "40px 80px 40px 60px",
+      columns: "60px 1fr 60px",
+      breakpoints: {
+        "@md": {
+          template: `
+            photo photo+badge identity logo
+            photo photo       details  qr`,
+          rows: "40px 120px",
+          columns: "100px 40px 1fr 80px",
+        },
+      },
+    },
+  ],
+});
+```
+
+On narrow cards `logo`, `badge` and `identity` sit in the photo's corners;
+from `@md` the photo is a column of its own and only `badge` stays on it.
+Use `align` to pin a layer within its cells.
+
+In derived layouts, a missing optional layer just disappears from its cells:
+it never leaves a hole for a neighbour to fill. A row or column is only
+dropped if every layer in it also continues into a neighbouring track.
+
+**Track sizing.** Layers sit in grid tracks, so their content takes part in
+sizing those tracks just like the base's does. Give the host area's tracks
+fixed or `minmax()` sizes, or a large layer can stretch the area it sits on.
+
+### Restyling layered content: `--tga-over`
+
+Every layered slot gets the custom property `--tga-over`, set to the name of
+the area underneath it (the one owning its top-left cell); every other slot
+gets `none`. Content inside a slot can restyle itself with a container style
+query, for example white text while it sits over a photo:
+
+```css
+@container style(--tga-over: photo) {
+  .identity-name {
+    color: white;
+  }
+}
+```
+
+Every element is a style container, so the query reads the nearest
+ancestor's value: put the rule on the slot's content, not the slot itself.
+
+Browser support for style queries on custom properties
+([MDN browser-compat-data](https://github.com/mdn/browser-compat-data/blob/main/css/at-rules/container.json)
+`css.at-rules.container.style_queries_for_custom_properties`, and
+[caniuse](https://caniuse.com/css-container-queries-style), checked
+2026-10-31):
+
+| Browser | Supported since    |
+| ------- | ------------------ |
+| Chrome  | 111                |
+| Safari  | 18                 |
+| Firefox | 151                |
+
+All on by default. Only custom-property queries are supported (which is all
+`--tga-over` needs); the range syntax (`style(--x > 1)`) isn't in Safari.
+The library's own tests only run in Chromium. In older browsers the query
+simply never matches, so write the unlayered look as the default and the
+layered look inside the query.
+
 ## Slots and CSS
 
 `createSlots(areas)`, `generateCss(config)` and `gridId(config)` turn a
