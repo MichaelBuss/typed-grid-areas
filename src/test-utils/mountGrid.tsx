@@ -8,6 +8,11 @@ interface MountGridOptions<TAreaName extends string> {
   width: number;
   /** The slots to render; every other area is left absent. */
   present: ReadonlyArray<TAreaName>;
+  /**
+   * If set, the wrapper sits inside an unrelated size container
+   * (`container-type: inline-size`) of this width in px.
+   */
+  ancestorContainerWidth?: number;
 }
 
 interface MountedGrid<TAreaName extends string> {
@@ -46,12 +51,20 @@ function GridHarness<TAreaName extends string>({
  */
 export async function mountGrid<TAreaName extends string>(
   config: GridConfig<TAreaName>,
-  { width, present }: MountGridOptions<TAreaName>,
+  { width, present, ancestorContainerWidth }: MountGridOptions<TAreaName>,
 ): Promise<MountedGrid<TAreaName>> {
-  await render(
+  const sized = (
     <div style={{ width }}>
       <GridHarness config={config} present={present} />
-    </div>,
+    </div>
+  );
+
+  await render(
+    ancestorContainerWidth === undefined ? (
+      sized
+    ) : (
+      <div style={{ width: ancestorContainerWidth, containerType: "inline-size" }}>{sized}</div>
+    ),
   );
 
   const grid = document.querySelector<HTMLElement>("[data-testid=grid]");

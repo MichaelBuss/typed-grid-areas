@@ -1,4 +1,7 @@
+import { render } from "vitest-browser-react";
 import { createGrid } from "./createGrid";
+import { GridAreas } from "./react/GridAreas";
+import { useGridAreas } from "./react/useGridAreas";
 import { mountGrid } from "./test-utils/mountGrid";
 
 const cardGrid = createGrid()
@@ -56,13 +59,100 @@ describe("grid layout in a real browser", () => {
     expect(withoutIcon.templateAreas()).toBe('"info tag"');
   });
 
-  // Expected failure until https://github.com/MichaelBuss/typed-grid-areas/issues/6 is fixed:
-  // the grid is its own `container-type: inline-size` element, so its `@container`
-  // queries look for an ancestor container instead of measuring the grid itself.
-  // Remove `.fails` when that lands.
-  it.fails("applies a breakpoint layout based on the grid's own width", async () => {
+  it("applies a breakpoint layout based on the grid's own width", async () => {
     // 800px is well above @sm (24rem = 384px), and the wrapper is not a container.
     const grid = await mountGrid(breakpointGrid, { width: 800, present: ["icon", "info"] });
+
+    expect(grid.templateAreas()).toBe('"icon info"');
+  });
+
+  it("switches a nested grid's breakpoints on the nested grid's own width", async () => {
+    // At 800px the outer grid's own @sm layout applies, giving `main` 200px.
+    // `main` comes after an empty cell, so the nested grid only lands in it if
+    // the area reaches its outermost element (auto-placement would pick the
+    // empty cell).
+    const outerGrid = createGrid()
+      .areas(["main", "side"])
+      .layout({
+        layout: [[".", "side", "main"]],
+        columns: ["1fr", "1fr", "1fr"],
+        breakpoints: {
+          "@sm": { layout: [[".", "side", "main"]], columns: ["1fr", "1fr", "200px"] },
+        },
+      })
+      .build();
+
+    function Nested() {
+      const outer = useGridAreas(outerGrid);
+      const inner = useGridAreas(breakpointGrid);
+      return (
+        <GridAreas {...outer}>
+          {slots => (
+            <>
+              <GridAreas {...inner} {...slots.main} data-testid="inner">
+                {innerSlots => (
+                  <>
+                    <div {...innerSlots.icon} />
+                    <div {...innerSlots.info} />
+                  </>
+                )}
+              </GridAreas>
+              <div {...slots.side} />
+            </>
+          )}
+        </GridAreas>
+      );
+    }
+
+    await render(
+      <div style={{ width: 800 }}>
+        <Nested />
+      </div>,
+    );
+
+    const inner = document.querySelector<HTMLElement>("[data-testid=inner]");
+    expect(inner?.getBoundingClientRect().width).toBe(200);
+    expect(inner && getComputedStyle(inner).gridTemplateAreas).toBe('"icon" "info"');
+  });
+
+  describe("an arbitrary breakpoint (@[27rem] = 432px)", () => {
+    const arbitraryGrid = createGrid()
+      .areas(["icon", "info"])
+      .layout({
+        layout: [["icon"], ["info"]],
+        breakpoints: { "@[27rem]": { layout: [["icon", "info"]] } },
+      })
+      .build();
+
+    it("does not apply just below its width", async () => {
+      const grid = await mountGrid(arbitraryGrid, { width: 431, present: ["icon", "info"] });
+
+      expect(grid.templateAreas()).toBe('"icon" "info"');
+    });
+
+    it("applies at its width", async () => {
+      const grid = await mountGrid(arbitraryGrid, { width: 432, present: ["icon", "info"] });
+
+      expect(grid.templateAreas()).toBe('"icon info"');
+    });
+  });
+
+  it("ignores a wider size container above the grid", async () => {
+    const grid = await mountGrid(breakpointGrid, {
+      width: 200,
+      ancestorContainerWidth: 800,
+      present: ["icon", "info"],
+    });
+
+    expect(grid.templateAreas()).toBe('"icon" "info"');
+  });
+
+  it("ignores a narrower size container above the grid", async () => {
+    const grid = await mountGrid(breakpointGrid, {
+      width: 800,
+      ancestorContainerWidth: 200,
+      present: ["icon", "info"],
+    });
 
     expect(grid.templateAreas()).toBe('"icon info"');
   });

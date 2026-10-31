@@ -1,6 +1,6 @@
 import {
   BreakpointLayoutConfig,
-  ContainerBreakpoint,
+  BreakpointKey,
   EmptyCell,
   GridConfig,
   LayoutConfig,
@@ -107,7 +107,7 @@ type StrictLayoutInput<
   /**
    * Responsive breakpoint overrides.
    */
-  breakpoints?: Partial<Record<ContainerBreakpoint, BreakpointLayoutConfig<TAreaName>>>;
+  breakpoints?: Partial<Record<BreakpointKey, BreakpointLayoutConfig<TAreaName>>>;
 };
 
 // =============================================================================

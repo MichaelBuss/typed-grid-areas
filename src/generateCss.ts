@@ -76,10 +76,49 @@ function getOrCreateNestedStyles(styles: NestedStyles, key: string): NestedStyle
 }
 
 /**
- * Type guard to check if a string is a valid container breakpoint
+ * Resolves a breakpoint key to the width it switches at: a named Tailwind
+ * size (`"@sm"` -> `"24rem"`) or an arbitrary length (`"@[27rem]"` -> `"27rem"`).
+ * Returns undefined for anything else.
  */
-function isContainerBreakpoint(value: string): value is ContainerBreakpoint {
-  return value in CONTAINER_BREAKPOINTS;
+function breakpointWidth(key: string): string | undefined {
+  if (key in CONTAINER_BREAKPOINTS) {
+    return CONTAINER_BREAKPOINTS[key as ContainerBreakpoint];
+  }
+  return /^@\[(.+)\]$/.exec(key)?.[1];
+}
+
+/**
+ * The container name of a grid's size container, derived from the grid's id.
+ *
+ * Breakpoint queries target this name, so only the grid's own size container
+ * can answer them, never an unrelated container above or below it. Characters
+ * that aren't valid in a CSS identifier (React's `useId()` emits some) are
+ * replaced.
+ */
+export function sizeContainerName(id: string): string {
+  return `grid-${id.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+}
+
+/**
+ * The `@container` query for one breakpoint of the grid with the given id,
+ * targeting that grid's own size container by name. Undefined for keys that
+ * aren't a breakpoint.
+ */
+function sizeContainerQuery(id: string, breakpoint: string): string | undefined {
+  const width = breakpointWidth(breakpoint);
+  return width === undefined
+    ? undefined
+    : `@container ${sizeContainerName(id)} (min-width: ${width})`;
+}
+
+/**
+ * Whether any layout in the config has breakpoints, i.e. whether the grid
+ * needs its own size container.
+ */
+export function hasBreakpoints(config: GridConfig<string>): boolean {
+  return config.layouts.some(
+    ({ breakpoints }) => breakpoints !== undefined && Object.keys(breakpoints).length > 0,
+  );
 }
 
 /**
@@ -221,11 +260,10 @@ export function generateCss<TAreaName extends string>(
       applyLayoutStyles({ targetStyles: styles, layout, rows, columns });
 
       // Add breakpoint overrides for base layout
-      for (const breakpoint of Object.keys(breakpoints)) {
-        if (isContainerBreakpoint(breakpoint)) {
-          const breakpointConfig = breakpoints[breakpoint];
+      for (const [breakpoint, breakpointConfig] of Object.entries(breakpoints)) {
+        const containerQuery = sizeContainerQuery(id, breakpoint);
+        if (containerQuery !== undefined) {
           if (breakpointConfig !== undefined) {
-            const containerQuery = `@container (min-width: ${CONTAINER_BREAKPOINTS[breakpoint]})`;
             const nestedStyles = getOrCreateNestedStyles(styles, containerQuery);
             applyLayoutStyles({
               targetStyles: nestedStyles,
@@ -245,11 +283,10 @@ export function generateCss<TAreaName extends string>(
       applyLayoutStyles({ targetStyles: conditionalStyles, layout, rows, columns });
 
       // Add breakpoint overrides for conditional layout
-      for (const breakpoint of Object.keys(breakpoints)) {
-        if (isContainerBreakpoint(breakpoint)) {
-          const breakpointConfig = breakpoints[breakpoint];
+      for (const [breakpoint, breakpointConfig] of Object.entries(breakpoints)) {
+        const containerQuery = sizeContainerQuery(id, breakpoint);
+        if (containerQuery !== undefined) {
           if (breakpointConfig !== undefined) {
-            const containerQuery = `@container (min-width: ${CONTAINER_BREAKPOINTS[breakpoint]})`;
             const containerStyles = getOrCreateNestedStyles(styles, containerQuery);
             const nestedConditional = getOrCreateNestedStyles(containerStyles, selector);
             applyLayoutStyles({

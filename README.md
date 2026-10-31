@@ -95,8 +95,9 @@ So layouts react to _which optional children are actually rendered_, without
 any JS layout logic — omit the `icon` slot's element and the grid falls back
 to the base layout automatically.
 
-`breakpoints` nests the same idea under `@container` queries (using
-Tailwind's default `@container` breakpoints — `@xs` through `@7xl`), and are
+`breakpoints` nests the same idea under `@container` queries. Keys are
+Tailwind's default `@container` sizes (`@xs` through `@7xl`) or an arbitrary
+length in Tailwind's arbitrary-value syntax (`"@[27rem]"`). Breakpoints are
 self-contained: a breakpoint always explicitly sets `grid-template-rows`/
 `-columns` (to a value, or to `none`) so a base layout's tracks never leak
 into it.
@@ -108,10 +109,23 @@ createGrid()
     layout: [["info"]],
     breakpoints: {
       "@sm": { layout: [["icon", "info"]] },
+      "@[40rem]": { layout: [["info", "icon"]] },
     },
   })
   .build();
 ```
+
+A breakpoint measures the space the grid itself is given, never a container
+somewhere above it. A container query can't measure the element it styles,
+so a grid with breakpoints renders inside its own size container: a wrapper
+`div` with `container-type: inline-size` and a container name unique to that
+grid, which its `@container` queries target by name (see
+[ADR 0002](docs/adr/0002-grid-owns-its-size-container.md)). Grids without
+breakpoints get no wrapper and are not size containers.
+
+Because of inline-size containment, a grid with breakpoints can't take its
+width from its content. That's fine in a `1fr` or stretched track, but it
+collapses to zero width in an `auto` or `min-content` track of a parent grid.
 
 ## Slots and CSS
 
@@ -164,7 +178,8 @@ function Card() {
 ```
 
 - `useGridAreas(config)` generates a unique id (`useId`) and memoizes
-  `{ slots, css, containerProps }`. In development it also runs
+  `{ slots, css, containerProps, sizeContainerProps }` (`sizeContainerProps`
+  only when the definition has breakpoints). In development it also runs
   `validateGridConfig` and logs any warnings.
 - `<GridAreas>` renders the `<style>` tag plus the container (a `div` by
   default), spreads `containerProps` and your `style`/`className` onto it,
@@ -172,10 +187,16 @@ function Card() {
   runs `validateGridSlots` against the mounted container's direct children
   and warns on the console for any that aren't wired up correctly — did you
   forget to spread `{...slots.name}` somewhere?
-- The container's own layout styles (`display: grid`, `containerType:
-inline-size` for the `@container` queries) are set inline and merged with
-  any `style` you pass; nothing here depends on Tailwind or any other CSS
-  framework being present.
+- The container's own layout style (`display: grid`) is set inline and
+  merged with any `style` you pass; nothing here depends on Tailwind or any
+  other CSS framework being present.
+- When the definition has breakpoints, the container is wrapped in its own
+  size container (a `div`, even with `asChild`). `className`, `ref`,
+  `data-testid` and `style` still go on the grid itself.
+- A nested grid fills an area of an outer grid by spreading that grid's slot
+  props onto it: `<GridAreas {...inner} {...slots.main}>`. The area
+  (`data-slot` and `style.gridArea`) goes on the outermost element, so on the
+  wrapper when there is one.
 
 ### `asChild`
 

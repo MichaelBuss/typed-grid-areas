@@ -17,6 +17,12 @@ interface GridAreasElementProps<TElement extends Element = HTMLElement> {
   className?: string;
   /** A id that can be used in tests to get the component */
   "data-testid"?: string;
+  /**
+   * The area this grid fills when it is a nested grid, i.e. spread
+   * `{...slots.name}` of the outer grid onto it. Goes on the outermost element
+   * (the size container, if there is one), together with `style.gridArea`.
+   */
+  "data-slot"?: string;
   /** Inline styles, merged onto the container's own grid styles */
   style?: CSSProperties;
   /** Ref forwarded to the root DOM element */
@@ -128,8 +134,10 @@ export function GridAreas<TAreaName extends string, TElement extends Element = H
   slots,
   css,
   containerProps,
+  sizeContainerProps,
   className,
   "data-testid": dataTestId,
+  "data-slot": dataSlot,
   ref,
   style,
   children,
@@ -159,18 +167,50 @@ export function GridAreas<TAreaName extends string, TElement extends Element = H
     }
   };
 
+  if (sizeContainerProps === undefined) {
+    return (
+      <>
+        <style>{css}</style>
+        <Comp
+          {...containerProps}
+          className={className}
+          data-slot={dataSlot}
+          data-testid={dataTestId}
+          ref={containerRef}
+          style={{ display: "grid", ...style }}
+        >
+          {children(slots)}
+        </Comp>
+      </>
+    );
+  }
+
+  // A grid with breakpoints sits inside its own size container, which is then
+  // the outermost element: the area it fills in an outer grid goes there.
+  const { gridArea, ...gridStyle } = style ?? {};
   return (
     <>
       <style>{css}</style>
-      <Comp
-        {...containerProps}
-        className={className}
-        data-testid={dataTestId}
-        ref={containerRef}
-        style={{ display: "grid", containerType: "inline-size", ...style }}
+      <div
+        data-slot={dataSlot}
+        style={{
+          ...sizeContainerProps.style,
+          gridArea,
+          // Lets the grid fill the wrapper in both axes, as it would its cell.
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr)",
+        }}
       >
-        {children(slots)}
-      </Comp>
+        <Comp
+          {...containerProps}
+          className={className}
+          data-testid={dataTestId}
+          ref={containerRef}
+          style={{ display: "grid", ...gridStyle }}
+        >
+          {children(slots)}
+        </Comp>
+      </div>
     </>
   );
 }

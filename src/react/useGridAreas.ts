@@ -1,5 +1,5 @@
 import { useId, useMemo } from "react";
-import { createSlots, generateCss } from "../generateCss";
+import { createSlots, generateCss, hasBreakpoints, sizeContainerName } from "../generateCss";
 import { GridAreasResult, GridConfig } from "../types";
 import { validateGridConfig } from "../validateGridConfig";
 
@@ -84,6 +84,9 @@ export function useGridAreas<TAreaName extends string>(
       slots: createSlots(config.areas),
       css: generateCss(id, config),
       containerProps: { "data-grid-id": id },
+      sizeContainerProps: hasBreakpoints(config)
+        ? { style: { containerType: "inline-size", containerName: sizeContainerName(id) } }
+        : undefined,
     };
   }, [id, config]);
 }
