@@ -143,24 +143,13 @@ describe("validateGridConfig", () => {
   });
 
   describe("when-clause validation", () => {
-    it("should warn when 'when' items don't appear in layout", () => {
+    it("should accept a 'when' area the layout leaves out, which it hides", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
-        layouts: [
-          {
-            when: ["icon", "info"],
-            layout: [["icon"]], // 'info' is in when but not in layout
-          },
-        ],
+        layouts: [{ layout: [["icon", "info"]] }, { when: ["icon", "info"], layout: [["icon"]] }],
       };
 
-      const errors = validateGridConfig(config);
-
-      expect(errors).toContainEqual(
-        expect.stringContaining(
-          "Area \"info\" is in 'when' clause but doesn't appear in the layout",
-        ),
-      );
+      expect(validateGridConfig(config)).toHaveLength(0);
     });
   });
 

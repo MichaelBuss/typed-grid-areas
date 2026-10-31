@@ -27,19 +27,22 @@ function normalizeCondition(
 }
 
 /**
- * Reports names in an `unless` clause that aren't areas of the grid.
+ * Reports names in one half of a condition (`when` or `unless`) that aren't
+ * areas of the grid. A `when` area the layout leaves out is fine: the layout
+ * still applies when it's present, and hides it.
  */
-function validateUnlessClause(
-  unless: Array<string> | undefined,
+function validateConditionAreas(
+  clause: "when" | "unless",
+  names: Array<string> | undefined,
   areas: ReadonlyArray<string>,
   context: string,
 ): Array<string> {
   const areaSet = new Set(areas);
-  return (unless ?? [])
-    .filter(item => !areaSet.has(item))
+  return (names ?? [])
+    .filter(name => !areaSet.has(name))
     .map(
-      item =>
-        `${context}: Unknown area "${item}" in 'unless' clause. Valid areas are: ${areas.join(", ")}.`,
+      name =>
+        `${context}: Unknown area "${name}" in '${clause}' clause. Valid areas are: ${areas.join(", ")}.`,
     );
 }
 
@@ -180,52 +183,6 @@ function validateCells({ layout, areas, context }: ValidateCellsOptions): Array<
   return errors;
 }
 
-interface ValidateWhenClauseOptions {
-  when: Array<string> | undefined;
-  layout: GridLayout<string>;
-  areas: ReadonlyArray<string>;
-  context: string;
-}
-
-/**
- * Validates that all items in a 'when' array are valid area names and appear in the layout.
- *
- * @param options - Validation options
- * @param options.when - Optional when-clause array
- * @param options.layout - The 2D grid layout
- * @param options.areas - Valid area names
- * @param options.context - Context string for error messages
- * @returns {Array<string>} Array of error messages
- */
-function validateWhenClause({
-  when,
-  layout,
-  areas,
-  context,
-}: ValidateWhenClauseOptions): Array<string> {
-  if (when === undefined || when.length === 0) {
-    return [];
-  }
-
-  const errors: Array<string> = [];
-  const areaSet = new Set(areas);
-  const layoutCells = new Set(layout.flat().flatMap(cellAreas));
-
-  for (const item of when) {
-    if (!areaSet.has(item)) {
-      errors.push(
-        `${context}: Unknown area "${item}" in 'when' clause. Valid areas are: ${areas.join(", ")}.`,
-      );
-    } else if (!layoutCells.has(item)) {
-      errors.push(
-        `${context}: Area "${item}" is in 'when' clause but doesn't appear in the layout. The layout will never match this condition.`,
-      );
-    }
-  }
-
-  return errors;
-}
-
 interface ValidateBreakpointsOptions {
   breakpoints: Partial<Record<BreakpointKey, BreakpointLayoutConfig<string>>> | undefined;
   areas: ReadonlyArray<string>;
@@ -356,15 +313,8 @@ export function validateGridConfig<TAreaName extends string>(
       }),
     );
     errors.push(...validateCells({ layout: layoutConfig.layout, areas, context }));
-    errors.push(
-      ...validateWhenClause({
-        when: layoutConfig.when,
-        layout: layoutConfig.layout,
-        areas,
-        context,
-      }),
-    );
-    errors.push(...validateUnlessClause(layoutConfig.unless, areas, context));
+    errors.push(...validateConditionAreas("when", layoutConfig.when, areas, context));
+    errors.push(...validateConditionAreas("unless", layoutConfig.unless, areas, context));
     errors.push(
       ...validateBreakpoints({ breakpoints: layoutConfig.breakpoints, areas, layoutIndex: i }),
     );
