@@ -1,35 +1,35 @@
 /**
  * Builds `@typed-grid-areas/angular`, packs its build folder (what's
  * published) and the core the way `npm publish` does, installs both tarballs
- * into a clean Angular 22 project, and checks what a consumer gets: the
- * tarball's files and manifest, and the README's Angular example compiling
- * with `strictTemplates` and rendering on the server.
+ * into a clean Angular 22 project alongside Angular from npm's registry, and
+ * checks what a consumer gets: the tarball's files and manifest, the install
+ * resolving its dependencies and peers, and the README's Angular example
+ * compiling with `strictTemplates` and rendering on the server. Needs the
+ * network (or npm's cache) for Angular.
  */
 import { execFileSync } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
-import { createRequire } from "node:module";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 const packageDir = resolve(import.meta.dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
 const readmePath = resolve(packageDir, "..", "..", "README.md");
-const require = createRequire(import.meta.url);
-const ngc = join(
-  dirname(require.resolve("@angular/compiler-cli/package.json")),
-  "bundles",
-  "src",
-  "bin",
-  "ngc.js",
-);
+
+/**
+ * A clean Angular 22 project's dependencies, from the registry: what the
+ * README's example imports, and the compiler and TypeScript it builds with.
+ */
+const ANGULAR_PROJECT = [
+  "@angular/common@^22.0.0",
+  "@angular/compiler@^22.0.0",
+  "@angular/core@^22.0.0",
+  "@angular/platform-browser@^22.0.0",
+  "@angular/platform-server@^22.0.0",
+  "@angular/compiler-cli@^22.0.0",
+  "rxjs@^7.4.0",
+  "typescript@~6.0.3",
+];
 
 type Manifest = {
   name: string;
@@ -40,65 +40,59 @@ type Manifest = {
   optionalDependencies?: Record<string, string>;
 };
 
+/** A package in `npm ls --json`'s tree. */
+type Installed = { version: string; dependencies?: Record<string, Installed> };
+
 let consumer: string;
 let files: string[];
 let manifest: Manifest;
 let core: Manifest;
 
-/** Packs a package folder into the consumer and unpacks it into the consumer's node_modules. */
-function packAndInstall(dir: string, name: string): { files: string[]; manifest: Manifest } {
-  const [pack] = JSON.parse(
+/** Packs a package folder into the consumer: the tarball's file name and contents. */
+function pack(dir: string): { tarball: string; files: string[] } {
+  const [packed] = JSON.parse(
     execFileSync("npm", ["pack", "--json", "--pack-destination", consumer], {
       cwd: dir,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }),
   ) as Array<{ filename: string; files: Array<{ path: string }> }>;
-  const installed = join(consumer, "node_modules", name);
-  mkdirSync(installed, { recursive: true });
-  execFileSync("tar", [
-    "-xzf",
-    join(consumer, pack!.filename),
-    "-C",
-    installed,
-    "--strip-components=1",
-  ]);
-  return {
-    files: pack!.files.map(file => file.path),
-    manifest: JSON.parse(readFileSync(join(installed, "package.json"), "utf8")),
-  };
+  return { tarball: packed!.filename, files: packed!.files.map(file => file.path) };
 }
 
-/** Links a third-party package from the repo's install into the consumer's node_modules. */
-function linkInstalled(name: string): void {
-  const link = join(consumer, "node_modules", name);
-  mkdirSync(dirname(link), { recursive: true });
-  const installed = require.resolve
-    .paths(name)!
-    .map(nodeModules => join(nodeModules, name))
-    .find(dir => existsSync(join(dir, "package.json")));
-  symlinkSync(installed!, link, "dir");
+function installedManifest(name: string): Manifest {
+  return JSON.parse(readFileSync(join(consumer, "node_modules", name, "package.json"), "utf8"));
 }
 
 beforeAll(() => {
   // What the release does before publishing the build folder.
   execFileSync("npm", ["run", "build"], { cwd: packageDir, stdio: "ignore" });
   consumer = mkdtempSync(join(tmpdir(), "typed-grid-areas-angular-consumer-"));
-  core = packAndInstall(coreDir, "typed-grid-areas").manifest;
-  ({ files, manifest } = packAndInstall(join(packageDir, "dist"), "@typed-grid-areas/angular"));
-  for (const name of [
-    "@angular/common",
-    "@angular/compiler",
-    "@angular/core",
-    "@angular/platform-browser",
-    "@angular/platform-server",
-    "rxjs",
-    "tslib",
-  ]) {
-    linkInstalled(name);
-  }
-  writeFileSync(join(consumer, "package.json"), JSON.stringify({ type: "module" }));
-}, 180_000);
+  writeFileSync(
+    join(consumer, "package.json"),
+    JSON.stringify({ name: "consumer", private: true, type: "module" }),
+  );
+  const packedCore = pack(coreDir);
+  const packedAngular = pack(join(packageDir, "dist"));
+  files = packedAngular.files;
+  // One install, as an Angular 22 app adds the adapter: npm resolves the
+  // adapter's dependencies (the core, tslib) and checks its Angular peer.
+  execFileSync(
+    "npm",
+    [
+      "install",
+      `./${packedCore.tarball}`,
+      `./${packedAngular.tarball}`,
+      ...ANGULAR_PROJECT,
+      "--prefer-offline",
+      "--no-audit",
+      "--no-fund",
+    ],
+    { cwd: consumer, stdio: "ignore" },
+  );
+  core = installedManifest("typed-grid-areas");
+  manifest = installedManifest("@typed-grid-areas/angular");
+}, 300_000);
 
 afterAll(() => {
   rmSync(consumer, { recursive: true, force: true });
@@ -134,6 +128,17 @@ describe("the packed Angular adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
+  it("installs into an Angular 22 project with every dependency and peer satisfied", () => {
+    // `npm ls` fails on a missing, invalid or unmet peer dependency anywhere in the tree.
+    const tree = JSON.parse(
+      execFileSync("npm", ["ls", "--all", "--json"], { cwd: consumer, encoding: "utf8" }),
+    ) as { dependencies: Record<string, Installed> };
+    expect(tree.dependencies["@angular/core"]?.version).toMatch(/^22\./);
+    const adapter = tree.dependencies["@typed-grid-areas/angular"]?.dependencies ?? {};
+    expect(Object.keys(adapter).sort()).toEqual(["@angular/core", "tslib", "typed-grid-areas"]);
+    expect(adapter["typed-grid-areas"]?.version).toBe(core.version);
+  });
+
   it("compiles the README's Angular example with strictTemplates, and renders it on the server", () => {
     const readme = readFileSync(readmePath, "utf8");
     const example = Array.from(
@@ -161,7 +166,10 @@ describe("the packed Angular adapter", () => {
     );
     let output = "";
     try {
-      execFileSync(process.execPath, [ngc, "-p", consumer], { cwd: consumer, encoding: "utf8" });
+      execFileSync(join(consumer, "node_modules", ".bin", "ngc"), ["-p", consumer], {
+        cwd: consumer,
+        encoding: "utf8",
+      });
     } catch (error) {
       const { stdout, stderr } = error as { stdout?: string; stderr?: string };
       output = `${stdout ?? ""}${stderr ?? ""}`.replace(/\x1b\[[0-9;]*m/g, "");
