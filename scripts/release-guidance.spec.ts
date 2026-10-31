@@ -23,7 +23,7 @@ describe("shipped paths", () => {
   it("count each package's package.json, and the repo's README.md and LICENSE for every package", () => {
     expect(shipping("packages/core/package.json")).toEqual(["typed-grid-areas"]);
     expect(shipping("packages/react/package.json")).toEqual(["@typed-grid-areas/react"]);
-    // Every public package, however many adapters there are.
+    // Every public workspace, adapters added since included.
     const all = packages.map(({ name }) => name);
     expect(all).toEqual(expect.arrayContaining(["typed-grid-areas", "@typed-grid-areas/react"]));
     expect(shipping("README.md")).toEqual(all);

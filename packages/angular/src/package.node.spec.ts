@@ -137,7 +137,7 @@ describe("the packed Angular adapter", () => {
   it("compiles the README's Angular example with strictTemplates, and renders it on the server", () => {
     const readme = readFileSync(readmePath, "utf8");
     const example = Array.from(
-      readme.matchAll(/^```typescript\n([\s\S]*?)^```/gm),
+      readme.matchAll(/^```ts angular\n([\s\S]*?)^```/gm),
       match => match[1]!,
     ).find(code => code.includes('from "@typed-grid-areas/angular"'));
     expect(example).toBeDefined();

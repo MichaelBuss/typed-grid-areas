@@ -606,7 +606,7 @@ npm i typed-grid-areas @typed-grid-areas/angular
 directives that go on your own elements, and a typed reference per
 definition that the template names grids and areas through:
 
-```typescript
+```ts angular
 import { Component, input } from "@angular/core";
 import { defineLayout } from "typed-grid-areas";
 import { createGrid, TgaArea, TgaGrid, TgaSizeContainer } from "@typed-grid-areas/angular";
@@ -683,6 +683,400 @@ browser, a grid warns on the console after every render when a required
 area's slot is missing, when it has a direct child that isn't one of its
 slots, or when it has breakpoints but its parent isn't its size container.
 Production builds and server rendering log nothing.
+
+## Rendering with Vue: `@typed-grid-areas/vue`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/vue
+```
+
+`@typed-grid-areas/vue` needs `vue` 3.5 or later. It has the React
+adapter's shape: `createGridComponent(definition, { nest })` returns the
+grid's component, with a member component per area that templates use as a
+tag (`<Card.input>`):
+
+```vue
+<script setup lang="ts">
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/vue";
+
+defineProps<{ selectable: boolean }>();
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
+);
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+</script>
+
+<template>
+  <Card class="gap-4" aria-label="Card">
+    <Card.input v-if="selectable" as-child>
+      <label><input type="checkbox" /></label>
+    </Card.input>
+    <Card.content class="p-4">
+      <Card.content.icon>★</Card.content.icon>
+      <Card.content.title>Title</Card.content.title>
+    </Card.content>
+  </Card>
+</template>
+```
+
+- **`<Card>`** renders the grid, a `div` taking `class`, `style` and any other
+  attribute (inside its own size container when the definition has
+  breakpoints; your attributes still go on the grid). **`<Card.input>`** is
+  the slot for the `input` area, a `div` marked `data-area="input"`.
+  **`<Card.content>`** is both the `content` slot and the nested grid, so
+  `<Card.content.icon>` is one of its slots. Leave an optional area out with
+  `v-if`; slots must be direct children of their grid.
+- **Bind grid components in `<script setup>`** (or return them from
+  `setup()`): Vue resolves member tags like `<Card.input>` only from there.
+  Registering them under `components:` (Options API) and in-DOM templates
+  aren't supported. Run `vue-tsc` to type-check templates: `<Card.inputt>`
+  and `<Card.content.iconn>` are type errors.
+- **`as-child`** (on slots and on the grid) renders your own single child
+  element instead of a `div`, the way Reka UI's `as-child` does: the slot's
+  attributes are merged into the child's (the child's own win, classes and
+  styles combine, event handlers both run), it always gets the slot's
+  `data-area` (or the grid's `data-grid-id`), and its own `ref` still
+  reaches it.
+- **Area names Vue reserves** on a component (`length`, `props`, `emits`,
+  `slots`, `inheritAttrs`, `displayName`, `compatConfig`, and any starting
+  with `__`) can't be members: `createGridComponent` rejects them, as a type
+  error and at runtime.
+
+**CSS.** In the browser, each grid puts its definition's CSS into `<head>`
+once (a `<style data-typed-grid-areas>`), however many instances render, and
+leaves it there. Vue has no API for `<head>` on the server, so when you
+server-render, add the grids' style tags to your page's `<head>` in your
+server entry with `renderGridStyles`:
+
+```js
+import { renderToString } from "vue/server-renderer";
+import { renderGridStyles } from "@typed-grid-areas/vue";
+
+/** @param {import("vue").App} app the app from `createSSRApp` */
+export async function render(app) {
+  const ctx = {};
+  const html = await renderToString(app, ctx);
+  return { html, head: renderGridStyles(ctx) };
+}
+```
+
+It returns one tag per definition rendered with that `ctx`, and hydration
+reuses them instead of adding a second. Without it, server-rendered grids
+still work: their CSS is inserted on hydration, so the page lays out once
+the app's script runs.
+
+**Development warnings.** In development (`process.env.NODE_ENV ===
+"development"`), a grid warns on the console after it mounts and after each
+update when a required area's slot isn't rendered, or when it has a direct
+child that isn't one of its slots. Production builds and server rendering
+log nothing.
+
+## Rendering with Solid: `@typed-grid-areas/solid`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/solid
+```
+
+`@typed-grid-areas/solid` supports Solid 1.x: it needs `solid-js` 1.9 or
+later within 1.x. Solid 2 will be supported by a new major of the adapter.
+
+The API is the React adapter's: `createGridComponent(definition, { nest })`
+returns the grid component, with a slot component per area (`<Card.icon>`),
+and a nested grid's slots reached through its area (`<Card.content.icon>`).
+Create it once, at module level. Slots and the grid take `class`, `style`,
+`ref`, `children` and any other attribute of the element they render.
+
+```tsx solid
+import { createSignal, Show } from "solid-js";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/solid";
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title", "tag?"], layouts: [{ template: "icon title tag" }] }),
+);
+
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+
+function Example(props: { tag?: string }) {
+  const [hasIcon, setHasIcon] = createSignal(true);
+  return (
+    <Card class="gap-4" aria-label="Card">
+      <Card.input as="label" for="notify">
+        <input id="notify" type="checkbox" onChange={() => setHasIcon(!hasIcon())} />
+      </Card.input>
+      <Card.content class="p-4">
+        <Show when={hasIcon()}>
+          <Card.content.icon>★</Card.content.icon>
+        </Show>
+        <Card.content.title>Weekly digest</Card.content.title>
+        <Show when={props.tag}>
+          <Card.content.tag>{props.tag}</Card.content.tag>
+        </Show>
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+- **Optional areas** are absent when their slot isn't rendered: use Solid's
+  own `<Show>` (or any conditional). Slots stay reactive, through a nested
+  grid's root too, and so does the layout.
+- **Your own element as a slot: `as`.** Solid's JSX creates real DOM nodes,
+  so there's no `asChild`; instead `as` (on slots and the grid) renders the
+  slot as a tag name, a component or a render function, with no wrapper.
+  The other props are typed from `as`: with `as="label"`, `for` type-checks
+  and `ref` gets an `HTMLLabelElement`, and an attribute a label doesn't take
+  is an error. A component (or render function) gets the slot's props,
+  including its `data-area`, and must spread them onto its root element.
+  Annotate a render function's `props` for the slot to take that element's
+  attributes:
+
+```tsx solid
+import type { JSX } from "solid-js";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/solid";
+
+const Row = createGridComponent(
+  defineLayout({ areas: ["icon", "input"], layouts: [{ template: "icon input" }] }),
+);
+
+function Icon(props: JSX.SvgSVGAttributes<SVGSVGElement> & { size: number }) {
+  return <svg {...props} width={props.size} height={props.size} />;
+}
+
+function Example() {
+  return (
+    <Row as="section">
+      <Row.icon as={Icon} size={16} />
+      <Row.input
+        as={(props: JSX.LabelHTMLAttributes<HTMLLabelElement>) => <label {...props} />}
+        for="notify"
+      >
+        <input id="notify" type="checkbox" />
+      </Row.input>
+    </Row>
+  );
+}
+```
+
+- **CSS.** Each definition's CSS goes on the page once, however many
+  instances render. In the browser, the grid puts its style tag in `<head>`
+  as it's created, reusing one the server rendered, so hydration adds no
+  second copy. On the server, the grid registers its style tag with Solid's
+  `useAssets`, once per definition per render, and `renderToString`,
+  `renderToStringAsync` and `renderToStream` put it before `</head>` when the
+  app renders the whole document (as SolidStart does). If your app renders
+  only part of the page, put `getAssets()` from `solid-js/web` in the
+  `<head>` you render around it. Nothing else is needed: no `@solidjs/meta`.
+- **Development warnings** are React's: in development
+  (`process.env.NODE_ENV === "development"`), after mount and after every
+  change to its slots, a grid warns about a missing required slot or a
+  direct child that isn't a slot, once per distinct set of problems. Never on
+  the server, never in production.
+- **Builds.** The package's `solid` export is Solid JSX for your bundler's
+  Solid plugin (`vite-plugin-solid` and the like) to compile, for the browser
+  or the server; its `import` export is compiled for the browser.
+
+## Rendering with Svelte: `@typed-grid-areas/svelte`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/svelte
+```
+
+Needs Svelte 5.57.0 or later, in runes mode. The package ships `.svelte`
+files under the `svelte` export condition, so build with a Svelte-aware
+bundler (Vite with `@sveltejs/vite-plugin-svelte`, or SvelteKit).
+
+`createGridComponent(definition, { nest })` turns a definition into a
+component with one member per area, like the React adapter. A `.svelte`
+file can't be a generic factory, so create grid components in a module: a
+`.ts` file, or a component's `<script module>`:
+
+```svelte
+<script module lang="ts">
+  import { defineLayout } from "typed-grid-areas";
+  import { createGridComponent } from "@typed-grid-areas/svelte";
+
+  const Content = createGridComponent(
+    defineLayout({
+      areas: ["icon?", "information", "cardTag?"],
+      layouts: [
+        {
+          template: "icon information cardTag",
+          columns: "min-content minmax(0, 1fr) auto",
+        },
+      ],
+    }),
+  );
+
+  const Card = createGridComponent(
+    defineLayout({
+      areas: ["input?", "content"],
+      layouts: [{ template: "input content", columns: "auto minmax(0, 1fr)" }],
+    }),
+    { nest: { content: Content } },
+  );
+</script>
+
+<script lang="ts">
+  let { selectable = false, tag }: { selectable?: boolean; tag?: string } = $props();
+</script>
+
+<Card class="gap-2" aria-label="Card">
+  {#if selectable}
+    <Card.input>
+      {#snippet child({ props })}
+        <label {...props}><input type="checkbox" /></label>
+      {/snippet}
+    </Card.input>
+  {/if}
+  <Card.content class="p-4">
+    <Card.content.icon>★</Card.content.icon>
+    <Card.content.information>Weekly digest</Card.content.information>
+    {#if tag}
+      <Card.content.cardTag>{tag}</Card.content.cardTag>
+    {/if}
+  </Card.content>
+</Card>
+```
+
+- **`<Card>`** renders the grid, and **`<Card.icon>`** the slot for the
+  `icon` area, exactly as in React: the same DOM, the same size container
+  for a definition with breakpoints (your attributes still go on the grid),
+  and `<Card.iconn>` is an error in `svelte-check`. Both take any attribute
+  a `div` takes (`class`, `style`, `aria-*`, event handlers) and children.
+- **Optional areas:** leave a slot out with an ordinary `{#if}`; the
+  derived layout for its absence applies. Slots must be direct children of
+  their grid (`{#if}`, `{#each}` and snippets rendered in place are fine).
+- **Your own element as a slot (or the grid):** pass a `child` snippet
+  instead of children, and spread its `props` onto your element, Bits UI's
+  convention: `{#snippet child({ props })}<label {...props}>…</label>{/snippet}`.
+  `props` carries the slot's `data-area` (or the grid's attributes) and
+  every attribute you gave the component.
+- **Nesting:** `nest: { content: Content }` makes `<Card.content>` both the
+  `content` slot and the `Content` grid, reaching its slots as
+  `<Card.content.icon>`.
+
+**Where the CSS goes.** Each definition's CSS is a
+`<style data-typed-grid-areas="<grid id>">` in `<svelte:head>`, rendered by
+exactly one instance of the definition, however many render:
+
+- **With server rendering**, `render()` from `svelte/server` puts it in
+  `head` once per render; SvelteKit puts `head` into the page for you, and
+  with plain `svelte/server` you put it in your HTML's `<head>`. Hydration
+  reuses the server's tag.
+- **Without server rendering**, the first mounted instance adds it to
+  `document.head`; when that instance unmounts another one takes it over,
+  and it goes away with the last instance.
+
+**Development warnings.** Under the `development` export condition (Vite's
+dev server, Vitest), a grid warns on the console when a required area's
+slot isn't rendered or it has a direct child that isn't one of its slots,
+once per distinct set of problems, after mount and after each update.
+Production builds and server rendering log nothing.
+
+## Rendering with Preact: `@typed-grid-areas/preact`
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/preact
+```
+
+`@typed-grid-areas/preact` is a native Preact adapter (no `preact/compat`)
+for Preact 11 (`preact` `^11.0.0`; checked with 11.1). Its API is the React
+adapter's: `createGridComponent(definition, { nest })` returns `<Card>`,
+with a slot component per area (`<Card.icon>`), each taking anything a
+`div` takes (`class` or `className`, `style`, `ref`, …):
+
+```tsx preact
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/preact";
+
+const Card = createGridComponent(
+  defineLayout({
+    areas: ["icon?", "information", "cardTag?"],
+    layouts: [
+      {
+        template: "icon information cardTag",
+        columns: "min-content minmax(0, 1fr) auto",
+      },
+    ],
+  }),
+);
+
+function Example({ tag }: { tag?: string }) {
+  return (
+    <Card class="gap-2">
+      <Card.icon>★</Card.icon>
+      <Card.information>Weekly digest</Card.information>
+      {tag && <Card.cardTag>{tag}</Card.cardTag>}
+    </Card>
+  );
+}
+```
+
+The rendered DOM, `nest`, and the development warnings are the React
+adapter's ([Rendering with React](#rendering-with-react-grid-components)).
+
+**Your own element as a slot: `asChild`.** On a slot or on the grid,
+`asChild` renders your single child element instead of a `div`. Classes
+(`class` and `className`) from both are joined, `style` objects merge (a
+string style is appended after the slot's), a handler on both runs the
+child's then the slot's, and both refs are set. The slot's `data-area` (or
+the grid's `data-grid-id`) always wins; any other prop of the child wins.
+
+```tsx preact
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/preact";
+
+const Row = createGridComponent(
+  defineLayout({ areas: ["input", "content"], layouts: [{ template: "input content" }] }),
+);
+
+function Example() {
+  return (
+    <Row>
+      <Row.input asChild class="p-4">
+        <label for="notify">
+          <input id="notify" type="checkbox" />
+        </label>
+      </Row.input>
+      <Row.content>Notify me</Row.content>
+    </Row>
+  );
+}
+```
+
+**Where the CSS goes.** In the browser, each definition's CSS goes into one
+`<style data-typed-grid-areas>` in `<head>`, inserted while the first
+instance renders and kept for the page's lifetime; nothing to set up.
+Preact has no way to reach `<head>` from the server, so a server render
+collects it with `createGridStyleSheet()`, a new one per request, and puts
+it in `<head>` itself:
+
+```tsx preact
+import { renderToString } from "preact-render-to-string";
+import { createGridStyleSheet } from "@typed-grid-areas/preact";
+
+function App() {
+  return <main>…</main>;
+}
+
+const sheet = createGridStyleSheet();
+const body = renderToString(sheet.collect(<App />));
+const html = `<!doctype html><html><head>${sheet}</head><body>${body}</body></html>`;
+```
+
+When the page hydrates, the grids reuse the server's style tags. In
+development, a grid rendered on the server outside a sheet warns that its
+CSS is missing.
 
 ## Without React: `typed-grid-areas/adapter`
 
