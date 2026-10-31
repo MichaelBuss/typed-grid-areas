@@ -1,7 +1,6 @@
-import { html, nothing, type TemplateResult } from "lit";
+import { type CSSResult, html, nothing, type TemplateResult } from "lit";
 import { ref, type RefOrCallback } from "lit/directives/ref.js";
 import { styleMap, type StyleInfo } from "lit/directives/style-map.js";
-import { type CSSResult } from "lit";
 import { gridMarkup } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 import { gridElement } from "./gridElement.ts";
