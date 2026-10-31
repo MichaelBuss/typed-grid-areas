@@ -11,8 +11,6 @@ import {
 import { isDevelopment } from "./isDevelopment";
 import { validateGridConfig } from "./validateGridConfig";
 
-type OptionalAreaName<TArea extends string> = TArea extends `${infer TName}?` ? TName : never;
-
 /**
  * One arrangement of the areas, as written in a layout or a breakpoint.
  */
@@ -124,15 +122,14 @@ export function defineLayout<
   areas: TAreas;
   /** The layouts, in precedence order: when several apply, the later one wins. */
   layouts: CheckedLayouts<TLayouts, AreaName<TAreas[number]>>;
-}): LayoutDefinition<AreaName<TAreas[number]>, OptionalAreaName<TAreas[number]>> {
+}): LayoutDefinition<AreaName<TAreas[number]>> {
   type TAreaName = AreaName<TAreas[number]>;
-  type TOptionalAreaName = OptionalAreaName<TAreas[number]>;
 
-  const config: LayoutDefinition<TAreaName, TOptionalAreaName> = {
+  const config: LayoutDefinition<TAreaName> = {
     areas: definition.areas.map(area => area.replace(/\?$/, "") as TAreaName),
     optionalAreas: definition.areas
       .filter(area => area.endsWith("?"))
-      .map(area => area.slice(0, -1) as TOptionalAreaName),
+      .map(area => area.slice(0, -1) as TAreaName),
     layouts: definition.layouts.map(layout => toLayout<TAreaName>(layout)),
   };
 

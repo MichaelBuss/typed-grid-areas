@@ -86,8 +86,9 @@ export type AreaAlignment = {
 export type AreaAlignments<TAreaName extends string> = Partial<Record<TAreaName, AreaAlignment>>;
 
 /**
- * Layout configuration with optional conditions and track sizes.
- * This is the runtime type - compile-time validation is done by the builder.
+ * One layout of a grid definition as the engine takes it: its condition,
+ * cells, track sizes, alignment and breakpoints. `defineLayout` builds it
+ * from a template, after checking the template at compile time.
  */
 export type LayoutConfig<TAreaName extends string> = {
   /** The grid layout to apply. Use "." for empty cells. */
@@ -118,8 +119,8 @@ export type BreakpointLayoutConfig<TAreaName extends string> = {
 };
 
 /**
- * Grid configuration output from the builder.
- * Contains the layout structure - id is generated at render time.
+ * A grid definition as the engine takes it: what `defineLayout` returns. Its
+ * id (`gridId`) is a hash of this content, so equal definitions share CSS.
  */
 export type GridConfig<TAreaName extends string> = {
   /** Array of area names - slots are matched as [data-area=name] */
@@ -135,14 +136,11 @@ export type GridConfig<TAreaName extends string> = {
 };
 
 /**
- * A grid definition from `defineLayout`, typed with its area names and which
- * of them are optional.
+ * A grid definition from `defineLayout`, typed with its area names. It always
+ * lists its optional areas (empty when there are none).
  */
-export type LayoutDefinition<
-  TAreaName extends string,
-  TOptionalAreaName extends TAreaName = never,
-> = Omit<GridConfig<TAreaName>, "optionalAreas"> & {
-  optionalAreas: ReadonlyArray<TOptionalAreaName>;
+export type LayoutDefinition<TAreaName extends string> = GridConfig<TAreaName> & {
+  optionalAreas: ReadonlyArray<TAreaName>;
 };
 
 /**
@@ -154,24 +152,3 @@ export type LayoutDefinition<
 export type SlotProps = {
   "data-area": string;
 };
-
-/**
- * A single CSS-in-JS style value: a declaration value, a nested selector/at-rule
- * block, or undefined.
- */
-export type StyleValue = string | number | NestedStyles | undefined;
-
-/**
- * Nested styles object for container queries and conditional selectors.
- *
- * Framework-agnostic replacement for React's `CSSProperties`, since core has
- * no React dependency.
- */
-export interface NestedStyles {
-  [key: string]: StyleValue;
-}
-
-/**
- * CSS-in-JS compatible styles object with nested selectors
- */
-export type GridStyles = NestedStyles;

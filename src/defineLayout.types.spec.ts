@@ -198,6 +198,8 @@ describe("defineLayout type checks", () => {
     expectTypeOf(layout.areas).toEqualTypeOf<
       ReadonlyArray<"icon" | "information" | "cardTag" | "badge">
     >();
-    expectTypeOf(layout.optionalAreas).toEqualTypeOf<ReadonlyArray<"icon" | "cardTag" | "badge">>();
+    expectTypeOf(layout.optionalAreas).toEqualTypeOf<
+      ReadonlyArray<"icon" | "information" | "cardTag" | "badge">
+    >();
   });
 });

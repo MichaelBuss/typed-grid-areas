@@ -15,11 +15,8 @@ export {
   type GridCell,
   type GridConfig,
   type GridLayout,
-  type GridStyles,
   type LayoutConfig,
   type LayoutDefinition,
-  type NestedStyles,
   type SlotProps,
-  type StyleValue,
   type TrackSize,
 } from "./types";
