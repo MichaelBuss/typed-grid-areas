@@ -326,11 +326,11 @@ Browser support for style queries on custom properties
 [caniuse](https://caniuse.com/css-container-queries-style), checked
 2026-10-31):
 
-| Browser | Supported since    |
-| ------- | ------------------ |
-| Chrome  | 111                |
-| Safari  | 18                 |
-| Firefox | 151                |
+| Browser | Supported since |
+| ------- | --------------- |
+| Chrome  | 111             |
+| Safari  | 18              |
+| Firefox | 151             |
 
 All on by default. Only custom-property queries are supported (which is all
 `--tga-over` needs); the range syntax (`style(--x > 1)`) isn't in Safari.
@@ -458,8 +458,12 @@ aren't rectangles.
 **PreferenceCard:** an optional input panel (a checkbox, as a `<label>`)
 beside a content panel with its own padding. The content panel is a nested
 grid of an optional icon, the information, an optional tag and optional
-children. From `@sm` the tag moves up beside the information; without a
-tag, the information sits beside the icon at every width.
+children. With both an icon and a tag, the two share the top row above
+the information on narrow cards, and from `@sm` all three share one row.
+With only one of them, it sits beside the information at every width (the
+second override: the derived layout without an icon would stack the tag
+above the information). Children always take a full-width last row. The
+library's browser acceptance tests render this design in every combination.
 
 ```tsx
 import type { ReactNode } from "react";
@@ -485,6 +489,12 @@ const PreferenceContent = createGridComponent(
         },
       },
       { unless: ["cardTag"], template: "icon information / children children" },
+      {
+        when: ["cardTag"],
+        unless: ["icon"],
+        template: "information cardTag / children children",
+        columns: "minmax(0, 1fr) auto",
+      },
     ],
   }),
 );
