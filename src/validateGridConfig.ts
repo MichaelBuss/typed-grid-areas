@@ -12,8 +12,8 @@ import {
  * Order within each list doesn't matter. Returns an empty string for a
  * layout with no condition.
  *
- * @param when - The when-clause array
- * @param unless - The unless-clause array
+ * @param when - The areas that must be present
+ * @param unless - The areas that must be absent
  * @returns {string} A normalized string key for comparison
  */
 function normalizeCondition(
@@ -230,42 +230,45 @@ function validateBreakpoints({
 }
 
 /**
- * Validates that there are no duplicate 'when' clauses across layouts.
- * Two when-clauses are considered duplicates if they contain the same set of areas (order doesn't matter).
- *
- * @param layouts - Array of layout configurations
- * @returns {Array<string>} Array of warning messages
+ * A condition as written, for messages: `when: icon; unless: tag`.
  */
-function validateDuplicateWhenClauses<TAreaName extends string>(
+function describeCondition(
+  when: Array<string> | undefined,
+  unless: Array<string> | undefined,
+): string {
+  return [
+    ...(when?.length ? [`when: ${when.join(", ")}`] : []),
+    ...(unless?.length ? [`unless: ${unless.join(", ")}`] : []),
+  ].join("; ");
+}
+
+/**
+ * Reports layouts whose condition (the same `when` and `unless` areas, in any
+ * order) repeats an earlier layout's: the later one always wins, so the
+ * earlier one never applies. Base layouts have no condition and are skipped.
+ */
+function validateDuplicateConditions<TAreaName extends string>(
   layouts: Array<LayoutConfig<TAreaName>>,
 ): Array<string> {
   const warnings: Array<string> = [];
-  const seenWhenClauses = new Map<string, number>();
+  const seenConditions = new Map<string, number>();
 
-  for (let i = 0; i < layouts.length; i++) {
-    const layoutConfig = layouts[i];
-    if (layoutConfig === undefined) {
-      continue;
+  layouts.forEach(({ when, unless }, i) => {
+    const key = normalizeCondition(when, unless);
+    if (key === "") {
+      return;
     }
 
-    const whenKey = normalizeCondition(layoutConfig.when, layoutConfig.unless);
-
-    // Skip layouts without when-clauses (base layouts)
-    if (whenKey === "") {
-      continue;
-    }
-
-    const previousIndex = seenWhenClauses.get(whenKey);
+    const previousIndex = seenConditions.get(key);
     if (previousIndex !== undefined) {
-      const whenDisplay = layoutConfig.when?.join(", ") ?? "";
       warnings.push(
-        `Layout ${i} has the same 'when' clause as Layout ${previousIndex}: [${whenDisplay}]. ` +
+        `Layout ${i} has the same condition as Layout ${previousIndex} (${describeCondition(when, unless)}). ` +
           `Layout ${i} will override Layout ${previousIndex} since it appears later.`,
       );
     }
 
-    seenWhenClauses.set(whenKey, i);
-  }
+    seenConditions.set(key, i);
+  });
 
   return warnings;
 }
@@ -293,8 +296,7 @@ export function validateGridConfig<TAreaName extends string>(
     errors.push("Config has no layouts defined. Define at least one layout.");
   }
 
-  // Check for duplicate when-clauses
-  errors.push(...validateDuplicateWhenClauses(layouts));
+  errors.push(...validateDuplicateConditions(layouts));
 
   // Validate each layout
   for (let i = 0; i < layouts.length; i++) {

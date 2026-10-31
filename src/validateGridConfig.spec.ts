@@ -142,7 +142,7 @@ describe("validateGridConfig", () => {
     });
   });
 
-  describe("when-clause validation", () => {
+  describe("condition validation", () => {
     it("should accept a 'when' area the layout leaves out, which it hides", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
@@ -201,8 +201,24 @@ describe("validateGridConfig", () => {
     });
   });
 
-  describe("duplicate when-clause validation", () => {
-    it("should warn when two layouts have the same when-clause", () => {
+  describe("duplicate condition validation", () => {
+    it("should report the whole condition two layouts share", () => {
+      const config: GridConfig<"icon" | "info" | "tag"> = {
+        areas: ["icon", "info", "tag"],
+        layouts: [
+          { layout: [["info"]] },
+          { when: ["icon"], unless: ["tag"], layout: [["icon", "info"]] },
+          { when: ["icon"], unless: ["tag"], layout: [["info", "icon"]] },
+        ],
+      };
+
+      expect(validateGridConfig(config)).toEqual([
+        "Layout 2 has the same condition as Layout 1 (when: icon; unless: tag). " +
+          "Layout 2 will override Layout 1 since it appears later.",
+      ]);
+    });
+
+    it("should warn when two layouts have the same condition", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
         layouts: [
@@ -219,13 +235,13 @@ describe("validateGridConfig", () => {
 
       const errors = validateGridConfig(config);
 
-      expect(errors).toContainEqual(expect.stringContaining("same 'when' clause"));
+      expect(errors).toContainEqual(expect.stringContaining("same condition"));
       expect(errors).toContainEqual(expect.stringContaining("Layout 1"));
       expect(errors).toContainEqual(expect.stringContaining("Layout 0"));
       expect(errors).toContainEqual(expect.stringContaining("will override"));
     });
 
-    it("should warn when when-clauses have same areas in different order", () => {
+    it("should warn when conditions have the same areas in a different order", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
@@ -242,10 +258,10 @@ describe("validateGridConfig", () => {
 
       const errors = validateGridConfig(config);
 
-      expect(errors).toContainEqual(expect.stringContaining("same 'when' clause"));
+      expect(errors).toContainEqual(expect.stringContaining("same condition"));
     });
 
-    it("should not warn for different when-clauses", () => {
+    it("should not warn for different conditions", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
@@ -265,7 +281,7 @@ describe("validateGridConfig", () => {
       expect(errors).toHaveLength(0);
     });
 
-    it("should not warn when the same when-clause has a different unless-clause", () => {
+    it("should not warn when the same 'when' has a different 'unless'", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {
         areas: ["icon", "info", "tag"],
         layouts: [
@@ -279,7 +295,7 @@ describe("validateGridConfig", () => {
       expect(errors).toHaveLength(0);
     });
 
-    it("should not warn for multiple base layouts without when-clause", () => {
+    it("should not warn for multiple base layouts without a condition", () => {
       const config: GridConfig<"icon" | "info"> = {
         areas: ["icon", "info"],
         layouts: [{ layout: [["icon"]] }, { layout: [["info"]] }],
@@ -287,8 +303,8 @@ describe("validateGridConfig", () => {
 
       const errors = validateGridConfig(config);
 
-      // Base layouts don't have when-clauses, so no duplicate warning
-      expect(errors.filter(e => e.includes("same 'when' clause"))).toHaveLength(0);
+      // Base layouts have no condition, so no duplicate warning
+      expect(errors.filter(e => e.includes("same condition"))).toHaveLength(0);
     });
   });
 
