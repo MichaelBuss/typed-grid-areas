@@ -108,6 +108,10 @@ describe("the release script's dry run after it", () => {
       "typed-grid-areas": ["1.4.2"],
       "@typed-grid-areas/react": ["0.3.0"],
     };
+    // Every other package (the other adapters) is on npm at its current version already.
+    for (const { name, version } of readWorkspaces(root)) {
+      npm[name] ??= [version];
+    }
     let output = "";
     const status = await releaseCli({
       root,
