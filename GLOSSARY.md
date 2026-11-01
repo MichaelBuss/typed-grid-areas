@@ -57,3 +57,11 @@ _Avoid_: Media query, responsive variant
 **Adapter**:
 What renders grids in one UI framework, turning a definition into that framework's components. Every adapter offers the same concepts (slots, nested grids, hidden areas); how it spells them follows its framework.
 _Avoid_: Renderer, binding, integration
+
+**Server-only grid**:
+A grid rendered on the server, in a page or region that is never hydrated, so none of the library's code runs in the browser for it.
+_Avoid_: Static grid, zero-JS grid
+
+**Precompiled definition**:
+A definition whose CSS and markup are produced when the app is built, instead of when it runs.
+_Avoid_: Compiled grid, static definition
