@@ -86,6 +86,18 @@
       "evidence": [
         "git diff -M main: rename to packages/core/skills/typed-grid-areas/"
       ]
+    },
+    "source:GLOSSARY.md": {
+      "fingerprint": "e0023fffa9457e720c43b170a7cb6bdedb9a810713d5ca4ae4ebd6a93ab0f7fc",
+      "snapshot": {
+        "GLOSSARY.md": "1aad0360307df44195be5744d332458272b013ac433423f3fa920e01bcf47dd6"
+      },
+      "head": "7fa9357cb33fcae2d27faab44096791cf27646bb",
+      "outcome": "no-change",
+      "reason": "GLOSSARY.md only gains terms (server-only grid, precompiled definition) for features planned in #47 and #48 that don't exist yet; the skill's guidance on writing, converting and debugging layouts is unaffected",
+      "evidence": [
+        "Changed: GLOSSARY.md at 7fa9357cb33fcae2d27faab44096791cf27646bb"
+      ]
     }
   }
 }
