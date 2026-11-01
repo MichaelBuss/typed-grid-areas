@@ -1,6 +1,6 @@
 {
   "name": "typed-grid-areas",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
   "keywords": [
     "tanstack-intent"

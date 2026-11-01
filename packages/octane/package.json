@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/octane",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Octane adapter for typed-grid-areas (experimental): render a grid definition as typed slot components.",
   "type": "module",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "octane": "^0.16.0"
   },
   "dependencies": {
-    "typed-grid-areas": "^0.2.0"
+    "typed-grid-areas": "^0.3.0"
   },
   "devDependencies": {
     "@octanejs/testing-library": "^0.1.66",
