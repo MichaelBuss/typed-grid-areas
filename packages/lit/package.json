@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/lit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Lit adapter for typed-grid-areas: render a grid definition as a typed template function.",
   "type": "module",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "lit": "^3.0.0"
   },
   "dependencies": {
-    "typed-grid-areas": "^0.1.0"
+    "typed-grid-areas": "^0.2.0"
   },
   "devDependencies": {
     "@lit-labs/ssr": "^4.1.0",

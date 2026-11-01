@@ -1,5 +1,13 @@
 # typed-grid-areas
 
+## 0.2.0
+
+### Minor Changes
+
+- [#38](https://github.com/MichaelBuss/typed-grid-areas/pull/38) [`5ed302b`](https://github.com/MichaelBuss/typed-grid-areas/commit/5ed302b2e827d291c3949c75aa1105ef9834baff) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - Build an adapter for another framework on `typed-grid-areas/adapter`. `gridMarkup(definition)` gives the attributes and styles of the grid, its size container and each slot (including where a nested grid's `data-area` goes), plus the CSS and a key to emit it once by. `insertGridStyle` and `gridStyleTags` put that CSS in `<head>` in the browser and on the server (`insertServerGridStyle` for a server DOM that is serialized, such as Angular's), and `createSlotCheck` returns the development warnings about a mounted grid's slots, worded for your framework. The React adapter now renders through it, unchanged.
+
+- [#38](https://github.com/MichaelBuss/typed-grid-areas/pull/38) [`cdab124`](https://github.com/MichaelBuss/typed-grid-areas/commit/cdab12422cb0bb9d1fb6f6d7ff28ddbaa1de6962) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - **Breaking:** the React adapter has moved to its own package, and `typed-grid-areas/react` is gone. Install `@typed-grid-areas/react` and import `createGridComponent` from it instead; its API is unchanged. `typed-grid-areas` is now framework-free: no `react` peer dependency and no Radix dependency, just the `.` and `./adapter` entries.
+
 ## 0.1.0
 
 ### Minor Changes
