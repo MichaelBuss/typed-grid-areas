@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React adapter for typed-grid-areas: render a grid definition as typed slot components.",
   "type": "module",
   "license": "MIT",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",
-    "typed-grid-areas": "^0.1.0"
+    "typed-grid-areas": "^0.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
