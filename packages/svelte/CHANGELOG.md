@@ -1,5 +1,12 @@
 # @typed-grid-areas/svelte
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`1007398`](https://github.com/MichaelBuss/typed-grid-areas/commit/100739836f3e71b4654310fa377cc82ae78b2690)]:
+  - typed-grid-areas@0.3.0
+
 ## 0.1.0
 
 ### Minor Changes

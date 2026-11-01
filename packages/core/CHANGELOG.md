@@ -1,5 +1,11 @@
 # typed-grid-areas
 
+## 0.3.0
+
+### Minor Changes
+
+- [#43](https://github.com/MichaelBuss/typed-grid-areas/pull/43) [`1007398`](https://github.com/MichaelBuss/typed-grid-areas/commit/100739836f3e71b4654310fa377cc82ae78b2690) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - Ship the typed-grid-areas agent skill in the package, versioned with each release. Run `npx @tanstack/intent@latest install` in your project to let your coding agent load it: it walks the agent through writing a layout, converting hand-written `:has()` CSS or layout JavaScript, and debugging type errors and development warnings.
+
 ## 0.2.0
 
 ### Minor Changes
