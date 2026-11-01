@@ -1,55 +1,102 @@
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
 import {
   closesIssue,
   globMatch,
   guidance,
   isShippedPath,
   parseChangeset,
-  shippedPaths,
+  shippedSources,
+  shippingPackages,
   type ChangesetEntry,
 } from "./release-guidance.ts";
+import { readWorkspaces } from "./workspaces.ts";
 
-const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
-  name: string;
-  files: string[];
-};
-const build = JSON.parse(
-  readFileSync(new URL("../tsconfig.build.json", import.meta.url), "utf8"),
-) as { compilerOptions: { outDir: string }; include: string[]; exclude: string[] };
-const shipped = shippedPaths(pkg.files, {
-  outDir: build.compilerOptions.outDir,
-  include: build.include,
-  exclude: build.exclude,
-});
+const repo = resolve(__dirname, "..");
+const packages = shippingPackages(repo);
+const shipping = (file: string) =>
+  packages.filter(({ shipped }) => isShippedPath(file, shipped)).map(({ name }) => name);
 
 describe("shipped paths", () => {
-  it("count the sources the build compiles into a shipped directory", () => {
-    expect(isShippedPath("src/defineLayout.ts", shipped)).toBe(true);
-    expect(isShippedPath("src/engine/derive.ts", shipped)).toBe(true);
-    expect(isShippedPath("src/react/gridComponent.tsx", shipped)).toBe(true);
+  it("count the sources each package's build compiles into a shipped directory", () => {
+    expect(shipping("packages/core/src/defineLayout.ts")).toEqual(["typed-grid-areas"]);
+    expect(shipping("packages/core/src/engine/derive.ts")).toEqual(["typed-grid-areas"]);
+    expect(shipping("packages/react/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/react"]);
   });
 
-  it("count the files package.json lists, and package.json itself", () => {
-    expect(isShippedPath("README.md", shipped)).toBe(true);
-    expect(isShippedPath("LICENSE", shipped)).toBe(true);
-    expect(isShippedPath("package.json", shipped)).toBe(true);
+  it("count each package's package.json, and the repo's README.md and LICENSE for every package", () => {
+    expect(shipping("packages/core/package.json")).toEqual(["typed-grid-areas"]);
+    expect(shipping("packages/react/package.json")).toEqual(["@typed-grid-areas/react"]);
+    // Every public workspace, adapters added since included.
+    const all = packages.map(({ name }) => name);
+    expect(all).toEqual(expect.arrayContaining(["typed-grid-areas", "@typed-grid-areas/react"]));
+    expect(shipping("README.md")).toEqual(all);
+    expect(shipping("LICENSE")).toEqual(all);
   });
 
-  it("leave out the sources the build excludes", () => {
-    expect(isShippedPath("src/defineLayout.spec.ts", shipped)).toBe(false);
-    expect(isShippedPath("src/react/gridComponent.browser.spec.tsx", shipped)).toBe(false);
-    expect(isShippedPath("src/test-utils/designs.ts", shipped)).toBe(false);
-    expect(isShippedPath("src/test-setup.ts", shipped)).toBe(false);
+  it("leave out the sources the builds exclude", () => {
+    expect(shipping("packages/core/src/defineLayout.spec.ts")).toEqual([]);
+    expect(shipping("packages/react/src/gridComponent.browser.spec.tsx")).toEqual([]);
+    expect(shipping("packages/react/src/test-utils/mountGrid.tsx")).toEqual([]);
+    expect(shipping("packages/react/src/test-setup.ts")).toEqual([]);
+  });
+
+  it("count the source a source-published package lists in files, and nothing else of it", () => {
+    expect(shipping("packages/octane/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/octane"]);
+    expect(shipping("packages/octane/src/render.browser.spec.tsx")).toEqual([]);
+    expect(shipping("packages/octane/src/test-utils/RenderedAs.tsrx")).toEqual([]);
+  });
+
+  it("count the sources a build tool without a tsconfig.build.json compiles, from the workspace's buildSources", () => {
+    // Svelte builds with svelte-package from src/lib.
+    expect(shipping("packages/svelte/src/lib/Grid.svelte")).toEqual(["@typed-grid-areas/svelte"]);
+    expect(shipping("packages/svelte/src/lib/styleOwners.ts")).toEqual(["@typed-grid-areas/svelte"]);
+    expect(shipping("packages/svelte/src/fixtures/Checked.svelte")).toEqual([]);
+    expect(shipping("packages/svelte/src/types/GridComponentTypes.svelte")).toEqual([]);
+    expect(shipping("packages/svelte/src/serverRender.node.spec.ts")).toEqual([]);
+  });
+
+  it("count the sources a package published from its build folder compiles into it", () => {
+    // Angular builds with ng-packagr and publishes dist/ (publishConfig.directory).
+    expect(shipping("packages/angular/src/directives.ts")).toEqual(["@typed-grid-areas/angular"]);
+    expect(shipping("packages/angular/src/gridStyles.ts")).toEqual(["@typed-grid-areas/angular"]);
+    expect(shipping("packages/angular/src/server.node.spec.ts")).toEqual([]);
+    expect(shipping("packages/angular/src/test-utils/serverApp.ts")).toEqual([]);
+    expect(shipping("packages/angular/src/test-setup.node.ts")).toEqual([]);
+  });
+
+  it("back every files entry of every package with sources in the repo, whatever builds it", () => {
+    const tracked = execFileSync("git", ["ls-files"], { cwd: repo, encoding: "utf8" })
+      .split("\n")
+      .filter(Boolean);
+    for (const workspace of readWorkspaces(repo).filter(({ private: isPrivate }) => !isPrivate)) {
+      for (const entry of workspace.files ?? []) {
+        const sources = shippedSources(repo, workspace, entry);
+        expect(
+          tracked.some(file => isShippedPath(file, sources)),
+          `${workspace.name}: "${entry}" in files ships no source in the repo; declare the sources its build compiles in buildSources`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("never count a private workspace", () => {
+    expect(shipping("packages/acceptance/src/designs.ts")).toEqual([]);
+    expect(shipping("packages/acceptance/package.json")).toEqual([]);
   });
 
   it("leave out everything else in the repo", () => {
-    expect(isShippedPath("scripts/release.ts", shipped)).toBe(false);
-    expect(isShippedPath("docs/adr/0001-derived-layouts-for-optional-areas.md", shipped)).toBe(
-      false,
-    );
-    expect(isShippedPath(".github/workflows/ci.yml", shipped)).toBe(false);
-    expect(isShippedPath(".changeset/backfill-21-define-layout.md", shipped)).toBe(false);
-    expect(isShippedPath("package-lock.json", shipped)).toBe(false);
+    for (const file of [
+      "scripts/release.ts",
+      "docs/adr/0001-derived-layouts-for-optional-areas.md",
+      ".github/workflows/ci.yml",
+      ".changeset/backfill-21-define-layout.md",
+      "package.json",
+      "package-lock.json",
+      "packages/core/vitest.config.ts",
+    ]) {
+      expect(shipping(file), file).toEqual([]);
+    }
   });
 });
 
@@ -133,8 +180,7 @@ describe("guidance", () => {
   }): string {
     return guidance({
       changedFiles: input.changedFiles,
-      shipped,
-      package: pkg.name,
+      packages,
       changesets: input.changesets,
       closesIssue: closesIssue(input.body),
     }).markdown;
@@ -142,11 +188,13 @@ describe("guidance", () => {
 
   it("shows the bump and the note for a shipped change with a changeset", () => {
     const markdown = guidanceMarkdown({
-      changedFiles: ["src/generateCss.ts"],
-      changesets: [{ package: pkg.name, kind: "minor", note: "Hidden areas stay hidden." }],
+      changedFiles: ["packages/core/src/generateCss.ts"],
+      changesets: [
+        { package: "typed-grid-areas", kind: "minor", note: "Hidden areas stay hidden." },
+      ],
       body: "Closes #54",
     });
-    expect(markdown).toMatch(/src\/generateCss\.ts/);
+    expect(markdown).toMatch(/packages\/core\/src\/generateCss\.ts/);
     expect(markdown).toMatch(/minor/);
     expect(markdown).toMatch(/Hidden areas stay hidden\./);
     expect(markdown).not.toMatch(/No changeset/);
@@ -155,7 +203,7 @@ describe("guidance", () => {
 
   it("says what won't ship, and how to add a changeset, for a shipped change without one", () => {
     const markdown = guidanceMarkdown({
-      changedFiles: ["src/index.ts"],
+      changedFiles: ["packages/core/src/index.ts"],
       changesets: [],
       body: "",
     });
@@ -164,9 +212,27 @@ describe("guidance", () => {
     expect(markdown).toMatch(/Assumed bump.*\*\*patch\*\*/);
   });
 
+  it("says, per package, which shipped changes have a changeset and which don't", () => {
+    const markdown = guidanceMarkdown({
+      changedFiles: ["packages/core/src/index.ts", "packages/react/src/gridComponent.tsx"],
+      changesets: [{ package: "typed-grid-areas", kind: "patch", note: "Fix." }],
+      body: "Closes #1",
+    });
+    const [core, react] = markdown.split("### ").slice(1);
+    expect(core).toMatch(/^`typed-grid-areas`/);
+    expect(core).toMatch(/\*\*patch\*\* — Fix\./);
+    expect(core).not.toMatch(/No changeset/);
+    expect(react).toMatch(/^`@typed-grid-areas\/react`/);
+    expect(react).toMatch(/packages\/react\/src\/gridComponent\.tsx/);
+    expect(react).toMatch(/No changeset yet/);
+  });
+
   it("needs no changeset when nothing shipped changes, and says so", () => {
     const markdown = guidanceMarkdown({
-      changedFiles: ["src/defineLayout.spec.ts", "docs/adr/0003-hidden-areas-are-important.md"],
+      changedFiles: [
+        "packages/core/src/defineLayout.spec.ts",
+        "docs/adr/0003-hidden-areas-are-important.md",
+      ],
       changesets: [],
       body: "",
     });
@@ -177,8 +243,8 @@ describe("guidance", () => {
 
   it("nudges, never gates, when the body closes no issue", () => {
     const markdown = guidanceMarkdown({
-      changedFiles: ["src/index.ts"],
-      changesets: [{ package: pkg.name, kind: "patch", note: "Fix." }],
+      changedFiles: ["packages/core/src/index.ts"],
+      changesets: [{ package: "typed-grid-areas", kind: "patch", note: "Fix." }],
       body: "just a fix",
     });
     expect(markdown).toMatch(/Closes #\d+/);

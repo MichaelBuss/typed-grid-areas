@@ -1,27 +1,77 @@
-import { syncVersions } from "./sync-version.ts";
+import { syncVersions, type Lockfile } from "./sync-version.ts";
 
 describe("syncVersions", () => {
-  it("brings package-lock.json to package.json's version", () => {
-    const lock = { version: "0.0.0", packages: { "": { version: "0.0.0" } } };
-    const result = syncVersions({ pkg: { version: "0.1.0" }, lock });
-    expect(result.changed).toEqual(["package-lock.json"]);
-    expect(lock.version).toBe("0.1.0");
-    expect(lock.packages[""].version).toBe("0.1.0");
-  });
+  function lockfile(): Lockfile {
+    return {
+      version: "0.1.0",
+      packages: {
+        "": { name: "monorepo" },
+        "packages/core": { name: "typed-grid-areas", version: "0.1.0" },
+        "packages/react": {
+          name: "@typed-grid-areas/react",
+          version: "0.0.0",
+          dependencies: { "@radix-ui/react-slot": "^1.3.3", "typed-grid-areas": "^0.1.0" },
+          devDependencies: { "@typed-grid-areas/acceptance": "*" },
+        },
+        "node_modules/typed-grid-areas": { resolved: "packages/core", link: true },
+      },
+    };
+  }
 
-  it("syncs a lockfile's root version even without a packages entry", () => {
-    const lock = { version: "0.9.0", packages: {} };
-    const result = syncVersions({ pkg: { version: "1.0.0" }, lock });
+  it("brings each workspace's version and dependency ranges in package-lock.json to its package.json", () => {
+    const lock = lockfile();
+    const result = syncVersions({
+      workspaces: [
+        { dir: "packages/core", manifest: { version: "0.2.0" } },
+        {
+          dir: "packages/react",
+          manifest: {
+            version: "0.1.0",
+            dependencies: { "@radix-ui/react-slot": "^1.3.3", "typed-grid-areas": "^0.2.0" },
+            devDependencies: { "@typed-grid-areas/acceptance": "*" },
+          },
+        },
+      ],
+      lock,
+    });
     expect(result.changed).toEqual(["package-lock.json"]);
-    expect(lock.version).toBe("1.0.0");
+    expect(lock.packages!["packages/core"]!.version).toBe("0.2.0");
+    expect(lock.packages!["packages/react"]).toMatchObject({
+      version: "0.1.0",
+      dependencies: { "typed-grid-areas": "^0.2.0" },
+    });
+    expect(lock.packages!["node_modules/typed-grid-areas"]).toEqual({
+      resolved: "packages/core",
+      link: true,
+    });
   });
 
   it("has nothing to sync without a lockfile", () => {
-    expect(syncVersions({ pkg: { version: "0.3.0" }, lock: undefined }).changed).toEqual([]);
+    expect(
+      syncVersions({
+        workspaces: [{ dir: "packages/core", manifest: { version: "0.3.0" } }],
+        lock: undefined,
+      }).changed,
+    ).toEqual([]);
   });
 
   it("reports nothing to change when everything agrees", () => {
-    const lock = { version: "0.1.5", packages: { "": { version: "0.1.5" } } };
-    expect(syncVersions({ pkg: { version: "0.1.5" }, lock }).changed).toEqual([]);
+    const lock = lockfile();
+    expect(
+      syncVersions({
+        workspaces: [
+          { dir: "packages/core", manifest: { version: "0.1.0" } },
+          {
+            dir: "packages/react",
+            manifest: {
+              version: "0.0.0",
+              dependencies: { "@radix-ui/react-slot": "^1.3.3", "typed-grid-areas": "^0.1.0" },
+              devDependencies: { "@typed-grid-areas/acceptance": "*" },
+            },
+          },
+        ],
+        lock,
+      }).changed,
+    ).toEqual([]);
   });
 });

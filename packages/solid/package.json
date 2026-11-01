@@ -1,0 +1,51 @@
+{
+  "name": "@typed-grid-areas/solid",
+  "version": "0.0.0",
+  "description": "Solid adapter for typed-grid-areas: render a grid definition as typed slot components.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
+    "directory": "packages/solid"
+  },
+  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "bugs": {
+    "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "solid": "./dist/index.jsx",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
+    "postpack": "rm README.md LICENSE",
+    "test": "vitest run --project unit --project node",
+    "test:browser": "vitest run --project browser --project browser-development",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "dependencies": {
+    "typed-grid-areas": "^0.1.0"
+  },
+  "devDependencies": {
+    "@typed-grid-areas/acceptance": "*",
+    "@types/node": "^22.20.5",
+    "@vitest/browser-playwright": "^5.0.1",
+    "playwright": "^1.64.1",
+    "solid-js": "^1.9.17",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-solid": "^2.11.14",
+    "vitest": "^5.0.1"
+  }
+}
