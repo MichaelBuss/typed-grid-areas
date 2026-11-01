@@ -2,6 +2,9 @@
   "name": "typed-grid-areas",
   "version": "0.2.0",
   "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
+  "keywords": [
+    "tanstack-intent"
+  ],
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -24,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills/typed-grid-areas"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

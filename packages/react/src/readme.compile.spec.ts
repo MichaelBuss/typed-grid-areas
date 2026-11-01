@@ -1,6 +1,7 @@
 /**
  * Type-checks every `ts` and `tsx` code block in the repo's README and in the
- * agent skill (`skills/typed-grid-areas/`), each as its own module, with
+ * agent skill the core ships (`packages/core/skills/typed-grid-areas/`, its
+ * `references/` included), each as its own module, with
  * `@typed-grid-areas/react` resolving to this package's `src/` and
  * `typed-grid-areas` (and its `/adapter` entry) to the built core, as a
  * consumer gets them.
@@ -13,7 +14,7 @@ import { basename, dirname, join, resolve } from "node:path";
 const packageDir = resolve(__dirname, "..");
 const repoDir = resolve(packageDir, "..", "..");
 const readmePath = join(repoDir, "README.md");
-const skillDir = join(repoDir, "skills", "typed-grid-areas");
+const skillDir = join(repoDir, "packages", "core", "skills", "typed-grid-areas");
 const cacheDir = join(packageDir, "node_modules", ".cache");
 const tsc = join(
   dirname(createRequire(import.meta.url).resolve("typescript/package.json")),
@@ -84,10 +85,12 @@ describe("the README", () => {
 
 describe("the agent skill", () => {
   it("has examples whose code type-checks, in every file", () => {
-    const paths = readdirSync(skillDir)
+    const files = readdirSync(skillDir, { recursive: true, encoding: "utf8" })
       .filter(file => file.endsWith(".md"))
-      .map(file => join(skillDir, file));
-    expect(paths.map(path => basename(path))).toContain("SKILL.md");
+      .map(file => file.replaceAll("\\", "/"))
+      .sort();
+    expect(files).toEqual(["SKILL.md", "references/errors.md", "references/examples.md"]);
+    const paths = files.map(file => join(skillDir, file));
     expect(typeCheckBlocks("skill", paths)).toBe("");
   });
 });

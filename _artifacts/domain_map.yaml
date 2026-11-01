@@ -1,0 +1,61 @@
+library:
+  name: typed-grid-areas-monorepo
+  repository: https://github.com/MichaelBuss/typed-grid-areas
+  description: Type-safe CSS grid-template-areas whose layouts are derived for every combination of absent optional areas.
+  primary_framework: framework-agnostic
+domains:
+  - name: Grid layouts
+    slug: layouts
+    description: Describing a component's grid with defineLayout, from areas and text templates to overrides, breakpoints and layers, and rendering it with an adapter.
+skills:
+  - name: typed-grid-areas
+    slug: typed-grid-areas
+    domain: layouts
+    description: "typed-grid-areas (`defineLayout`) grids with optional areas. Use
+      when writing or changing a component layout, converting hand-written
+      `:has()` CSS or layout JavaScript, or debugging its type errors and
+      development warnings."
+    type: core
+    packages:
+      - typed-grid-areas
+    covers:
+      - defineLayout areas, optional areas and templates
+      - derived layouts (drop, fill, layers vanish)
+      - overrides with when and unless, and their precedence
+      - breakpoints measured against the grid's own space
+      - layers (base+layer) and --tga-over
+      - rendering slots with an adapter
+      - type errors and development warnings
+    tasks:
+      - Write or change a component layout with defineLayout
+      - Convert hand-written :has() CSS, class toggles or layout JavaScript to a defineLayout grid
+      - Debug a defineLayout type error, a development warning or a layout that lands wrong
+    reference_candidates:
+      - topic: worked examples (nested PreferenceCard, layered ID card)
+        reason: the whole Write a layout procedure end to end, too long for SKILL.md
+      - topic: every type error and development warning
+        reason: one message per entry with its fix
+    failure_modes:
+      - mistake: Overriding cases the derivation already handles
+        mechanism: An override is written for a combination whose derived layout is already as designed, adding CSS and cases to maintain.
+        source: packages/core/src/engine/derive.ts
+        priority: HIGH
+        status: active
+      - mistake: Override without breakpoints ignores width
+        mechanism: An override replaces every arrangement of the earlier layout, so without its own breakpoints it applies at every width.
+        source: packages/core/src/engine/rules.ts
+        priority: HIGH
+        status: active
+      - mistake: Nested grid with breakpoints in an auto track
+        mechanism: A grid with breakpoints is a size container and collapses to zero width in an auto or min-content track.
+        source: README.md (Breakpoints)
+        priority: HIGH
+        status: active
+      - mistake: Slot wrapped instead of a direct child
+        mechanism: A slot that isn't a direct child of its grid gets no placement, and the slot check warns in development.
+        source: packages/core/src/adapter/slotCheck.ts
+        priority: MEDIUM
+        status: active
+tensions: []
+cross_references: []
+gaps: []

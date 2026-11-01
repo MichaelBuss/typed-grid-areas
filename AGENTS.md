@@ -19,3 +19,7 @@ Every package is an npm workspace under `packages/` with its own toolchain: addi
 ### Release
 
 Releases run through Changesets: PRs that change what ships add a changeset; version fields, tags and publishing are never touched by hand. See `docs/agents/release.md`.
+
+### Agent skill
+
+The core ships a skill for consumers' agents at `packages/core/skills/typed-grid-areas/`, maintained with TanStack Intent. CI fails until every change since the last recorded review is reviewed, so a PR touching the skill, its sources or anything else Intent tracks records a review. See `docs/agents/agent-skill.md`.

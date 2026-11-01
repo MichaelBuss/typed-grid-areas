@@ -75,7 +75,7 @@ afterAll(() => {
 });
 
 describe("the packed core", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, the agent skill, LICENSE, README.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
@@ -91,6 +91,9 @@ describe("the packed core", () => {
       "LICENSE",
       "README.md",
       "package.json",
+      "skills/typed-grid-areas/SKILL.md",
+      "skills/typed-grid-areas/references/errors.md",
+      "skills/typed-grid-areas/references/examples.md",
     ]);
   });
 

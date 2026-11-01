@@ -22,6 +22,20 @@ npm i typed-grid-areas @typed-grid-areas/react
 Moving from `typed-grid-areas/react` (0.1)? Install `@typed-grid-areas/react`
 and import `createGridComponent` from it instead; nothing else changes.
 
+### Agent skill
+
+The `typed-grid-areas` package ships an agent skill (in its
+`skills/typed-grid-areas/`) that walks a coding agent through writing,
+converting and debugging layouts, versioned with each release. Enable it in your project with
+[TanStack Intent](https://tanstack.com/intent):
+
+```sh
+npx @tanstack/intent@latest install
+```
+
+The first run asks which packages' skills to enable, so it needs an
+interactive terminal, and Intent needs Node.js 20.12 or newer.
+
 ## At a glance
 
 ```tsx

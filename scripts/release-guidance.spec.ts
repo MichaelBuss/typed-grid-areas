@@ -34,6 +34,15 @@ describe("shipped paths", () => {
     expect(shipping("LICENSE")).toEqual(all);
   });
 
+  it("count the agent skill the core lists in files, references included", () => {
+    expect(shipping("packages/core/skills/typed-grid-areas/SKILL.md")).toEqual([
+      "typed-grid-areas",
+    ]);
+    expect(shipping("packages/core/skills/typed-grid-areas/references/errors.md")).toEqual([
+      "typed-grid-areas",
+    ]);
+  });
+
   it("leave out the sources the builds exclude", () => {
     expect(shipping("packages/core/src/defineLayout.spec.ts")).toEqual([]);
     expect(shipping("packages/react/src/gridComponent.browser.spec.tsx")).toEqual([]);

@@ -1,0 +1,35 @@
+library:
+  name: typed-grid-areas-monorepo
+generated_from:
+  domain_map: _artifacts/domain_map.yaml
+  skill_spec: _artifacts/skill_spec.md
+skills:
+  - name: typed-grid-areas
+    slug: typed-grid-areas
+    domain: layouts
+    package: packages/core
+    path: skills/typed-grid-areas/SKILL.md
+    description: typed-grid-areas (`defineLayout`) grids with optional areas. Use
+      when writing or changing a component layout, converting hand-written
+      `:has()` CSS or layout JavaScript, or debugging its type errors and
+      development warnings.
+    references:
+      - references/errors.md
+      - references/examples.md
+    sources:
+      - src/engine/derive.ts
+      - src/engine/cells.ts
+      - src/engine/rules.ts
+      - src/validateGridConfig.ts
+      - src/adapter/slotCheck.ts
+      - MichaelBuss/typed-grid-areas:README.md
+    requires: []
+review:
+  ignore:
+    - ".changeset/**"
+    - "**/CHANGELOG.md"
+    - ".github/**"
+    - "docs/**"
+    - "scripts/**"
+    - "**/*.spec.ts"
+    - "**/*.spec.tsx"
