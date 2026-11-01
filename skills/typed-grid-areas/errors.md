@@ -11,8 +11,6 @@ error TS2322: Type '"icon iconn / information information"' is not assignable to
   Type 'string' is not assignable to type '{ _unknownArea: "iconn"; }'.
 ```
 
-While a `when`, `unless` or `align` error stands, the definition's template and track errors may not be reported at all: fix those first.
-
 ### `{ _unknownArea: "…" }` on `template`
 
 A cell names an area that isn't in `areas`, including inside a layered cell (`photo+badgee`). Usually a typo, or an optional area named with its `?`: declare `"icon?"`, then write `icon` in templates. Fix the cell, or add the area to `areas`.

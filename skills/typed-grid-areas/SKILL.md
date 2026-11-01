@@ -1,6 +1,6 @@
 ---
 name: typed-grid-areas
-description: typed-grid-areas (`defineLayout`) grids with optional areas. Use when writing a new component layout, converting hand-written `:has()` CSS or layout JavaScript, building a responsive or layered layout, or debugging its type errors and development warnings.
+description: typed-grid-areas (`defineLayout`) grids with optional areas. Use when writing or changing a component layout, converting hand-written `:has()` CSS or layout JavaScript, or debugging its type errors and development warnings.
 ---
 
 # typed-grid-areas
@@ -15,7 +15,7 @@ Use these terms, in code comments and in what you tell the user:
 - **Area**: a named region that exactly one slot fills. **Optional area**: declared with a trailing `?` (`"icon?"`), named without it everywhere else; its slot may be absent. Every other area is required.
 - **Slot**: the rendered element that fills an area, present or absent. A slot is always a direct child of its grid.
 - **Layout**: one arrangement of the areas (`template`, `rows`, `columns`, `align`), with optional `breakpoints`. An area a layout leaves out is hidden while it applies.
-- **Base layout**: the layout without a condition, which applies when no other layout's condition matches. **Override**: a layout with a **condition** (`when`: areas that must be present, `unless`: areas that must be absent). Areas a condition doesn't name don't affect it. When several layouts apply, the one declared **last** wins.
+- **Base layout**: the layout without a condition, which applies when no other layout's condition matches. **Override**: a layout with a **condition** (`when`: areas that must be present, `unless`: areas that must be absent). Areas a condition doesn't name don't affect it.
 - **Derived layout**: what the library makes of an authored layout when some optional areas are absent, by leaving them out.
 - **Breakpoint**: a width at which a layout switches arrangement, measured against the space the grid itself is given.
 - **Layer**: an area drawn over cells another area owns, written `base+layer` in a cell.
@@ -24,7 +24,7 @@ Use these terms, in code comments and in what you tell the user:
 
 ## Pick the branch
 
-- **Writing a new layout**: [Write a layout](#write-a-layout).
+- **Writing or changing a layout**: [Write a layout](#write-a-layout). For a change, start at the first step it touches and walk again from step 6.
 - **Converting** a layout built from hand-written `:has()` classes, class toggles or layout JavaScript: [Convert a layout](#convert-a-layout).
 - **Responsive or layered designs**: [Write a layout](#write-a-layout), with [Breakpoints](#breakpoints) and [Layers](#layers) open beside it.
 - **Debugging** a type error, a development warning or a layout that lands wrong: [Debug](#debug).
@@ -33,13 +33,13 @@ Worked examples of the whole process, a nested card and a layered ID card, are i
 
 ## Write a layout
 
-1. **Decide whether a grid fits.** A grid earns its place when pieces of the design appear and disappear, move between arrangements at different widths, or overlap. Pieces that simply flow in a row or column (a title beside its tag, a row of buttons, a label above a value) are plain flex inside one slot. Gaps, padding, borders and colours stay on the component's own classes. _Done when_ you have a list of the pieces that move, appear or overlap (each becomes an area), and every other piece is assigned to some slot's content.
+1. **Decide whether a grid fits.** A grid earns its place when pieces of the design appear and disappear, move between arrangements at different widths, or overlap. Pieces that simply flow in a row or column (a title beside its tag, a row of buttons, a label above a value) are plain flex inside one slot. _Done when_ you have a list of the pieces that move, appear or overlap (each becomes an area), and every other piece is assigned to some slot's content.
 
 2. **Decide nested or flat.** Nest where the design has a panel with its own padding, background or border: the panel is one area of the outer grid and a grid of its own. Nesting also keeps the optional areas per grid few, which keeps the generated CSS small (it grows with 2ⁿ for n optional areas in one grid). Stay flat when areas must overlap or line up across what would be the panel's edge: a layer covers cells of its own grid only. _Done when_ every area from step 1 belongs to exactly one grid.
 
 3. **Name the areas and mark the optional ones.** An area is optional when the component may render without its slot (a prop left out, a feature switched off). _Done when_ each grid has an `areas` list with every optional area ending in `?`.
 
-4. **Draw the everything-present layout.** One base layout per grid, with every area present, at the narrowest width the design has. Rows go on new lines (or are separated by `/`), cells by whitespace; `.` is a deliberately empty cell. Give `rows` and `columns` one CSS track per template row and column (`"min-content minmax(0, 1fr)"` is two tracks); leave either out and the browser sizes those tracks to their content. Size every track that holds a nested grid with breakpoints `minmax(0, 1fr)` or `1fr`, never `auto` or `min-content` (see [Breakpoints](#breakpoints)). A grid has no height of its own unless you give it one, so `1fr` rows grow with their content: give rows a photo or other image spans fixed lengths.
+4. **Draw the everything-present layout.** One base layout per grid, with every area present, at the narrowest width the design has. Rows go on new lines (or are separated by `/`), cells by whitespace; `.` is a deliberately empty cell. Give `rows` and `columns` one CSS track per template row and column (`"min-content minmax(0, 1fr)"` is two tracks); leave either out and the browser sizes those tracks to their content. Size every track that holds a nested grid with breakpoints `minmax(0, 1fr)`, `1fr` or a fixed length (see [Breakpoints](#breakpoints)). A grid has no height of its own unless you give it one, so `1fr` rows grow with their content: give rows a photo or other image spans fixed lengths.
 
    **Alignment.** A slot's box is what the grid places, and every slot stretches to fill the cells it covers (unless it has a fixed size of its own, such as an `<svg>` with `width` and `height`, which sits at the start of its cells), so a slot whose cells already sit in a corner or along an edge is there with no `align`. Add `align: { area: { justify, align } }` (`start`, `center`, `end`, `stretch`, `baseline`) only for a slot whose box should be smaller than its cells, such as a layer pinned to one corner of the area it covers. To move content within its box (text to the right, an icon to the middle), style the content (`text-align`, flex): `align` moves the box itself.
 
@@ -61,7 +61,7 @@ Worked examples of the whole process, a nested card and a layered ID card, are i
 
    _Done when_ every area has its slot in the markup: required ones always rendered, optional ones under the condition that makes them absent.
 
-9. **Check.** _Done when_ the type-checker passes with no `@ts-expect-error` or cast around a definition, the browser console shows no `typed-grid-areas` or `defineLayout` warning in development (with no page to render, `validateGridConfig(definition)` from `typed-grid-areas`, given what `defineLayout` returned, lists the definition's warnings: it must return `[]`), and every combination you walked in step 6 renders as designed. Write no `:has()` rule, `grid-template-*` CSS or layout JavaScript of your own: if a case still lands wrong, it needs an override, not CSS.
+9. **Check.** Run the type-checker and render the component in development. A type error or warning sends you to [Debug](#debug); a case that still lands wrong gets an override (step 7). _Done when_ the type-checker passes with no `@ts-expect-error` or cast around a definition, the browser console shows no `typed-grid-areas` or `defineLayout` warning in development (with no page to render, `validateGridConfig(definition)` from `typed-grid-areas`, given what `defineLayout` returned, lists the definition's warnings: it must return `[]`), every combination you walked in step 6 renders as designed, and placement comes from the definition alone, with no `:has()` rule, `grid-template-*` CSS or layout JavaScript in the component.
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
@@ -105,7 +105,7 @@ For example:
 - `icon cardTag / information information` without `icon`: the first column holds `icon`'s cell, and `information` continues into the second, so the column is dropped with its track, giving `cardTag / information`. Without `cardTag`, the second column goes the same way: `icon / information`. Without both, the first row is all absent and goes first; then no column holds an absent cell, so both stay: `information information`, on both tracks.
 - `title tag / body actions` without `tag`: the hole can't be dropped (`title` still needs the row, `actions` the column), so `title` grows into it from the left, giving `title title / body actions`. Without both `tag` and `actions`, the second column is dropped: `title / body`.
 
-Work each derived layout through the rules, cell by cell, from the template. Combinations that differ only in absent layers derive the same tracks and placements, minus those layers.
+Work each derived layout through the rules, cell by cell, from the template. A present layer can hold a track that would otherwise drop, so a combination with a layer absent can derive different tracks from the same combination with it present: walk both.
 
 The fill order is a convention. When a different neighbour should grow, or the result is a different picture altogether, write an override.
 
@@ -171,8 +171,8 @@ defineLayout({
 
 ## Debug
 
-1. **Type errors.** The type-checker reports one problem per template, on the property at fault (`template`, `rows`, `columns`, `align`, `when`, `unless`). The first line of the message echoes your string; the useful part is on the second line, such as `Type 'string' is not assignable to type '{ _unknownArea: "iconn"; }'`. Fix errors in `when`, `unless` and `align` first: while those fail, the definition's template errors may not be reported at all. Fix one, re-run, and repeat until the definition is clean. Look up each error in [errors.md](errors.md).
-2. **Development warnings.** In development, `defineLayout` warns once per definition about what types can't check (areas and layers that aren't rectangles, malformed cells, repeated conditions), and each grid warns about its slots (a missing required slot, a direct child that isn't a slot). Look up each warning in [errors.md](errors.md).
-3. **A layout lands wrong with no error.** Find which layout applies: the last one whose condition matches, and an override without breakpoints beats an earlier layout's breakpoints. Walk its derived layout with the [derivation rules](#derivation-rules) for the slots actually rendered. Then check, in this order: slots that aren't direct children of the grid, a nested grid with breakpoints in an `auto` or `min-content` track, a layer stretching its host's tracks, and a breakpoint measuring a smaller area than you assumed.
+1. **Type errors.** Fix errors in `when`, `unless` and `align` first: while those fail, the definition's template errors may not be reported at all. Fix one, re-run, and repeat until the definition is clean. Look up each error in [errors.md](errors.md), which also shows how to read the message.
+2. **Development warnings.** Look up each `defineLayout:` or `typed-grid-areas:` warning in [errors.md](errors.md).
+3. **A layout lands wrong with no error.** Find which layout applies ([Conditions and precedence](#conditions-and-precedence)). Walk its derived layout with the [derivation rules](#derivation-rules) for the slots actually rendered. Then check, in this order: slots that aren't direct children of the grid, a nested grid with breakpoints in an `auto` or `min-content` track, a layer stretching its host's tracks, and a breakpoint measuring a smaller area than you assumed.
 
 _Done when_ the type-checker is clean, the console shows no warning from the library, and the case that landed wrong renders as designed.
