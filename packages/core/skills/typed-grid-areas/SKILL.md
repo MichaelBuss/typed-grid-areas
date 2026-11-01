@@ -1,6 +1,13 @@
 ---
 name: typed-grid-areas
 description: typed-grid-areas (`defineLayout`) grids with optional areas. Use when writing or changing a component layout, converting hand-written `:has()` CSS or layout JavaScript, or debugging its type errors and development warnings.
+sources:
+  - src/engine/derive.ts
+  - src/engine/cells.ts
+  - src/engine/rules.ts
+  - src/validateGridConfig.ts
+  - src/adapter/slotCheck.ts
+  - MichaelBuss/typed-grid-areas:README.md
 ---
 
 # typed-grid-areas
@@ -29,7 +36,7 @@ Use these terms, in code comments and in what you tell the user:
 - **Responsive or layered designs**: [Write a layout](#write-a-layout), with [Breakpoints](#breakpoints) and [Layers](#layers) open beside it.
 - **Debugging** a type error, a development warning or a layout that lands wrong: [Debug](#debug).
 
-Worked examples of the whole process, a nested card and a layered ID card, are in [examples.md](examples.md). Read them before your first definition.
+Worked examples of the whole process, a nested card and a layered ID card, are in [references/examples.md](references/examples.md). Read them before your first definition.
 
 ## Write a layout
 
@@ -123,6 +130,8 @@ The fill order is a convention. When a different neighbour should grow, or the r
 - **Keys** are Tailwind's `@container` sizes, `@xs` (20rem), `@sm` (24rem), `@md` (28rem), `@lg` (32rem), `@xl` (36rem), `@2xl` (42rem) up to `@7xl` (80rem), or an arbitrary length: `"@[27rem]"`, `"@[448px]"`. Named keys are in `rem`, so they move with the root font size; use a `px` key when the design gives its threshold in pixels.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["media", "title", "body"],
   layouts: [
@@ -171,8 +180,8 @@ defineLayout({
 
 ## Debug
 
-1. **Type errors.** Fix errors in `when`, `unless` and `align` first: while those fail, the definition's template errors may not be reported at all. Fix one, re-run, and repeat until the definition is clean. Look up each error in [errors.md](errors.md), which also shows how to read the message.
-2. **Development warnings.** Look up each `defineLayout:` or `typed-grid-areas:` warning in [errors.md](errors.md).
+1. **Type errors.** Fix errors in `when`, `unless` and `align` first: while those fail, the definition's template errors may not be reported at all. Fix one, re-run, and repeat until the definition is clean. Look up each error in [references/errors.md](references/errors.md), which also shows how to read the message.
+2. **Development warnings.** Look up each `defineLayout:` or `typed-grid-areas:` warning in [references/errors.md](references/errors.md).
 3. **A layout lands wrong with no error.** Find which layout applies ([Conditions and precedence](#conditions-and-precedence)). Walk its derived layout with the [derivation rules](#derivation-rules) for the slots actually rendered. Then check, in this order: slots that aren't direct children of the grid, a nested grid with breakpoints in an `auto` or `min-content` track, a layer stretching its host's tracks, and a breakpoint measuring a smaller area than you assumed.
 
 _Done when_ the type-checker is clean, the console shows no warning from the library, and the case that landed wrong renders as designed.

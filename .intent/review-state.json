@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
+  "items": {
+    "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
+      "fingerprint": "03673c033c5d193c4e3fc8e69b89cbe9261eb241a3c1a99d3b992f6ad20461b4",
+      "snapshot": {
+        "README.md": "0210e8e1a457be63571e599b85e24a5b55af40056dd50d0a02145de5ea803e51",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
+        "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
+        "packages/core/src/adapter/slotCheck.ts": "0573a92003e76f40cd9fe9a2218b44130f2899d6e7b52942d360754b97cde176",
+        "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
+        "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
+        "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
+        "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
+      },
+      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
+      "outcome": "updated",
+      "reason": "Moved into the core package with its references under references/; links repointed, snippets import defineLayout so Intent types them, sources declared. Guidance otherwise unchanged; README change only adds the Agent skill section.",
+      "evidence": [
+        "packages/react/src/readme.compile.spec.ts: passed",
+        "packages/core/src/package.node.spec.ts: passed",
+        "intent maintainer check: skill validation passed",
+        "intent load in a scratch project resolves both reference links"
+      ]
+    },
+    "planning:_artifacts": {
+      "fingerprint": "38220f747317b72be963c6d38f20c5c45d56f50c4ec4c66170c8c2cd745c5b77",
+      "snapshot": {
+        "README.md": "0210e8e1a457be63571e599b85e24a5b55af40056dd50d0a02145de5ea803e51",
+        "_artifacts/domain_map.yaml": "c12e5d50ce2a89843617102b2ddf86d228aa77b170dd56ffde7f2eb176cafaed",
+        "_artifacts/skill_spec.md": "6c7d0ab5062e0f0c5a03e51e9ae2035039e2d499ba5d77f5af38513ad92225df",
+        "_artifacts/skill_tree.yaml": "76918570da3a6a089f7746f69c90f19a2c4fabffe5cded7f5722c31ec20efcb9",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
+        "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
+        "packages/core/src/adapter/slotCheck.ts": "0573a92003e76f40cd9fe9a2218b44130f2899d6e7b52942d360754b97cde176",
+        "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
+        "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
+        "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
+        "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
+      },
+      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
+      "outcome": "updated",
+      "reason": "Planning records authored for #41: domain layouts, the three developer tasks, failure modes, sources, references and review.ignore.",
+      "evidence": [
+        "_artifacts/domain_map.yaml",
+        "_artifacts/skill_spec.md",
+        "_artifacts/skill_tree.yaml",
+        "intent maintainer check: 0 authoring issues"
+      ]
+    },
+    "source:skills/typed-grid-areas/SKILL.md": {
+      "fingerprint": "b195fef119600e0bd3e4eadcbe58a1ffcf9f5c844af18f30116a0dca5277789b",
+      "snapshot": {
+        "skills/typed-grid-areas/SKILL.md": null
+      },
+      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
+      "outcome": "updated",
+      "reason": "The skill file moved to packages/core/skills/typed-grid-areas/ (#41); no copy remains at the repo root.",
+      "evidence": [
+        "git diff -M main: rename to packages/core/skills/typed-grid-areas/"
+      ]
+    },
+    "source:skills/typed-grid-areas/errors.md": {
+      "fingerprint": "05c1de0c5206a8d469a4b98c949b918c7e68501c0603c4bf424f09bc1506ea5e",
+      "snapshot": {
+        "skills/typed-grid-areas/errors.md": null
+      },
+      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
+      "outcome": "updated",
+      "reason": "The skill file moved to packages/core/skills/typed-grid-areas/ (#41); no copy remains at the repo root.",
+      "evidence": [
+        "git diff -M main: rename to packages/core/skills/typed-grid-areas/"
+      ]
+    },
+    "source:skills/typed-grid-areas/examples.md": {
+      "fingerprint": "dfc1a217a518c8b7f29fe658d53e30843571479faa6f977ce439da76cff54d96",
+      "snapshot": {
+        "skills/typed-grid-areas/examples.md": null
+      },
+      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
+      "outcome": "updated",
+      "reason": "The skill file moved to packages/core/skills/typed-grid-areas/ (#41); no copy remains at the repo root.",
+      "evidence": [
+        "git diff -M main: rename to packages/core/skills/typed-grid-areas/"
+      ]
+    }
+  }
+}

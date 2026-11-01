@@ -1,6 +1,6 @@
 # Worked examples
 
-Two designs taken through [Write a layout](SKILL.md#write-a-layout), step by step: the PreferenceCard (nested grids, two overrides) and the ID card (one flat grid, layers, no overrides). Both render with the React adapter here; other adapters spell the slots differently but take the same definitions.
+Two designs taken through [Write a layout](../SKILL.md#write-a-layout), step by step: the PreferenceCard (nested grids, two overrides) and the ID card (one flat grid, layers, no overrides). Both render with the React adapter here; other adapters spell the slots differently but take the same definitions.
 
 ## PreferenceCard
 

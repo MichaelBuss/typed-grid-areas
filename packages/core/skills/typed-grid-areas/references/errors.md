@@ -16,6 +16,8 @@ error TS2322: Type '"icon iconn / information information"' is not assignable to
 A cell names an area that isn't in `areas`, including inside a layered cell (`photo+badgee`). Usually a typo, or an optional area named with its `?`: declare `"icon?"`, then write `icon` in templates. Fix the cell, or add the area to `areas`.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["icon?", "information"],
   layouts: [
@@ -32,6 +34,8 @@ defineLayout({
 Row 2 (counting from 1) has a different number of cells from row 1. Every row needs one cell per column: repeat a spanning area's name in each column it covers, or write `.` for an empty cell.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["icon", "information", "cardTag"],
   layouts: [
@@ -48,6 +52,8 @@ defineLayout({
 The track list has a different number of tracks from the template's columns (or rows). Give one track per column. Whitespace inside parentheses doesn't split a track, so `minmax(0, 1fr)` is one. The check is skipped for `repeat(` and for strings that aren't literals.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["icon", "information"],
   layouts: [
@@ -67,6 +73,8 @@ A breakpoint arrangement inherits nothing: when its template has a different sha
 A condition names an area that isn't in `areas`. Name areas without their `?`.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["icon?", "information"],
   layouts: [
@@ -85,6 +93,8 @@ defineLayout({
 `align` names an area that isn't in `areas`. Its keys are area names; each value is `{ justify?, align? }`, one of `start`, `center`, `end`, `stretch`, `baseline`.
 
 ```ts
+import { defineLayout } from "typed-grid-areas";
+
 defineLayout({
   areas: ["icon", "information"],
   layouts: [
