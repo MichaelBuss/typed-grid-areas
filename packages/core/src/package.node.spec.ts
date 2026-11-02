@@ -10,6 +10,11 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import {
+  bundle,
+  describeDevelopmentCode,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const require = createRequire(import.meta.url);
@@ -128,6 +133,23 @@ describe("the packed core", () => {
     expect(output.trim()).toBe("function function");
   });
 
+  it("imports and defines a grid without a process global, as a browser does, logging nothing", () => {
+    const script = `
+      delete globalThis.process;
+      const warnings = [];
+      console.warn = (...args) => warnings.push(args.join(" "));
+      const { defineLayout } = await import("typed-grid-areas");
+      const { createSlotCheck } = await import("typed-grid-areas/adapter");
+      defineLayout({ areas: ["a", "b"], layouts: [{ template: "a b / b a" }] });
+      console.log(typeof globalThis.process, typeof createSlotCheck, warnings.length);
+    `;
+    const output = execFileSync(process.execPath, ["--input-type=module", "-e", script], {
+      cwd: consumer,
+      encoding: "utf8",
+    });
+    expect(output.trim()).toBe("undefined function 0");
+  });
+
   it.each(Object.entries(tscs))(
     "resolves every entry point's types for a Node ESM consumer on %s",
     (version, installTsc) => {
@@ -183,6 +205,53 @@ defineLayout({
         output = String((error as { stdout?: string }).stdout ?? error);
       }
       expect(output).toBe("");
+    },
+    60_000,
+  );
+});
+
+describe("the packed core in an app's bundle", () => {
+  describeDevelopmentCode(() => {
+    const entry = join(consumer, "app.js");
+    writeFileSync(
+      entry,
+      `import { defineLayout, generateCss } from "typed-grid-areas";
+const card = defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] });
+document.head.append(Object.assign(document.createElement("style"), { textContent: generateCss(card) }));
+`,
+    );
+    return entry;
+  }, VALIDATION_MESSAGES);
+
+  it.each(["esbuild", "vite"] as const)(
+    "validates in a development build by %s, run where there is no process, as in a browser",
+    async bundler => {
+      const entry = join(consumer, "crossed.js");
+      writeFileSync(
+        entry,
+        `import { defineLayout } from "typed-grid-areas";
+defineLayout({ areas: ["a", "b"], layouts: [{ template: "a b / b a" }] });
+`,
+      );
+      writeFileSync(
+        join(consumer, "crossed.bundle.js"),
+        await bundle(entry, bundler, "development"),
+      );
+      const script = `
+        delete globalThis.process;
+        const warnings = [];
+        console.warn = (...args) => warnings.push(args.join(" "));
+        await import("./crossed.bundle.js");
+        console.log(JSON.stringify(warnings));
+      `;
+      const output = execFileSync(process.execPath, ["--input-type=module", "-e", script], {
+        cwd: consumer,
+        encoding: "utf8",
+      });
+      expect(JSON.parse(output)).toEqual([
+        expect.stringMatching(/^defineLayout: Layout 0: Area "a" isn't a rectangle/),
+        expect.stringMatching(/^defineLayout: Layout 0: Area "b" isn't a rectangle/),
+      ]);
     },
     60_000,
   );

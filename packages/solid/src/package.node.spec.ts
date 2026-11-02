@@ -18,6 +18,12 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import solid from "vite-plugin-solid";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -202,6 +208,38 @@ describe("the packed Solid adapter", () => {
     expect(html).toContain('data-area="tag"');
     expect(html).toContain(">New<");
   }, 60_000);
+});
+
+describe("the packed Solid adapter in an app's bundle", () => {
+  // esbuild takes the compiled build (the `import` export); Vite, with Solid's
+  // plugin, compiles the `solid` export itself.
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { createComponent, render } from "solid-js/web";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/solid";
+const Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+render(
+  () =>
+    createComponent(Card, {
+      get children() {
+        return createComponent(Card.info, { children: "Weekly digest" });
+      },
+    }),
+  document.body,
+);
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { external: ["solid-js"], vitePlugins: [solid()] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */

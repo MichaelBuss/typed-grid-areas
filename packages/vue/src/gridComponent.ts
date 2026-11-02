@@ -8,7 +8,7 @@ import {
   type FunctionalComponent,
   type SetupContext,
 } from "vue";
-import { createSlotCheck, gridMarkup, isDevelopment } from "typed-grid-areas/adapter";
+import { createSlotCheck, gridMarkup } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 import { renderAsChild } from "./asChild.ts";
 import { useGridStyle } from "./gridStyles.ts";
@@ -104,20 +104,28 @@ function createGrid(definition: GridConfig<string>) {
 
       // In development, check the slots after mounting and after every update.
       const gridRef = ref<Element | null>(null);
-      if (isDevelopment()) {
-        const checkSlots = createSlotCheck(definition, {
-          strayChildRemedy: "make it a slot with as-child",
-        });
-        const check = () => {
-          if (gridRef.value !== null) {
-            for (const warning of checkSlots(gridRef.value)) {
-              // eslint-disable-next-line no-console
-              console.warn(warning);
+      // Written out, not `isDevelopment()`, so production builds drop the check.
+      try {
+        if (process.env.NODE_ENV === "development") {
+          const checkSlots = createSlotCheck(definition, {
+            strayChildRemedy: "make it a slot with as-child",
+          });
+          const check = () => {
+            if (gridRef.value !== null) {
+              for (const warning of checkSlots(gridRef.value)) {
+                // eslint-disable-next-line no-console
+                console.warn(warning);
+              }
             }
-          }
-        };
-        onMounted(check);
-        onUpdated(check);
+          };
+          onMounted(check);
+          onUpdated(check);
+        }
+      } catch (error) {
+        // Without a bundler, `process` may not exist: then this isn't development.
+        if (!(error instanceof ReferenceError)) {
+          throw error;
+        }
       }
 
       return () => {

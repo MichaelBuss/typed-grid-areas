@@ -10,8 +10,12 @@ import {
   type OctaneNode,
   type Ref,
 } from "octane";
-import { createSlotCheck, gridMarkup, isDevelopment } from "typed-grid-areas/adapter";
+import { createSlotCheck, gridMarkup } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
+
+// This source ships, and apps type-check it without Node's types. Bundlers
+// replace `process.env.NODE_ENV`; without one, `process` may not exist.
+declare const process: { env: { NODE_ENV?: string } };
 
 /**
  * Props of a slot component (`<Card.icon>`) and of a grid's root component
@@ -138,15 +142,25 @@ function createRoot(definition: GridConfig<string>) {
     // In development, check the slots after every commit (`null`: no inferred dependencies).
     const checkSlots = useRef<ReturnType<typeof createSlotCheck> | undefined>(undefined);
     useEffect(() => {
-      if (!isDevelopment() || grid.current === null) {
-        return;
-      }
-      checkSlots.current ??= createSlotCheck(definition, {
-        strayChildRemedy: "make it a slot with render={<element />}",
-      });
-      for (const warning of checkSlots.current(grid.current)) {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+      // Written out, not `isDevelopment()`, so production builds drop the check.
+      try {
+        if (process.env.NODE_ENV === "development") {
+          if (grid.current === null) {
+            return;
+          }
+          checkSlots.current ??= createSlotCheck(definition, {
+            strayChildRemedy: "make it a slot with render={<element />}",
+          });
+          for (const warning of checkSlots.current(grid.current)) {
+            // eslint-disable-next-line no-console
+            console.warn(warning);
+          }
+        }
+      } catch (error) {
+        // Without a bundler, `process` may not exist: then this isn't development.
+        if (!(error instanceof ReferenceError)) {
+          throw error;
+        }
       }
     }, null);
 

@@ -17,6 +17,11 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -171,6 +176,29 @@ describe("the packed React adapter", () => {
     expect(html).toContain('data-area="information"');
     expect(html).toContain('data-area="cardTag"');
   });
+});
+
+describe("the packed React adapter in an app's bundle", () => {
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { createElement as h } from "react";
+import { createRoot } from "react-dom/client";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/react";
+const Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+createRoot(document.body).render(h(Card, null, h(Card.info, null, "Weekly digest")));
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { external: ["react", "react-dom", "@radix-ui/react-slot"] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */
