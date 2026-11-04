@@ -11,7 +11,7 @@ import {
   type PartInfo,
   PartType,
 } from "lit/directive.js";
-import { createSlotCheck, gridMarkup, isDevelopment } from "typed-grid-areas/adapter";
+import { createSlotCheck, gridMarkup } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 import { putGridStyle } from "./styleSheets.ts";
 
@@ -52,11 +52,19 @@ class GridElementDirective extends Directive {
 
   private afterUpdate(grid: Element, definition: GridConfig<string>): void {
     putGridStyle(grid, definition);
-    if (isDevelopment()) {
-      this.checkSlots ??= createSlotCheck(definition, { strayChildRemedy });
-      for (const warning of this.checkSlots(grid)) {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+    // Written out, not `isDevelopment()`, so production builds drop the check.
+    try {
+      if (process.env.NODE_ENV === "development") {
+        this.checkSlots ??= createSlotCheck(definition, { strayChildRemedy });
+        for (const warning of this.checkSlots(grid)) {
+          // eslint-disable-next-line no-console
+          console.warn(warning);
+        }
+      }
+    } catch (error) {
+      // Without a bundler, `process` may not exist: then this isn't development.
+      if (!(error instanceof ReferenceError)) {
+        throw error;
       }
     }
   }

@@ -1,6 +1,6 @@
 import type { ComponentChildren, HTMLAttributes } from "preact";
 import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
-import { createSlotCheck, gridMarkup, isDevelopment } from "typed-grid-areas/adapter";
+import { createSlotCheck, gridMarkup } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 import { composeRefs, slotChild } from "./slot.ts";
 import { putGridStyle, SheetContext } from "./styleSheet.ts";
@@ -68,15 +68,25 @@ function createRoot(definition: GridConfig<string>) {
     // In development, check the slots after every commit.
     const checkSlots = useRef<ReturnType<typeof createSlotCheck>>(undefined);
     useEffect(() => {
-      if (!isDevelopment() || gridRef.current === null) {
-        return;
-      }
-      checkSlots.current ??= createSlotCheck(definition, {
-        strayChildRemedy: "make it a slot with asChild",
-      });
-      for (const warning of checkSlots.current(gridRef.current)) {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+      // Written out, not `isDevelopment()`, so production builds drop the check.
+      try {
+        if (process.env.NODE_ENV === "development") {
+          if (gridRef.current === null) {
+            return;
+          }
+          checkSlots.current ??= createSlotCheck(definition, {
+            strayChildRemedy: "make it a slot with asChild",
+          });
+          for (const warning of checkSlots.current(gridRef.current)) {
+            // eslint-disable-next-line no-console
+            console.warn(warning);
+          }
+        }
+      } catch (error) {
+        // Without a bundler, `process` may not exist: then this isn't development.
+        if (!(error instanceof ReferenceError)) {
+          throw error;
+        }
       }
     });
 

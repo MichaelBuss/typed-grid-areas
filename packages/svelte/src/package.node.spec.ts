@@ -18,6 +18,12 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -224,4 +230,25 @@ describe("the packed Svelte adapter", () => {
     expect(body).toContain('data-area="information"');
     expect(body).toContain('data-area="cardTag"');
   }, 60_000);
+});
+
+describe("the packed Svelte adapter in an app's bundle", () => {
+  // Svelte apps build with Vite: its plugin compiles the package's components.
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/svelte";
+globalThis.Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { bundlers: ["vite"], external: ["svelte"], vitePlugins: [svelte()] },
+  );
 });

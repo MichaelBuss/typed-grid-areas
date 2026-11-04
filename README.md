@@ -1311,7 +1311,6 @@ import {
   gridMarkup,
   gridStyleTags,
   insertGridStyle,
-  isDevelopment,
 } from "typed-grid-areas/adapter";
 
 const cardGrid = defineLayout({
@@ -1337,12 +1336,19 @@ insertGridStyle(document, cardGrid);
 const head = gridStyleTags([cardGrid]);
 
 // In development, after each render: what to warn about the grid's slots.
-const checkSlots = createSlotCheck(cardGrid, {
-  strayChildRemedy: "make it a slot with asChild",
-});
-const gridElement = document.querySelector(`[data-grid-id="${markup.id}"]`);
-if (isDevelopment() && gridElement !== null) {
-  checkSlots(gridElement).forEach(warning => console.warn(warning));
+try {
+  if (process.env.NODE_ENV === "development") {
+    const checkSlots = createSlotCheck(cardGrid, {
+      strayChildRemedy: "make it a slot with asChild",
+    });
+    const gridElement = document.querySelector(`[data-grid-id="${markup.id}"]`);
+    if (gridElement !== null) {
+      checkSlots(gridElement).forEach(warning => console.warn(warning));
+    }
+  }
+} catch (error) {
+  // Without a bundler, `process` may not exist: then this isn't development.
+  if (!(error instanceof ReferenceError)) throw error;
 }
 ```
 
@@ -1359,7 +1365,9 @@ id>">` in `<head>` (ahead of the page's other styles, reusing a tag the
   `markup.cssKey` instead.
 - **Slot check.** One check per grid instance; it reports a set of problems
   once. `strayChildRemedy` says how your framework makes an element a slot.
-  Gate it on your framework's development flag, or on `isDevelopment()`.
+  Gate it on your framework's development flag, or read
+  `process.env.NODE_ENV` as above: bundlers replace it, so production builds
+  drop the check. Behind a call, such as `isDevelopment()`, they keep it.
 
 The main entry's `createSlots`, `generateCss` and `gridId` remain for
 rendering by hand.

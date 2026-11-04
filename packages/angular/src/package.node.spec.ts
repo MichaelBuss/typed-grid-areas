@@ -11,6 +11,11 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(import.meta.dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -198,6 +203,36 @@ describe("the packed Angular adapter", () => {
     expect(html).toMatch(/data-area="content"[^>]*style="container-type: inline-size;/);
     expect(html).toContain('data-area="title"');
   });
+});
+
+describe("the packed Angular adapter in an app's bundle", () => {
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { defineLayout } from "typed-grid-areas";
+import { createGrid, TgaGrid } from "@typed-grid-areas/angular";
+globalThis.app = [
+  createGrid(defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] })),
+  TgaGrid,
+];
+`,
+      );
+      return entry;
+    },
+    [
+      ...VALIDATION_MESSAGES,
+      ...SLOT_CHECK_MESSAGES,
+      "a grid with breakpoints needs its own size container",
+    ],
+    {
+      external: ["@angular/core", "@angular/common", "rxjs"],
+      // As the Angular CLI's production build does; its development build leaves it undefined.
+      define: (mode): Record<string, string> =>
+        mode === "production" ? { ngDevMode: "false" } : {},
+    },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */

@@ -19,6 +19,12 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { octane } from "octane/compiler/vite";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -235,6 +241,27 @@ describe("the packed Octane adapter", () => {
     expect(html).toMatch(/<label[^>]* data-area="input"/);
     expect(html).toContain('data-area="title"');
   });
+});
+
+describe("the packed Octane adapter in an app's bundle", () => {
+  // Octane apps build with Vite: its plugin compiles the package's source.
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/octane";
+globalThis.Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { bundlers: ["vite"], external: ["octane"], vitePlugins: [octane()] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */
