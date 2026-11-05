@@ -27,7 +27,7 @@
     "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
     "postpack": "rm README.md LICENSE",
     "test": "vitest run --project unit --project node",
-    "test:browser": "vitest run --project browser --project browser-development",
+    "test:browser": "vitest run --project browser --project browser-development --project react-compiler --project react-compiler-development",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -38,12 +38,15 @@
     "typed-grid-areas": "^0.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@typed-grid-areas/acceptance": "*",
+    "@types/babel__core": "^7.20.5",
     "@types/node": "^22.10.5",
     "@types/react": "^19.3.0",
     "@vitest/browser-playwright": "^5.0.1",
+    "babel-plugin-react-compiler": "^1.0.0",
     "happy-dom": "^20.14.5",
     "playwright": "^1.64.1",
     "react": "^19.3.0",

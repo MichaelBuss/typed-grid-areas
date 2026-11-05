@@ -417,6 +417,9 @@ Slots must be **direct children** of their grid (fragments and conditionals
 are fine). Render an area's slot even while the current layout hides it;
 leave it out only to make an optional area absent.
 
+Grid components work with React Compiler and in Strict Mode, and the
+adapter's tests run under both.
+
 ### Nesting: `nest`
 
 A grid can fill another grid's area. `nest` makes the area's slot the root
