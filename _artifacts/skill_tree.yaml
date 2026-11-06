@@ -33,3 +33,7 @@ review:
     - "scripts/**"
     - "**/*.spec.ts"
     - "**/*.spec.tsx"
+    # The docs site and its examples explain the library; the skill relies on
+    # the README, not the site (ADR 0007).
+    - "packages/site/**"
+    - "examples/**"
