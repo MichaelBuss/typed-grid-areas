@@ -2,13 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { extname, join, normalize } from "node:path";
+import { basePath as base } from "../site.ts";
 import { siteDir } from "./tsc.ts";
 
 /** The built site's folder. */
 export const dist = join(siteDir, "dist");
-
-/** The base path GitHub Pages serves the site under. */
-export const base = "/typed-grid-areas/";
 
 const types: Record<string, string> = {
   ".html": "text/html",

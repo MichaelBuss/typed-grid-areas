@@ -3,11 +3,12 @@ import react from "@astrojs/react";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 import { sidebar } from "./src/sidebar.ts";
+import { basePath, repoUrl, siteOrigin } from "./src/site.ts";
 
 // GitHub Pages serves the repo's site under its name.
 export default defineConfig({
-  site: "https://michaelbuss.github.io",
-  base: "/typed-grid-areas",
+  site: siteOrigin,
+  base: basePath,
   trailingSlash: "always",
   integrations: [
     starlight({
@@ -18,7 +19,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/MichaelBuss/typed-grid-areas",
+          href: repoUrl,
         },
       ],
       sidebar,

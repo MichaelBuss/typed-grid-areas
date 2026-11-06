@@ -13,6 +13,8 @@ import {
   preferenceContentGrid,
   WIDE,
 } from "@typed-grid-areas/acceptance/designs";
+import { examples } from "./examples.ts";
+import { repo } from "./site.ts";
 import { serveDist } from "./test-utils/serve.ts";
 
 describe("the Try it page", () => {
@@ -135,14 +137,13 @@ describe("the Try it page", () => {
     expect(await shown()).toEqual([generateCss(idCardGrid)]);
   });
 
-  it("links to a StackBlitz example for each of the seven stable adapters", async () => {
+  it("links to a StackBlitz example for each stable adapter", async () => {
     const links = await tryIt
       .locator('a[href^="https://stackblitz.com/"]')
       .evaluateAll(anchors => anchors.map(anchor => anchor.getAttribute("href")));
     expect(links).toEqual(
-      ["react", "vue", "svelte", "solid", "preact", "angular", "lit"].map(
-        adapter =>
-          `https://stackblitz.com/github/MichaelBuss/typed-grid-areas/tree/main/examples/${adapter}`,
+      examples.map(
+        ({ adapter }) => `https://stackblitz.com/github/${repo}/tree/main/examples/${adapter}`,
       ),
     );
   });

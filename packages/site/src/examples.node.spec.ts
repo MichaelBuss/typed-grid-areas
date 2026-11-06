@@ -12,7 +12,8 @@ import { examples } from "./examples.ts";
 import { repoDir } from "./test-utils/tsc.ts";
 
 const examplesDir = join(repoDir, "examples");
-const stable = ["react", "vue", "svelte", "solid", "preact", "angular", "lit"];
+/** The stable adapters, as the Try it page lists them. */
+const stable = examples.map(example => example.adapter);
 
 type Manifest = {
   name: string;
@@ -41,7 +42,6 @@ describe("the example apps", () => {
       .filter(entry => entry.isDirectory())
       .map(entry => entry.name);
     expect(folders.sort()).toEqual([...stable].sort());
-    expect(examples.map(example => example.adapter)).toEqual(stable);
   });
 
   it("are not npm workspaces", () => {

@@ -4,6 +4,8 @@
  * tag), so the site never points at unreleased API on `main`.
  */
 import GithubSlugger from "github-slugger";
+// Each workspace's own package.json, by path: no package's `exports` offers
+// `./package.json`, and adding it would change what each package ships.
 import angular from "../../angular/package.json";
 import core from "../../core/package.json";
 import lit from "../../lit/package.json";
@@ -13,8 +15,7 @@ import react from "../../react/package.json";
 import solid from "../../solid/package.json";
 import svelte from "../../svelte/package.json";
 import vue from "../../vue/package.json";
-
-const repository = "https://github.com/MichaelBuss/typed-grid-areas";
+import { repoUrl } from "./site.ts";
 
 type Package = { name: string; version: string };
 
@@ -47,5 +48,5 @@ export type ReadmeSection = keyof typeof readmeSections;
 export function readmeLink(section: ReadmeSection): string {
   const { package: pkg, heading } = readmeSections[section];
   const anchor = new GithubSlugger().slug(heading.replaceAll("`", ""));
-  return `${repository}/blob/${pkg.name}@${pkg.version}/README.md#${anchor}`;
+  return `${repoUrl}/blob/${pkg.name}@${pkg.version}/README.md#${anchor}`;
 }
