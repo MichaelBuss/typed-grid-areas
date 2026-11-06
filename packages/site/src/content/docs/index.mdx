@@ -5,9 +5,9 @@ description: Type-safe CSS grid layouts that rearrange themselves based on which
 
 import { LinkCard } from "@astrojs/starlight/components";
 
-typed-grid-areas is for components whose parts come and go: a card with an
+typed-grid-areas is for components whose slots come and go: a card with an
 optional icon, a tag that only some items have, a checkbox that only shows
-in a selection mode. Each combination of present parts, at each width,
+in a selection mode. Each combination of present slots, at each width,
 needs its own arrangement, and writing those by hand means a pile of
 `:has()` rules or layout JavaScript that drifts from the design.
 
