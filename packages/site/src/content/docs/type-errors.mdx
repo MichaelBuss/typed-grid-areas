@@ -1,0 +1,73 @@
+---
+title: Reading type errors
+description: Each template reports one error, and the useful part is on its second line.
+---
+
+import Mistake from "../../components/Mistake.astro";
+
+TypeScript checks every area name in a definition, every template's shape
+and every track list against its template. The errors come from the
+types, so they read a little oddly at first; once you know where to look,
+each one names the problem exactly.
+
+## Where to look
+
+Each error is reported on the property at fault (`template`, `columns`,
+`rows`), and has two lines:
+
+1. The first line echoes your string, and says it isn't assignable to
+   your string `&` something. Skip it.
+2. **The second line is the useful part:** it says your string isn't
+   assignable to an object type that names the problem, such as
+   `{ _unknownArea: "iconn"; }`.
+
+A template reports **one problem at a time**: fix it and the next one, if
+any, appears. There's no autocomplete inside a template string, so these
+errors are how a typo shows up.
+
+The errors below are real: a test compiles each example with the
+TypeScript version the library is checked with, and fails when the output
+changes, so this page can't drift from the compiler.
+
+## An unknown area: `_unknownArea`
+
+A cell names an area that isn't in `areas`. Usually a typo, or an optional
+area written with its `?`: declare `"icon?"`, but write `icon` in
+templates.
+
+<Mistake name="unknownArea" />
+
+The same goes for a layer in a `base+layer` cell:
+
+<Mistake name="unknownLayer" />
+
+## A row with the wrong number of cells: `_raggedRow`
+
+Every row needs one cell per column. `row: 2` counts from 1, `cells` is
+how many it has and `expected` how many the first row has. Repeat a
+spanning area's name in each column it covers, or write `.` for an empty
+cell.
+
+<Mistake name="raggedRow" />
+
+## A track list that doesn't match: `_columnCountError`, `_rowCountError`
+
+`columns` needs one track per column of the template, and `rows` one per
+row. Whitespace inside parentheses doesn't split a track, so
+`minmax(0, 1fr)` is one. The check is skipped for `repeat(` and for
+strings that aren't literals.
+
+<Mistake name="columnCount" />
+
+<Mistake name="rowCount" />
+
+A breakpoint arrangement inherits nothing from its layout: when its
+template has a different shape, it needs its own `columns` and `rows`.
+
+## Other mistakes
+
+An area in `when`, `unless` or `align` that isn't in `areas` is an
+ordinary TypeScript error (the name isn't one of the allowed strings). Some
+problems types can't see, such as an area whose cells don't form a
+rectangle: in development, `defineLayout` logs a warning for those, once
+per definition.

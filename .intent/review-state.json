@@ -23,12 +23,12 @@
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "cc35e133d0ae39437f1a36b17349561669414fdf644a08da12aef1e16cd6d1d3",
+      "fingerprint": "2a98d9977c4ab81b2402377c6b25d8586b785ac387ef832408f5e300b4022dba",
       "snapshot": {
         "README.md": "120a949bbfe7ee9eaff9f3f9a50787990b133cc0770f9fb2fd2a07d2af0f9bfe",
         "_artifacts/domain_map.yaml": "c12e5d50ce2a89843617102b2ddf86d228aa77b170dd56ffde7f2eb176cafaed",
         "_artifacts/skill_spec.md": "6c7d0ab5062e0f0c5a03e51e9ae2035039e2d499ba5d77f5af38513ad92225df",
-        "_artifacts/skill_tree.yaml": "76918570da3a6a089f7746f69c90f19a2c4fabffe5cded7f5722c31ec20efcb9",
+        "_artifacts/skill_tree.yaml": "e72c03c678578f5b3dfc1ce5b7562f5ce9c4ee8327f5fe643d3f703d35250ba4",
         "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
         "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
@@ -38,11 +38,11 @@
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "head": "72aa63c2b00b70383207618b8019e5c640953329",
       "outcome": "no-change",
-      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "reason": "The skill relies on the README, not the docs site (ADR 0007), so packages/site and examples are on the review ignore list; the acceptance package only gained a ./designs entry and moved NARROW/WIDE into designs.ts, which changes no guidance.",
       "evidence": [
-        "Changed: README.md at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+        "Changed: _artifacts/skill_tree.yaml at 72aa63c2b00b70383207618b8019e5c640953329"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
@@ -271,6 +271,30 @@
       "reason": "GLOSSARY.md adds Definition, narrows Grid to a rendered instance, and adds Server-only grid and Precompiled definition for features planned in #47 and #48; the skill already uses 'definition' for what defineLayout returns, and its guidance on writing, converting and debugging layouts is unaffected",
       "evidence": [
         "Changed: GLOSSARY.md at 2fc7ec84808cbebf1c8d5199246f58c5c3e0bbd1"
+      ]
+    },
+    "source:packages/acceptance/src/designs.ts": {
+      "fingerprint": "cabb216f0f73944df94822197a6243e28b5b2dae1009aebd1dd5681045638504",
+      "snapshot": {
+        "packages/acceptance/src/designs.ts": "06d7d521dccf52d1ead72c1f55eca34ab0369a738907b90abe39dc9dd6f1fda1"
+      },
+      "head": "72aa63c2b00b70383207618b8019e5c640953329",
+      "outcome": "no-change",
+      "reason": "The skill relies on the README, not the docs site (ADR 0007), so packages/site and examples are on the review ignore list; the acceptance package only gained a ./designs entry and moved NARROW/WIDE into designs.ts, which changes no guidance.",
+      "evidence": [
+        "Changed: packages/acceptance/src/designs.ts at 72aa63c2b00b70383207618b8019e5c640953329"
+      ]
+    },
+    "source:packages/acceptance/src/index.ts": {
+      "fingerprint": "c23a2a4d86883eaf0e5e8f5f0c9b0dc231292b37606aa2fb945a4bdf713017d2",
+      "snapshot": {
+        "packages/acceptance/src/index.ts": "0a00cc00ff12b6733494caeb9cce094602cbfb1d46fb9c06a2b70d7ea0174783"
+      },
+      "head": "72aa63c2b00b70383207618b8019e5c640953329",
+      "outcome": "no-change",
+      "reason": "The skill relies on the README, not the docs site (ADR 0007), so packages/site and examples are on the review ignore list; the acceptance package only gained a ./designs entry and moved NARROW/WIDE into designs.ts, which changes no guidance.",
+      "evidence": [
+        "Changed: packages/acceptance/src/index.ts at 72aa63c2b00b70383207618b8019e5c640953329"
       ]
     }
   }

@@ -1,0 +1,15 @@
+/* The Examples page's live demos: a wrapping row of cards at fixed widths. */
+.tga-demos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 1.5rem;
+  margin-block: 1.5rem;
+}
+
+/* The ID card's name turns white while it sits over the photo. */
+@container style(--tga-over: photo) {
+  .tga-identity-name {
+    color: white;
+  }
+}

@@ -1,0 +1,74 @@
+---
+title: Layers
+description: Draw an area on top of cells another area owns, with base+layer cells.
+---
+
+import { readmeLink } from "../../../readme.ts";
+
+A **layer** is an area drawn on top of cells that another area owns: a
+badge over a photo, a name over a banner. Write the cell as `base+layer`
+(or `base+layer+layer…`): `base` owns the cell as usual, and `layer` is
+drawn above it, whatever their order in the DOM.
+
+```ts
+defineLayout({
+  areas: ["photo", "identity", "details", "logo?", "qr?", "badge?"],
+  layouts: [
+    {
+      template: `
+        photo+logo     photo          photo+badge
+        photo          photo          photo
+        photo+identity photo+identity photo+identity
+        details        details        qr`,
+      rows: "40px 80px 40px 60px",
+      columns: "60px 1fr 60px",
+      breakpoints: {
+        "@md": {
+          template: `
+            photo photo+badge identity logo
+            photo photo       details  qr`,
+          rows: "40px 120px",
+          columns: "100px 40px 1fr 80px",
+        },
+      },
+    },
+  ],
+});
+```
+
+A layer covers the bounding rectangle of the cells it appears in. An area
+can be a layer in one layout and own cells in another: here, `logo` and
+`identity` sit on the photo on narrow cards and get columns of their own
+from `@md`. In a derived layout, an absent layer just disappears from its
+cells: it never leaves a hole for a neighbour to fill.
+
+## Layers affect track sizing
+
+A layer sits in grid tracks, so its content takes part in sizing those
+tracks just like the base's does. A long name layered over a photo can
+stretch the photo's row or column. Give the host area's tracks fixed or
+`minmax()` sizes, as the ID card does with its pixel tracks.
+
+## Restyling content while it's layered: `--tga-over`
+
+Every layered slot gets the custom property `--tga-over`, set to the name
+of the area underneath it; every other slot gets `none`. Content inside a
+slot can restyle itself with a container style query, for example white
+text while it sits over the photo:
+
+```css
+@container style(--tga-over: photo) {
+  .identity-name {
+    color: white;
+  }
+}
+```
+
+Every element is a style container, so the query reads its nearest
+ancestor's value: put the rule on the slot's content, not on the slot. In
+browsers without style queries on custom properties, the query never
+matches, so write the unlayered look as the default.
+
+Reference: <a href={readmeLink("layers")}>Layers</a> and
+<a href={readmeLink("tgaOver")}>Restyling layered content</a>, with
+browser support.

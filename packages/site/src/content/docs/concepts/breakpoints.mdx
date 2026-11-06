@@ -1,0 +1,72 @@
+---
+title: Breakpoints
+description: A grid measures its own space, not the viewport's or an outer grid's.
+---
+
+import { readmeLink } from "../../../readme.ts";
+
+A **breakpoint** is a width threshold at which a layout switches to a
+different arrangement. Keys are Tailwind's `@container` sizes (`@xs`
+through `@7xl`) or an arbitrary length such as `"@[40rem]"`:
+
+```ts
+defineLayout({
+  areas: ["icon", "information"],
+  layouts: [
+    {
+      template: "information",
+      breakpoints: {
+        "@sm": { template: "icon information" },
+        "@[40rem]": { template: "information icon", columns: "1fr auto" },
+      },
+    },
+  ],
+});
+```
+
+A breakpoint arrangement takes its own `rows`, `columns` and `align`, and
+inherits nothing from the layout it belongs to. Derived layouts apply to
+each breakpoint arrangement too.
+
+## A grid measures its own space
+
+A breakpoint measures **the space the grid itself is given**: never the
+viewport, and never an outer grid's. A grid behaves the same wherever it's
+placed, in a sidebar or a full-width page, and its breakpoints mean the
+same thing in every app that renders it.
+
+A container query can't measure the element it styles, so a grid with
+breakpoints renders inside its own size container: a wrapper element with
+`container-type: inline-size` and a container name unique to its
+definition. Grids without breakpoints get no wrapper.
+
+### Nesting changes where it switches
+
+Because each grid measures only its own area, the same breakpoint switches
+at different card widths depending on how deeply the grid is nested. In
+the PreferenceCard, the content grid's `@sm` (24rem) measures the content
+area, not the card: with the input panel beside it, the card has to be
+wider than 24rem before the content grid reaches it. A flat grid with the
+same breakpoint would switch sooner.
+
+That's the point: the content grid's layout depends on the room the
+content has, whatever surrounds it.
+
+## A grid with breakpoints can't size to its content
+
+Inline-size containment means the size container doesn't take its width
+from what's inside it. In a `1fr`, `minmax(0, 1fr)` or stretched track
+that's fine. In an `auto` or `min-content` track of a parent grid, there is
+no width to give it, and it collapses to zero.
+
+So when a nested grid has breakpoints, give its area a flexible track:
+
+```ts
+defineLayout({
+  areas: ["input?", "content"],
+  // `content` has breakpoints, so it needs a `minmax(0, 1fr)` track, not `auto`.
+  layouts: [{ template: "input content", columns: "auto minmax(0, 1fr)" }],
+});
+```
+
+Reference: <a href={readmeLink("breakpoints")}>Breakpoints</a>.

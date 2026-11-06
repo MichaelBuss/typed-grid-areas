@@ -1,0 +1,85 @@
+---
+title: How it works
+description: The CSS the library generates for the ID card, and the CSS features it relies on.
+---
+
+import { Code } from "@astrojs/starlight/components";
+import { designSource } from "../../designs.ts";
+import { headline } from "../../howItWorks.ts";
+
+Everything a grid does in the browser is CSS the core generates from its
+definition. This page shows that CSS for the ID card, produced by the core
+when this site was built, and the CSS features it relies on.
+
+## The definition
+
+The ID card has six areas, three of them optional, a layer on the photo in
+three corners, and a breakpoint at `@md`:
+
+<Code code={designSource("idCardGrid")} lang="ts" title="definition" />
+
+## The markup
+
+An adapter renders one grid of this definition as below (any framework,
+the same elements). The grid has breakpoints, so it sits inside its own
+size container, and each slot is marked with the area it fills. Placement
+is never written on a slot: the CSS reads `data-area`.
+
+<Code code={headline.markup} lang="html" title="markup" />
+
+## The CSS
+
+The adapter puts this on the page once, however many ID cards render. It is
+the whole of the library's work in the browser:
+
+<Code code={headline.css} lang="css" title="generated CSS" />
+
+## The CSS features it relies on
+
+### `grid-template-areas`
+
+Each template becomes a `grid-template-areas` value, with its `rows` and
+`columns` as `grid-template-rows` and `grid-template-columns`, and each
+slot gets `grid-area` with its area's name. A layered cell such as
+`photo+badge` is owned by its base in `grid-template-areas`; the layer is
+placed by line numbers over the cells it covers, with `z-index: 1` to draw
+it above the base, whatever the DOM order.
+
+### `:has()` and `:not(:has())`, inside `:where()`
+
+A condition becomes `:has(> [data-area=…])` for each area that must be
+present and `:not(:has(> …))` for the areas that must be absent, on the
+grid itself. The `>` means only the grid's direct children count, so a
+nested grid's slots never affect the outer grid. Each derived layout is
+one more such selector: above, `:not(:has(> [data-area=logo]))` is the
+layout without the logo.
+
+Every selector is wrapped in `:where()`, which has zero specificity. So
+between the library's own rules, the one written later wins, which is how
+the later layout wins; and any class of yours beats all of them.
+
+### `@container`, and the grid owning its size container
+
+A breakpoint becomes an `@container` query that names its container,
+`grid-<id>`, so it measures this grid's size container and nothing else.
+The size container is the wrapper in the markup, with `container-type:
+inline-size` and that `container-name`. A container query can't measure
+the element it styles, which is why the grid needs a wrapper of its own
+(and why a grid without breakpoints gets none).
+
+### `@layer`
+
+All of it sits in the `typed-grid-areas` cascade layer. Unlayered styles
+beat layered ones whatever their specificity, so your own styles on a grid
+or a slot always win over the library's. The one exception is an area a
+layout leaves out: it's hidden with `display: none !important`, so a
+`display` of yours can't bring it back while that layout applies.
+
+### `--tga-over`
+
+Every slot gets the custom property `--tga-over`: the name of the area it
+is layered over, or `none`. Above, `badge` has `--tga-over: photo` at every
+width, while `identity` and `logo` have it on narrow cards and `none` from
+`@md`, where they have cells of their own. Content inside a slot reads it with
+`@container style(--tga-over: photo)`; see
+[Layers](/typed-grid-areas/concepts/layers/).

@@ -1,0 +1,110 @@
+---
+title: Getting started
+description: Install the core and your framework's adapter, and write a first definition.
+---
+
+import { readmeLink } from "../../readme.ts";
+
+## Install
+
+Install the core, `typed-grid-areas`, and the adapter for your UI
+framework. With React:
+
+```sh
+npm i typed-grid-areas @typed-grid-areas/react
+```
+
+The core has no framework dependency. Each adapter is a package of its own,
+and every adapter offers the same concepts (slots, nested grids, hidden
+areas), spelled the way its framework spells them.
+
+## A first definition
+
+A **definition** declares a grid's areas and the layouts that arrange
+them, drawn as text templates. Write it once, at module level:
+
+```ts
+import { defineLayout } from "typed-grid-areas";
+
+export const cardGrid = defineLayout({
+  areas: ["icon?", "information", "cardTag?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information`,
+      columns: "min-content minmax(0, 1fr)",
+      breakpoints: {
+        "@sm": {
+          template: "icon information cardTag",
+          columns: "min-content minmax(0, 1fr) auto",
+        },
+      },
+    },
+  ],
+});
+```
+
+- `icon?` and `cardTag?` are **optional areas**: their slots may be absent.
+  Everywhere else they're named without the `?`.
+- The template is the layout with every area present. When a slot is
+  absent, the library derives the layout without it.
+- From the `@sm` breakpoint, the grid's own width, the three areas share a
+  row.
+
+Then render it with your adapter. In React, `createGridComponent` turns the
+definition into a component with a slot component per area:
+
+```tsx
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/react";
+
+const Card = createGridComponent(
+  defineLayout({
+    areas: ["icon?", "information", "cardTag?"],
+    layouts: [
+      {
+        template: "icon information cardTag",
+        columns: "min-content minmax(0, 1fr) auto",
+      },
+    ],
+  }),
+);
+
+export function Example({ tag }: { tag?: string }) {
+  return (
+    <Card>
+      <Card.icon>★</Card.icon>
+      <Card.information>Weekly digest</Card.information>
+      {tag && <Card.cardTag>{tag}</Card.cardTag>}
+    </Card>
+  );
+}
+```
+
+`<Card.iconn>` would be a type error, and so would `iconn` in a template.
+
+## Your adapter
+
+How each adapter renders a grid, its slots and nested grids, and where it
+puts the CSS, is in the README's section for it, as of the release this
+site was built from:
+
+| Framework | Package                     | Reference                                                       |
+| --------- | --------------------------- | --------------------------------------------------------------- |
+| React     | `@typed-grid-areas/react`   | <a href={readmeLink("react")}>Rendering with React</a>          |
+| Vue       | `@typed-grid-areas/vue`     | <a href={readmeLink("vue")}>Rendering with Vue</a>              |
+| Svelte    | `@typed-grid-areas/svelte`  | <a href={readmeLink("svelte")}>Rendering with Svelte</a>        |
+| Solid     | `@typed-grid-areas/solid`   | <a href={readmeLink("solid")}>Rendering with Solid</a>          |
+| Preact    | `@typed-grid-areas/preact`  | <a href={readmeLink("preact")}>Rendering with Preact</a>        |
+| Angular   | `@typed-grid-areas/angular` | <a href={readmeLink("angular")}>Rendering with Angular</a>      |
+| Lit       | `@typed-grid-areas/lit`     | <a href={readmeLink("lit")}>Rendering with Lit</a>              |
+| Octane    | `@typed-grid-areas/octane`  | <a href={readmeLink("octane")}>Rendering with Octane</a> (experimental) |
+
+For a framework without an adapter, the core's `typed-grid-areas/adapter`
+entry has what every adapter builds on:
+<a href={readmeLink("withoutFramework")}>Without React</a>.
+
+The core also ships an agent skill that walks a coding agent through
+writing and debugging layouts:
+<a href={readmeLink("agentSkill")}>Agent skill</a>.

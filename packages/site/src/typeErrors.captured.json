@@ -1,0 +1,22 @@
+{
+  "unknownArea": {
+    "line": 6,
+    "message": "error TS2322: Type '\"iconn information cardTag\"' is not assignable to type '\"iconn information cardTag\" & { _unknownArea: \"iconn\"; }'.\n  Type 'string' is not assignable to type '{ _unknownArea: \"iconn\"; }'."
+  },
+  "unknownLayer": {
+    "line": 6,
+    "message": "error TS2322: Type '\"icon information cardTag+badgee\"' is not assignable to type '\"icon information cardTag+badgee\" & { _unknownArea: \"badgee\"; }'.\n  Type 'string' is not assignable to type '{ _unknownArea: \"badgee\"; }'."
+  },
+  "raggedRow": {
+    "line": 6,
+    "message": "error TS2322: Type '\"icon cardTag / information\"' is not assignable to type '\"icon cardTag / information\" & { _raggedRow: { row: 2; cells: 1; expected: 2; }; }'.\n  Type 'string' is not assignable to type '{ _raggedRow: { row: 2; cells: 1; expected: 2; }; }'."
+  },
+  "columnCount": {
+    "line": 8,
+    "message": "error TS2322: Type '\"min-content minmax(0, 1fr) auto\"' is not assignable to type '\"min-content minmax(0, 1fr) auto\" & { _columnCountError: { expected: 2; got: 3; }; }'.\n  Type 'string' is not assignable to type '{ _columnCountError: { expected: 2; got: 3; }; }'."
+  },
+  "rowCount": {
+    "line": 8,
+    "message": "error TS2322: Type '\"auto\"' is not assignable to type '\"auto\" & { _rowCountError: { expected: 2; got: 1; }; }'.\n  Type 'string' is not assignable to type '{ _rowCountError: { expected: 2; got: 1; }; }'."
+  }
+}
