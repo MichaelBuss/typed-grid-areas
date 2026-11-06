@@ -262,15 +262,15 @@
       ]
     },
     "source:GLOSSARY.md": {
-      "fingerprint": "9e0ddb939f87e2d6365bc2e3eefd6b6ff4513517a3cbe95f1216eb54b03ea439",
+      "fingerprint": "ed229e9c831a72c3b41c55a830e26d7cdf999a76b4270c5804b74bd445990e12",
       "snapshot": {
-        "GLOSSARY.md": "6f986fe24230a76b833cf5de981ace290832d0b247d3148630012f8b5803bb5a"
+        "GLOSSARY.md": "ec8d6ab74de4a54fef0b8b7fc6dca7542bf94f9bb57b37003d6e52dfc8e696b1"
       },
-      "head": "69671736d982621b3edc48e3f6b4d926ef8b52b0",
+      "head": "2fc7ec84808cbebf1c8d5199246f58c5c3e0bbd1",
       "outcome": "no-change",
-      "reason": "GLOSSARY.md adds Definition and narrows Grid to a rendered instance; the skill already uses 'definition' for what defineLayout returns, so its guidance still holds",
+      "reason": "GLOSSARY.md adds Definition, narrows Grid to a rendered instance, and adds Server-only grid and Precompiled definition for features planned in #47 and #48; the skill already uses 'definition' for what defineLayout returns, and its guidance on writing, converting and debugging layouts is unaffected",
       "evidence": [
-        "Changed: GLOSSARY.md at 69671736d982621b3edc48e3f6b4d926ef8b52b0"
+        "Changed: GLOSSARY.md at 2fc7ec84808cbebf1c8d5199246f58c5c3e0bbd1"
       ]
     }
   }
