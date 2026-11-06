@@ -2,6 +2,13 @@
   "name": "@typed-grid-areas/lit",
   "version": "0.1.0",
   "description": "Lit adapter for typed-grid-areas: render a grid definition as a typed template function.",
+  "keywords": [
+    "css-grid",
+    "grid-template-areas",
+    "layout",
+    "typescript",
+    "lit"
+  ],
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -9,7 +16,7 @@
     "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
     "directory": "packages/lit"
   },
-  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "homepage": "https://michaelbuss.github.io/typed-grid-areas/",
   "bugs": {
     "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
   },
