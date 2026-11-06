@@ -14,6 +14,7 @@ The repo is an npm-workspaces monorepo (ADR 0004). Every package is a workspace 
 | `packages/lit`        | `@typed-grid-areas/lit`        | yes               |
 | `packages/octane`     | `@typed-grid-areas/octane`     | yes, as source    |
 | `packages/acceptance` | `@typed-grid-areas/acceptance` | never (`private`) |
+| `packages/site`       | `@typed-grid-areas/site`       | never (`private`) |
 
 The root holds no package, only what spans them: the workspace list, the release scripts (`scripts/`, with their own tests), the Changesets config and the `just` recipes. `just build`, `just test`, `just test-browser` and `just typecheck` run each workspace's own `build`, `test`, `test:browser` and `typecheck` script with `npm run <script> --workspaces --if-present`, so a workspace without one is skipped. The root's `workspaces` lists `packages/core` before `packages/*`, so the core always builds first.
 
@@ -40,6 +41,16 @@ Add one only when `npm install` fails without it, scope it to the package that d
 
 - `vitest-browser-preact` → `preact: ^11.0.0`: it peers on `preact: ^10.0.0`; the Preact adapter targets Preact 11.
 - `octane` → `typescript: $typescript` (the root's range): Octane peers on `typescript: ^5.9.3 || ^6.0.0 || >=7.1.0-0`, which rejects the root's 7.0.
+
+## The docs site: `packages/site`
+
+An Astro Starlight site (#1, ADR 0007), deployed to GitHub Pages at `https://michaelbuss.github.io/typed-grid-areas/` (base path `/typed-grid-areas/`). It renders live demos with the React adapter only, so its `build`, `typecheck` and `dev` scripts build `@typed-grid-areas/react` first. It pins TypeScript 6 for `astro check`; its tests compile code with the root's TypeScript 7, as the packages are checked.
+
+- **Pages** are `src/content/docs/**/*.mdx`; their order is `src/sidebar.ts`. Link to the README with `readmeLink()` from `src/readme.ts` (each section at its package's release tag), never by hand.
+- **Code blocks:** `src/codeBlocks.node.spec.ts` type-checks every ` ```ts ` / ` ```tsx ` block, with the README's info strings for other adapters (` ```tsx preact `, ` ```tsx solid `, ` ```ts lit `, ` ```ts angular `, the last with `ngc`). A block can import the example designs from `./designs`.
+- **Type errors** on the Reading type errors page are tsc's real output for `src/typeErrors.ts`, captured in `src/typeErrors.captured.json`. When the error format changes, `src/typeErrors.node.spec.ts` fails: re-capture with `npx vitest run --project node -u` in the workspace, and re-read the page.
+- **`test:browser`** builds the site and checks `dist/`: the page order, the generated content, and the Examples page's demos laying out in Chromium with JavaScript turned off.
+- **Deploying:** `.github/workflows/pages.yml` runs only when `publish.yml` calls it after a release (a release tag at the released commit) or on manual dispatch, never on a push.
 
 ## Pinning a workspace's own TypeScript
 
