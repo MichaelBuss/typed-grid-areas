@@ -5,17 +5,12 @@
  * laying out in Chromium with JavaScript turned off.
  */
 import { existsSync, readFileSync } from "node:fs";
-import { createServer, type Server } from "node:http";
-import type { AddressInfo } from "node:net";
-import { extname, join, normalize } from "node:path";
+import { join } from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 import { NARROW, WIDE } from "@typed-grid-areas/acceptance/designs";
 import captured from "./typeErrors.captured.json";
 import { headline } from "./howItWorks.ts";
-import { siteDir } from "./test-utils/tsc.ts";
-
-const dist = join(siteDir, "dist");
-const base = "/typed-grid-areas/";
+import { base, dist, serveDist } from "./test-utils/serve.ts";
 
 /** A built page's HTML, by its path under the base. */
 function page(path: string): string {
@@ -117,44 +112,20 @@ describe("the built site", () => {
 });
 
 describe("the Examples page, with JavaScript turned off", () => {
-  let server: Server;
+  let server: { url: string; close: () => void };
   let browser: Browser;
   let examples: Page;
 
   beforeAll(async () => {
     page("examples");
-    const types: Record<string, string> = {
-      ".html": "text/html",
-      ".css": "text/css",
-      ".js": "text/javascript",
-      ".svg": "image/svg+xml",
-    };
-    server = createServer((request, response) => {
-      const path = normalize(decodeURIComponent(new URL(request.url!, "http://site").pathname));
-      const relative = path.startsWith(base) ? path.slice(base.length) : "\0";
-      const file = join(
-        dist,
-        relative,
-        relative === "" || relative.endsWith("/") ? "index.html" : "",
-      );
-      if (!file.startsWith(dist) || !existsSync(file)) {
-        response.writeHead(404).end();
-        return;
-      }
-      response.writeHead(200, {
-        "content-type": types[extname(file)] ?? "application/octet-stream",
-      });
-      response.end(readFileSync(file));
-    });
-    await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
-    const { port } = server.address() as AddressInfo;
+    server = await serveDist();
     browser = await chromium.launch();
     const context = await browser.newContext({
       javaScriptEnabled: false,
       viewport: { width: 1280, height: 900 },
     });
     examples = await context.newPage();
-    await examples.goto(`http://127.0.0.1:${port}${base}examples/`);
+    await examples.goto(`${server.url}examples/`);
   });
 
   afterAll(async () => {
