@@ -1,8 +1,11 @@
 /**
  * The example apps in `examples/<adapter>/`, one per stable adapter, which
  * the Try it page links to. Each opens in StackBlitz from `main` through its
- * GitHub import URL.
+ * GitHub import URL. They are the stable adapters, the list the site's
+ * other adapter lists come from.
  */
+import { repo, repoUrl } from "./site.ts";
+
 export const examples = [
   { adapter: "react", label: "React", tooling: "Vite" },
   { adapter: "vue", label: "Vue", tooling: "Vite, vue-tsc" },
@@ -15,12 +18,9 @@ export const examples = [
 
 export type ExampleAdapter = (typeof examples)[number]["adapter"];
 
-const repo = "MichaelBuss/typed-grid-areas";
-
 /** Opens the example in StackBlitz, imported from the repo's `main`. */
 export const stackblitzUrl = (adapter: ExampleAdapter) =>
   `https://stackblitz.com/github/${repo}/tree/main/examples/${adapter}`;
 
 /** The example's folder on GitHub. */
-export const sourceUrl = (adapter: ExampleAdapter) =>
-  `https://github.com/${repo}/tree/main/examples/${adapter}`;
+export const sourceUrl = (adapter: ExampleAdapter) => `${repoUrl}/tree/main/examples/${adapter}`;

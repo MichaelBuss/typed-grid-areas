@@ -9,7 +9,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { WIDE } from "@typed-grid-areas/acceptance/designs";
 import { playgroundDesigns, type PlaygroundDesignKey } from "../playground.ts";
-import { IdCard, PreferenceCard } from "./demos.tsx";
+import { DesignCard } from "./demos.tsx";
 
 const MIN_WIDTH = 240;
 const MAX_WIDTH = 720;
@@ -91,13 +91,7 @@ export function Playground({
         </label>
       </div>
       <div ref={frame} className="tga-playground-frame" data-playground-frame style={{ width }}>
-        {design === "preference-card" ? (
-          <PreferenceCard
-            present={present as (typeof playgroundDesigns)["preference-card"]["optional"]}
-          />
-        ) : (
-          <IdCard present={present as (typeof playgroundDesigns)["id-card"]["optional"]} />
-        )}
+        <DesignCard design={design} present={present} />
       </div>
       {showCss && <GeneratedCss blocks={css} />}
     </div>

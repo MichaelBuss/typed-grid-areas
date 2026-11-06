@@ -9,8 +9,10 @@ import { join } from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 import { NARROW, WIDE } from "@typed-grid-areas/acceptance/designs";
 import captured from "./typeErrors.captured.json";
+import { examples } from "./examples.ts";
 import { headline } from "./howItWorks.ts";
-import { base, dist, serveDist } from "./test-utils/serve.ts";
+import { basePath as base, repoUrl } from "./site.ts";
+import { dist, serveDist } from "./test-utils/serve.ts";
 
 /** A built page's HTML, by its path under the base. */
 function page(path: string): string {
@@ -74,13 +76,11 @@ describe("the built site", () => {
 
   it("links to the README only at a release tag, never at a branch", () => {
     const pages = ["getting-started", "concepts/areas", "examples"].map(page);
+    const blob = `${repoUrl}/blob/`;
     const links = pages.flatMap(html =>
-      Array.from(
-        html.matchAll(
-          /https:\/\/github\.com\/MichaelBuss\/typed-grid-areas\/blob\/([^"#]+)\/README\.md/g,
-        ),
-        match => match[1]!,
-      ),
+      Array.from(html.matchAll(/"(https:[^"#]+)\/README\.md\b/g), match => match[1]!)
+        .filter(url => url.startsWith(blob))
+        .map(url => url.slice(blob.length)),
     );
     expect(links.length).toBeGreaterThan(0);
     for (const ref of links) {
@@ -88,12 +88,12 @@ describe("the built site", () => {
     }
   });
 
-  it("has code tabs for the seven stable adapters on Examples, for each design", () => {
+  it("has a code tab for each stable adapter on Examples, for each design", () => {
     const tabs = Array.from(
       page("examples").matchAll(/<a role="tab"[^>]*>\s*([^<]+?)\s*</g),
       match => match[1]!.trim(),
     );
-    const adapters = ["React", "Vue", "Svelte", "Solid", "Preact", "Angular", "Lit"];
+    const adapters = examples.map(example => example.label);
     expect(tabs).toEqual([...adapters, ...adapters]);
   });
 

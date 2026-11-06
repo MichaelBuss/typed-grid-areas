@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // The version-sync invariant: each workspace's package.json is the single
 // source of truth for its version and dependency ranges; package-lock.json
-// carries the identical values after this script runs. `changeset version`
-// only writes the package.json files (bumping versions, and the ranges of
-// workspaces that depend on a bumped one), so `npm run version` chains this
-// after it, and `npm ci` keeps accepting the lockfile.
+// carries the identical values after this script runs, and each example app
+// in examples/ depends on the current version of every published package it
+// uses (`^<version>`), so it installs what the release publishes. `changeset
+// version` only writes the workspaces' package.json files (bumping versions,
+// and the ranges of workspaces that depend on a bumped one), so `npm run
+// version` chains this after it, and `npm ci` keeps accepting the lockfile.
 
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, globSync, realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -21,9 +23,12 @@ const DEPENDENCY_FIELDS = [
 
 type DependencyField = (typeof DEPENDENCY_FIELDS)[number];
 
-export type Manifest = { version: string } & {
-  [field in DependencyField]?: Record<string, string>;
-};
+type Dependencies = { [field in DependencyField]?: Record<string, string> };
+
+export type Manifest = { name?: string; version: string; private?: boolean } & Dependencies;
+
+/** An example app's package.json: not a workspace, never versioned. */
+export type ExampleManifest = Dependencies;
 
 export type Lockfile = {
   version?: string;
@@ -34,14 +39,17 @@ export type SyncInput = {
   /** Each workspace's folder (relative to the root, as the lockfile keys it) and manifest. */
   workspaces: ReadonlyArray<{ dir: string; manifest: Manifest }>;
   lock?: Lockfile | undefined;
+  /** Each example app's folder (relative to the root) and manifest. */
+  examples?: ReadonlyArray<{ dir: string; manifest: ExampleManifest }>;
 };
 
 export type SyncResult = {
   lock?: Lockfile | undefined;
+  /** The files changed: `package-lock.json`, and each example app's `<dir>/package.json`. */
   changed: readonly string[];
 };
 
-export function syncVersions({ workspaces, lock }: SyncInput): SyncResult {
+export function syncVersions({ workspaces, lock, examples = [] }: SyncInput): SyncResult {
   let changed = false;
   for (const { dir, manifest } of workspaces) {
     const entry = lock?.packages?.[dir];
@@ -64,7 +72,41 @@ export function syncVersions({ workspaces, lock }: SyncInput): SyncResult {
       changed = true;
     }
   }
-  return { lock, changed: changed ? ["package-lock.json"] : [] };
+  return {
+    lock,
+    changed: [...(changed ? ["package-lock.json"] : []), ...syncExamples(workspaces, examples)],
+  };
+}
+
+/**
+ * Moves each example's range on a published workspace to `^<its version>`.
+ * Returns the paths of the manifests it changed.
+ */
+function syncExamples(
+  workspaces: SyncInput["workspaces"],
+  examples: NonNullable<SyncInput["examples"]>,
+): Array<string> {
+  const ranges = new Map(
+    workspaces.flatMap(({ manifest }) =>
+      manifest.name !== undefined && manifest.private !== true
+        ? [[manifest.name, `^${manifest.version}`] as const]
+        : [],
+    ),
+  );
+  return examples.flatMap(({ dir, manifest }) => {
+    let changed = false;
+    for (const field of DEPENDENCY_FIELDS) {
+      const dependencies = manifest[field] ?? {};
+      for (const name of Object.keys(dependencies)) {
+        const range = ranges.get(name);
+        if (range !== undefined && dependencies[name] !== range) {
+          dependencies[name] = range;
+          changed = true;
+        }
+      }
+    }
+    return changed ? [`${dir}/package.json`] : [];
+  });
 }
 
 function isCliEntry(): boolean {
@@ -79,26 +121,43 @@ function isCliEntry(): boolean {
   }
 }
 
+const readJson = async <T>(path: string): Promise<T> =>
+  JSON.parse(await readFile(path, "utf8")) as T;
+
+const writeJson = (path: string, value: unknown) =>
+  writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
+
 export async function syncVersionCli(
   root = join(dirname(fileURLToPath(import.meta.url)), ".."),
 ): Promise<number> {
   const workspaces = await Promise.all(
     readWorkspaces(root).map(async ({ dir }) => ({
       dir,
-      manifest: JSON.parse(await readFile(join(root, dir, "package.json"), "utf8")) as Manifest,
+      manifest: await readJson<Manifest>(join(root, dir, "package.json")),
     })),
   );
+  const examples = await Promise.all(
+    globSync("examples/*/package.json", { cwd: root })
+      .sort()
+      .map(async path => ({
+        dir: dirname(path).replaceAll("\\", "/"),
+        manifest: await readJson<ExampleManifest>(join(root, path)),
+      })),
+  );
   const lockPath = join(root, "package-lock.json");
-  const lock = existsSync(lockPath)
-    ? (JSON.parse(await readFile(lockPath, "utf8")) as Lockfile)
-    : undefined;
-  const result = syncVersions({ workspaces, lock });
+  const lock = existsSync(lockPath) ? await readJson<Lockfile>(lockPath) : undefined;
+  const result = syncVersions({ workspaces, lock, examples });
   if (lock !== undefined && result.changed.includes("package-lock.json")) {
-    await writeFile(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
+    await writeJson(lockPath, lock);
+  }
+  for (const { dir, manifest } of examples) {
+    if (result.changed.includes(`${dir}/package.json`)) {
+      await writeJson(join(root, dir, "package.json"), manifest);
+    }
   }
   process.stdout.write(
     result.changed.length === 0
-      ? "package-lock.json already agrees with every workspace\n"
+      ? "package-lock.json and the example apps already agree with every workspace\n"
       : `Synced ${result.changed.join(", ")} to every workspace's package.json\n`,
   );
   return 0;

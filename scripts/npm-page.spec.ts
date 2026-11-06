@@ -32,22 +32,20 @@ const readmeTargets = [
   ...Array.from(readmeProse.matchAll(/\b(?:href|src)=["']([^"']+)/g), match => match[1]!),
 ];
 
-const adapterFramework: Record<string, string> = {
-  "@typed-grid-areas/react": "react",
-  "@typed-grid-areas/vue": "vue",
-  "@typed-grid-areas/svelte": "svelte",
-  "@typed-grid-areas/solid": "solid",
-  "@typed-grid-areas/preact": "preact",
-  "@typed-grid-areas/angular": "angular",
-  "@typed-grid-areas/lit": "lit",
-  "@typed-grid-areas/octane": "octane",
-};
+/**
+ * An adapter is a workspace `packages/<framework>`, published as
+ * `@typed-grid-areas/<framework>`: its folder names its framework.
+ */
+const frameworkOf = (workspace: { dir: string }): string => workspace.dir.split("/").at(-1)!;
 
 describe("every published package's npm page", () => {
-  it("covers the core and every adapter", () => {
-    expect(published.map(workspace => workspace.name).sort()).toEqual(
-      ["typed-grid-areas", ...Object.keys(adapterFramework)].sort(),
-    );
+  it("covers the core and every adapter, each named after its folder", () => {
+    expect(published.map(workspace => workspace.name)).toContain("typed-grid-areas");
+    const adapters = published.filter(workspace => workspace.name !== "typed-grid-areas");
+    expect(adapters.length).toBeGreaterThan(0);
+    for (const adapter of adapters) {
+      expect(adapter.name).toBe(`@typed-grid-areas/${frameworkOf(adapter)}`);
+    }
   });
 
   it.each(published.map(workspace => [workspace.name, workspace.manifest] as const))(
@@ -57,10 +55,10 @@ describe("every published package's npm page", () => {
     },
   );
 
-  it.each(published.map(workspace => [workspace.name, workspace.manifest] as const))(
+  it.each(published.map(workspace => [workspace.name, workspace] as const))(
     "%s is found by searching for CSS grid layouts in TypeScript, and its framework",
-    (name, manifest) => {
-      const framework = adapterFramework[name];
+    (name, { manifest, ...workspace }) => {
+      const framework = name === "typed-grid-areas" ? undefined : frameworkOf(workspace);
       expect(manifest.keywords).toEqual(
         expect.arrayContaining([
           "css-grid",

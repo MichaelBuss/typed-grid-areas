@@ -5,7 +5,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import GithubSlugger from "github-slugger";
+import { examples } from "./examples.ts";
 import { readmeLink, readmeSections } from "./readme.ts";
+import { repoUrl } from "./site.ts";
 import { repoDir } from "./test-utils/tsc.ts";
 
 const readme = readFileSync(join(repoDir, "README.md"), "utf8");
@@ -24,15 +26,15 @@ const version = (workspace: string): string =>
 describe("links to the README", () => {
   it("point at the release tag of the package the section documents", () => {
     expect(readmeLink("react")).toBe(
-      `https://github.com/MichaelBuss/typed-grid-areas/blob/@typed-grid-areas/react@${version("react")}/README.md#rendering-with-react-grid-components`,
+      `${repoUrl}/blob/@typed-grid-areas/react@${version("react")}/README.md#rendering-with-react-grid-components`,
     );
     expect(readmeLink("breakpoints")).toBe(
-      `https://github.com/MichaelBuss/typed-grid-areas/blob/typed-grid-areas@${version("core")}/README.md#breakpoints`,
+      `${repoUrl}/blob/typed-grid-areas@${version("core")}/README.md#breakpoints`,
     );
   });
 
   it("have a section for every stable adapter", () => {
-    for (const adapter of ["react", "vue", "svelte", "solid", "preact", "angular", "lit"]) {
+    for (const { adapter } of examples) {
       expect(readmeSections).toHaveProperty(adapter);
     }
   });
