@@ -2,6 +2,13 @@
   "name": "@typed-grid-areas/react",
   "version": "0.1.0",
   "description": "React adapter for typed-grid-areas: render a grid definition as typed slot components.",
+  "keywords": [
+    "css-grid",
+    "grid-template-areas",
+    "layout",
+    "typescript",
+    "react"
+  ],
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -9,7 +16,7 @@
     "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "homepage": "https://michaelbuss.github.io/typed-grid-areas/",
   "bugs": {
     "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
   },
