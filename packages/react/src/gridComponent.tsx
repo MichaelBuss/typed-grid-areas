@@ -55,7 +55,8 @@ type RootProps = GridComponentProps & {
 function createRoot(definition: GridConfig<string>) {
   const markup = gridMarkup(definition);
 
-  return function Root({ asChild = false, style, ref, "data-area": area, ...props }: RootProps) {
+  // Declared, not returned anonymously, so React Compiler sees a component.
+  function Root({ asChild = false, style, ref, "data-area": area, ...props }: RootProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const composedRef = useCallback(
       (node: HTMLDivElement | null) => {
@@ -78,13 +79,16 @@ function createRoot(definition: GridConfig<string>) {
           if (gridRef.current === null) {
             return;
           }
-          checkSlots.current ??= createSlotCheck(definition, {
-            strayChildRemedy: "make it a slot with asChild",
-          });
-          for (const warning of checkSlots.current(gridRef.current)) {
+          // Not `??=` or `for…of`, which React Compiler can't compile here yet.
+          if (checkSlots.current === undefined) {
+            checkSlots.current = createSlotCheck(definition, {
+              strayChildRemedy: "make it a slot with asChild",
+            });
+          }
+          checkSlots.current(gridRef.current).forEach(warning => {
             // eslint-disable-next-line no-console
             console.warn(warning);
-          }
+          });
         }
       } catch (error) {
         // Without a bundler, `process` may not exist: then this isn't development.
@@ -113,7 +117,9 @@ function createRoot(definition: GridConfig<string>) {
         )}
       </>
     );
-  };
+  }
+
+  return Root;
 }
 
 function createSlotComponent(area: string): SlotComponent {
@@ -123,6 +129,18 @@ function createSlotComponent(area: string): SlotComponent {
   }
   SlotComponent.displayName = area;
   return SlotComponent;
+}
+
+/**
+ * The component of an area nested through `nest`: the nested grid's root,
+ * filling `area`. `Nested` is capitalised because React Compiler renders a
+ * lowercase captured variable as a host element (`<nested>`), react/react#35268.
+ */
+function createNestedRoot(Nested: AnyGridComponent, area: string) {
+  function NestedRoot(props: GridComponentProps) {
+    return <Nested {...props} data-area={area} />;
+  }
+  return NestedRoot;
 }
 
 /** The statics (one per area) a grid component carries. */
@@ -185,11 +203,7 @@ export function createGridComponent<
       statics[area] = createSlotComponent(area);
       continue;
     }
-    const NestedRoot = (props: GridComponentProps) => {
-      const Nested = nested;
-      return <Nested {...props} data-area={area} />;
-    };
-    statics[area] = withStatics(NestedRoot, nested[STATICS] ?? {});
+    statics[area] = withStatics(createNestedRoot(nested, area), nested[STATICS] ?? {});
   }
 
   return withStatics(createRoot(definition), statics) as unknown as GridComponent<TAreaName, TNest>;
