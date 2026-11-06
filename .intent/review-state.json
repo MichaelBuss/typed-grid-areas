@@ -260,6 +260,18 @@
       "evidence": [
         "Changed: packages/react/vitest.config.ts at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
       ]
+    },
+    "source:GLOSSARY.md": {
+      "fingerprint": "9e0ddb939f87e2d6365bc2e3eefd6b6ff4513517a3cbe95f1216eb54b03ea439",
+      "snapshot": {
+        "GLOSSARY.md": "6f986fe24230a76b833cf5de981ace290832d0b247d3148630012f8b5803bb5a"
+      },
+      "head": "69671736d982621b3edc48e3f6b4d926ef8b52b0",
+      "outcome": "no-change",
+      "reason": "GLOSSARY.md adds Definition and narrows Grid to a rendered instance; the skill already uses 'definition' for what defineLayout returns, so its guidance still holds",
+      "evidence": [
+        "Changed: GLOSSARY.md at 69671736d982621b3edc48e3f6b4d926ef8b52b0"
+      ]
     }
   }
 }
