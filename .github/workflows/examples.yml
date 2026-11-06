@@ -1,0 +1,35 @@
+name: Examples
+
+# Installs, type-checks and builds every app in examples/ against the
+# packages published on npm (the examples are not workspaces and keep no
+# lockfile), so an example never breaks unnoticed: on PRs that touch them,
+# and after each release, when publish.yml calls it.
+on:
+  pull_request:
+    paths:
+      - "examples/**"
+      - ".github/workflows/examples.yml"
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [react, vue, svelte, solid, preact, angular, lit]
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run build

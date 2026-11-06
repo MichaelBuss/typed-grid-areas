@@ -1,16 +1,21 @@
 /**
- * The Examples page's live demos: the acceptance package's PreferenceCard
- * and ID card definitions, rendered with the React adapter. Astro renders
- * them to static HTML on the server, with no client directive, so nothing
- * hydrates: the browser lays them out from the generated CSS alone.
+ * The site's live demos: the acceptance package's PreferenceCard and ID
+ * card definitions, rendered with the React adapter. On the Examples and
+ * Try it pages, Astro renders them to static HTML on the server, with no
+ * client directive, so nothing hydrates: the browser lays them out from the
+ * generated CSS alone. The playground (`playground.tsx`) renders the same
+ * cards in a React island.
  */
 import type { CSSProperties, ReactNode } from "react";
 import { createGridComponent } from "@typed-grid-areas/react";
 import {
   idCardGrid,
+  NARROW,
   preferenceCardGrid,
   preferenceContentGrid,
+  WIDE,
 } from "@typed-grid-areas/acceptance/designs";
+import { combinations, playgroundDesigns, type PlaygroundDesignKey } from "../playground.ts";
 
 const PreferenceContent = createGridComponent(preferenceContentGrid);
 const Preference = createGridComponent(preferenceCardGrid, {
@@ -19,7 +24,7 @@ const Preference = createGridComponent(preferenceCardGrid, {
 const Id = createGridComponent(idCardGrid);
 
 /** Which of a design's optional areas a demo renders. */
-type Present<TArea extends string> = ReadonlyArray<TArea>;
+export type Present<TArea extends string> = ReadonlyArray<TArea>;
 
 const card: CSSProperties = {
   border: "1px solid var(--sl-color-gray-5)",
@@ -37,9 +42,24 @@ export type DemoFrame<TArea extends string> = {
 };
 
 /** A card at a fixed width, labelled with it, so the page shows how the width changes the layout. */
-function Frame({ width, label, children }: { width: number; label: string; children: ReactNode }) {
+function Frame({
+  width,
+  label,
+  present,
+  children,
+}: {
+  width: number;
+  label: string;
+  /** The optional areas present, for a matrix of combinations to mark each card with. */
+  present?: Present<string>;
+  children: ReactNode;
+}) {
   return (
-    <figure className="tga-demo" style={{ width, maxWidth: "100%", margin: 0 }}>
+    <figure
+      className="tga-demo"
+      style={{ width, maxWidth: "100%", margin: 0 }}
+      data-present={present?.join(",")}
+    >
       {children}
       <figcaption
         style={{ fontSize: "0.8rem", color: "var(--sl-color-gray-3)", marginTop: "0.25rem" }}
@@ -87,7 +107,43 @@ export function IdCardDemos({
   );
 }
 
-function PreferenceCard({
+/**
+ * A design in every combination of its optional areas, each at the narrow
+ * and the wide width, in one React tree, so React writes each definition's
+ * CSS once.
+ */
+export function CombinationMatrix({ design }: { design: PlaygroundDesignKey }) {
+  return (
+    <div className="not-content tga-demos" data-matrix={design}>
+      {design === "preference-card"
+        ? matrix(playgroundDesigns[design].optional, present => (
+            <PreferenceCard present={present} />
+          ))
+        : matrix(playgroundDesigns[design].optional, present => <IdCard present={present} />)}
+    </div>
+  );
+}
+
+function matrix<TArea extends string>(
+  optional: Present<TArea>,
+  card: (present: Present<TArea>) => ReactNode,
+) {
+  return combinations(optional).flatMap(present =>
+    [NARROW, WIDE].map(width => (
+      <Frame
+        key={`${present.join()}-${width}`}
+        label={present.length === 0 ? "No optional areas" : present.join(", ")}
+        width={width}
+        present={present}
+      >
+        {card(present)}
+      </Frame>
+    )),
+  );
+}
+
+/** The PreferenceCard, with only the given optional areas present. */
+export function PreferenceCard({
   present,
 }: {
   present: Present<"input" | "icon" | "cardTag" | "children">;
@@ -163,7 +219,8 @@ const corner: CSSProperties = {
   alignSelf: "start",
 };
 
-function IdCard({ present }: { present: Present<"logo" | "qr" | "badge"> }) {
+/** The ID card, with only the given optional areas present. */
+export function IdCard({ present }: { present: Present<"logo" | "qr" | "badge"> }) {
   const has = (area: (typeof present)[number]) => present.includes(area);
   return (
     <Id style={card} data-demo="id-card">

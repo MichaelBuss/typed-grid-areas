@@ -1,12 +1,73 @@
 ---
 title: Try it
-description: A playground and a StackBlitz example for each adapter.
+description: Resize a grid, toggle its optional areas and read its CSS, then open an example app for your framework in StackBlitz.
 ---
 
-Coming soon: a playground to resize a grid and toggle its optional areas,
-and a StackBlitz example for each adapter, with real TypeScript and real
-type errors.
+import { NARROW, WIDE } from "@typed-grid-areas/acceptance/designs";
+import { CombinationMatrix } from "../../components/demos.tsx";
+import { Playground } from "../../components/playground.tsx";
+import { examples, sourceUrl, stackblitzUrl } from "../../examples.ts";
 
-Until then, the [Examples](/typed-grid-areas/examples/) page shows both
-designs in every adapter, and [Getting started](/typed-grid-areas/getting-started/)
-has what you need to try one in your own project.
+## Playground
+
+The two designs from the [Examples](/typed-grid-areas/examples/) page, in a
+container you can resize: drag its corner, or the slider. Untick an optional
+area to take its slot out, and the grid switches to the
+[derived layout](/typed-grid-areas/concepts/areas/) for what's left.
+
+Each grid's [breakpoints](/typed-grid-areas/concepts/breakpoints/) measure
+the space the grid itself is given. The ID card switches at `@md` (448px).
+The PreferenceCard's content grid switches at `@sm` (384px) of its own
+width, so with the input panel present the card switches a little wider.
+
+<Playground client:load />
+
+This demo would look the same in every framework: placement is CSS, and
+every adapter writes the same CSS and the same markup. The playground's own
+JavaScript only runs its controls and reads out the width; the card in it
+measures nothing. Below the card is the CSS the core generated for the
+design's definitions, the same CSS whichever adapter renders it.
+
+## Every combination
+
+Each design with every combination of its optional areas present, at
+{NARROW}px and {WIDE}px. These cards are static HTML, rendered when the site
+was built: they lay out with JavaScript turned off.
+
+### PreferenceCard
+
+<CombinationMatrix design="preference-card" />
+
+### ID card
+
+<CombinationMatrix design="id-card" />
+
+## In your framework
+
+Each stable adapter has a small example app, built with its framework's
+usual tooling and depending on the published packages. Each renders the
+PreferenceCard, with its optional areas, its breakpoint and its nested
+grid. Open one in StackBlitz, misspell an area where a comment invites you
+to, and see the type error in the editor or with `npm run typecheck`.
+
+<table>
+  <thead>
+    <tr>
+      <th>Adapter</th>
+      <th>Tooling</th>
+      <th>Open</th>
+    </tr>
+  </thead>
+  <tbody>
+    {examples.map(({ adapter, label, tooling }) => (
+      <tr>
+        <td>{label}</td>
+        <td>{tooling}</td>
+        <td>
+          <a href={stackblitzUrl(adapter)}>Open in StackBlitz</a> ·{" "}
+          <a href={sourceUrl(adapter)}>source</a>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>

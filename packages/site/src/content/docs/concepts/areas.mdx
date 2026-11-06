@@ -3,6 +3,7 @@ title: Areas, optional areas and derived layouts
 description: Draw only the layout with every area present, mark areas optional with ?, and let the library derive the rest.
 ---
 
+import { Playground } from "../../../components/playground.tsx";
 import { readmeLink } from "../../../readme.ts";
 
 An **area** is a named region of a grid that exactly one slot fills. A
@@ -53,6 +54,12 @@ defineLayout({
 // without children: icon cardTag / information information
 // without cardTag:  icon / information / children
 ```
+
+Try it on the PreferenceCard, whose content grid is the one above: untick
+an area to take its slot out. Every combination, and the CSS behind them,
+is on the [Try it](/typed-grid-areas/try-it/) page.
+
+<Playground client:visible design="preference-card" showCss={false} />
 
 Taking an area out follows three rules:
 
