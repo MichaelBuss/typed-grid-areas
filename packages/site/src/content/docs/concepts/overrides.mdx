@@ -1,0 +1,79 @@
+---
+title: Overrides
+description: Write a layout with a condition only where a derived layout isn't what you want; the later layout wins.
+---
+
+import { readmeLink } from "../../../readme.ts";
+
+An **override** is an authored layout with a **condition**, written because
+the derived layout for that case isn't the arrangement you want. Most
+definitions need none, or one or two.
+
+## Conditions: `when` and `unless`
+
+A condition has two halves:
+
+- `when`: areas that must be present,
+- `unless`: areas that must be absent.
+
+Areas it names in neither don't affect it. A layout with no condition is a
+**base layout**: it applies when no other layout's condition matches.
+
+```ts
+defineLayout({
+  areas: ["icon?", "information", "cardTag?", "children?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information
+        children    children`,
+      columns: "min-content minmax(0, 1fr)",
+    },
+    // Without a tag, the derived layout would stack the icon above the
+    // information in the narrow first column; put them side by side instead.
+    { unless: ["cardTag"], template: "icon information / children children" },
+  ],
+});
+```
+
+The override still gets derived layouts of its own for the optional areas
+its condition doesn't mention: here, `icon` and `children` can each be
+absent too.
+
+## The later layout wins
+
+When several layouts' conditions match, the one declared **last** wins,
+however many areas each one names. There is no specificity to work out:
+read the list from the bottom up, and the first layout whose condition
+holds is the one that applies.
+
+So write the base layout first, and each override after the layout it
+replaces. An override that should beat another override goes after it:
+
+```ts
+defineLayout({
+  areas: ["icon?", "information", "cardTag?"],
+  layouts: [
+    { template: "icon cardTag / information information" },
+    { unless: ["cardTag"], template: "icon information" },
+    // Declared last, so it wins over both layouts above whenever it matches.
+    { when: ["cardTag"], unless: ["icon"], template: "information cardTag" },
+  ],
+});
+```
+
+## Every layout is complete
+
+While a layout applies, it sets the tracks, the placement and the
+alignment of every area, so nothing leaks in from another layout that also
+matches. An override never patches the layout it replaces: it redraws it.
+
+## In the browser
+
+A condition becomes `:has()` and `:not(:has())` on the grid's direct
+children, so a layout reacts to the slots actually in the page, with no
+JavaScript deciding which layout applies. [How it works](/typed-grid-areas/how-it-works/)
+shows the generated rules.
+
+Reference: <a href={readmeLink("overrides")}>Overrides: `when` and `unless`</a>.

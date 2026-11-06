@@ -1,0 +1,656 @@
+---
+title: Examples
+description: PreferenceCard and the ID card, rendered live with no JavaScript, with code for every adapter.
+---
+
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components";
+import { NARROW, WIDE } from "@typed-grid-areas/acceptance/designs";
+import { IdCardDemos, PreferenceCardDemos } from "../../components/demos.tsx";
+import { designSource } from "../../designs.ts";
+import { readmeLink } from "../../readme.ts";
+
+Two designs, the ones the library's browser tests check in every
+combination of their optional areas, in every adapter. The cards on this
+page are rendered with the React adapter when the site is built, as static
+HTML: nothing hydrates, and no JavaScript of the library's runs in your
+browser. They lay out with JavaScript turned off.
+
+Each design is shown at {NARROW}px and {WIDE}px. Every card is a grid
+measuring its own width, so the same definition gives each of them its own
+arrangement.
+
+## PreferenceCard
+
+An optional input panel beside a content panel with its own padding. The
+content panel is a [nested grid](/typed-grid-areas/concepts/nested-grids/):
+an optional icon, the information, an optional tag and optional children.
+With both an icon and a tag, the two share the top row above the
+information on narrow cards, and from `@sm` all three share one row. With
+only one of them, it sits beside the information at every width. Children
+always take a full-width last row.
+
+<PreferenceCardDemos
+  frames={[
+    { label: "Everything", width: NARROW, present: ["input", "icon", "cardTag", "children"] },
+    { label: "Everything", width: WIDE, present: ["input", "icon", "cardTag", "children"] },
+    { label: "No input, no tag", width: NARROW, present: ["icon", "children"] },
+    { label: "No icon, no children", width: WIDE, present: ["input", "cardTag"] },
+  ]}
+/>
+
+### The definitions
+
+Two definitions, one per grid. The content grid has two
+[overrides](/typed-grid-areas/concepts/overrides/): without a tag, and
+without an icon but with a tag, where the derived layouts would stack what
+should sit side by side.
+
+<Code code={designSource("preferenceCardGrid")} lang="ts" title="designs.ts" />
+<Code code={designSource("preferenceContentGrid")} lang="ts" title="designs.ts" />
+
+### Rendering it
+
+The same card in each adapter, importing the definitions above from
+`./designs`. Optional areas are absent when their slot isn't rendered.
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```tsx
+import type { ReactNode } from "react";
+import { createGridComponent } from "@typed-grid-areas/react";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+const Content = createGridComponent(preferenceContentGrid);
+const Card = createGridComponent(preferenceCardGrid, { nest: { content: Content } });
+
+type PreferenceCardProps = {
+  input?: ReactNode;
+  icon?: ReactNode;
+  title: ReactNode;
+  tag?: ReactNode;
+  children?: ReactNode;
+};
+
+export function PreferenceCard({ input, icon, title, tag, children }: PreferenceCardProps) {
+  return (
+    <Card className="card">
+      {input && (
+        <Card.input asChild className="panel">
+          <label>{input}</label>
+        </Card.input>
+      )}
+      <Card.content className="panel content">
+        {icon && <Card.content.icon>{icon}</Card.content.icon>}
+        <Card.content.information>{title}</Card.content.information>
+        {tag && <Card.content.cardTag>{tag}</Card.content.cardTag>}
+        {children && <Card.content.children>{children}</Card.content.children>}
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+<a href={readmeLink("react")}>React adapter reference</a>
+
+</TabItem>
+<TabItem label="Vue">
+
+```vue
+<script setup lang="ts">
+import { createGridComponent } from "@typed-grid-areas/vue";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+defineProps<{ selectable?: boolean; title: string; tag?: string }>();
+
+const Content = createGridComponent(preferenceContentGrid);
+const Card = createGridComponent(preferenceCardGrid, { nest: { content: Content } });
+</script>
+
+<template>
+  <Card class="card">
+    <Card.input v-if="selectable" as-child>
+      <label class="panel"><input type="checkbox" /></label>
+    </Card.input>
+    <Card.content class="panel content">
+      <Card.content.icon v-if="$slots.icon"><slot name="icon" /></Card.content.icon>
+      <Card.content.information>{{ title }}</Card.content.information>
+      <Card.content.cardTag v-if="tag">{{ tag }}</Card.content.cardTag>
+      <Card.content.children v-if="$slots.default"><slot /></Card.content.children>
+    </Card.content>
+  </Card>
+</template>
+```
+
+<a href={readmeLink("vue")}>Vue adapter reference</a>
+
+</TabItem>
+<TabItem label="Svelte">
+
+```svelte
+<script module lang="ts">
+  import { createGridComponent } from "@typed-grid-areas/svelte";
+  import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+  const Content = createGridComponent(preferenceContentGrid);
+  const Card = createGridComponent(preferenceCardGrid, { nest: { content: Content } });
+</script>
+
+<script lang="ts">
+  import type { Snippet } from "svelte";
+
+  let {
+    selectable = false,
+    icon,
+    title,
+    tag,
+    children,
+  }: {
+    selectable?: boolean;
+    icon?: Snippet;
+    title: string;
+    tag?: string;
+    children?: Snippet;
+  } = $props();
+</script>
+
+<Card class="card">
+  {#if selectable}
+    <Card.input>
+      {#snippet child({ props })}
+        <label {...props} class="panel"><input type="checkbox" /></label>
+      {/snippet}
+    </Card.input>
+  {/if}
+  <Card.content class="panel content">
+    {#if icon}
+      <Card.content.icon>{@render icon()}</Card.content.icon>
+    {/if}
+    <Card.content.information>{title}</Card.content.information>
+    {#if tag}
+      <Card.content.cardTag>{tag}</Card.content.cardTag>
+    {/if}
+    {#if children}
+      <Card.content.children>{@render children()}</Card.content.children>
+    {/if}
+  </Card.content>
+</Card>
+```
+
+<a href={readmeLink("svelte")}>Svelte adapter reference</a>
+
+</TabItem>
+<TabItem label="Solid">
+
+```tsx solid
+import { Show, type JSX } from "solid-js";
+import { createGridComponent } from "@typed-grid-areas/solid";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+const Content = createGridComponent(preferenceContentGrid);
+const Card = createGridComponent(preferenceCardGrid, { nest: { content: Content } });
+
+export function PreferenceCard(props: {
+  input?: JSX.Element;
+  icon?: JSX.Element;
+  title: JSX.Element;
+  tag?: JSX.Element;
+  children?: JSX.Element;
+}) {
+  return (
+    <Card class="card">
+      <Show when={props.input}>
+        <Card.input as="label" class="panel">
+          {props.input}
+        </Card.input>
+      </Show>
+      <Card.content class="panel content">
+        <Show when={props.icon}>
+          <Card.content.icon>{props.icon}</Card.content.icon>
+        </Show>
+        <Card.content.information>{props.title}</Card.content.information>
+        <Show when={props.tag}>
+          <Card.content.cardTag>{props.tag}</Card.content.cardTag>
+        </Show>
+        <Show when={props.children}>
+          <Card.content.children>{props.children}</Card.content.children>
+        </Show>
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+<a href={readmeLink("solid")}>Solid adapter reference</a>
+
+</TabItem>
+<TabItem label="Preact">
+
+```tsx preact
+import type { ComponentChildren } from "preact";
+import { createGridComponent } from "@typed-grid-areas/preact";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+const Content = createGridComponent(preferenceContentGrid);
+const Card = createGridComponent(preferenceCardGrid, { nest: { content: Content } });
+
+type PreferenceCardProps = {
+  input?: ComponentChildren;
+  icon?: ComponentChildren;
+  title: ComponentChildren;
+  tag?: ComponentChildren;
+  children?: ComponentChildren;
+};
+
+export function PreferenceCard({ input, icon, title, tag, children }: PreferenceCardProps) {
+  return (
+    <Card class="card">
+      {input && (
+        <Card.input asChild class="panel">
+          <label>{input}</label>
+        </Card.input>
+      )}
+      <Card.content class="panel content">
+        {icon && <Card.content.icon>{icon}</Card.content.icon>}
+        <Card.content.information>{title}</Card.content.information>
+        {tag && <Card.content.cardTag>{tag}</Card.content.cardTag>}
+        {children && <Card.content.children>{children}</Card.content.children>}
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+<a href={readmeLink("preact")}>Preact adapter reference</a>
+
+</TabItem>
+<TabItem label="Angular">
+
+```ts angular
+import { Component, input } from "@angular/core";
+import { createGrid, TgaArea, TgaGrid, TgaSizeContainer } from "@typed-grid-areas/angular";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+const Content = createGrid(preferenceContentGrid);
+const Card = createGrid(preferenceCardGrid, { nest: { content: Content } });
+
+@Component({
+  selector: "app-preference-card",
+  imports: [TgaGrid, TgaArea, TgaSizeContainer],
+  template: `
+    <div [tgaGrid]="Card" class="card">
+      @if (selectable()) {
+        <label [tgaArea]="Card.input" class="panel"><input type="checkbox" /></label>
+      }
+      <!-- The content grid has breakpoints, so it sits in its own size container. -->
+      <div tgaSizeContainer>
+        <div [tgaGrid]="Card.content" class="panel content">
+          @if (icon()) {
+            <span [tgaArea]="Card.content.icon">{{ icon() }}</span>
+          }
+          <div [tgaArea]="Card.content.information">{{ heading() }}</div>
+          @if (tag()) {
+            <span [tgaArea]="Card.content.cardTag">{{ tag() }}</span>
+          }
+          @if (details()) {
+            <p [tgaArea]="Card.content.children">{{ details() }}</p>
+          }
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class PreferenceCardComponent {
+  protected readonly Card = Card;
+  readonly selectable = input(false);
+  readonly icon = input<string>();
+  readonly heading = input.required<string>();
+  readonly tag = input<string>();
+  readonly details = input<string>();
+}
+```
+
+<a href={readmeLink("angular")}>Angular adapter reference</a>
+
+</TabItem>
+<TabItem label="Lit">
+
+```ts lit
+import { html, LitElement, nothing } from "lit";
+import { createGrid, gridStyles } from "@typed-grid-areas/lit";
+import { preferenceCardGrid, preferenceContentGrid } from "./designs";
+
+const Content = createGrid(preferenceContentGrid);
+const Card = createGrid(preferenceCardGrid, { nest: { content: Content } });
+
+class PreferenceCard extends LitElement {
+  static styles = [gridStyles(Card)];
+  static properties = {
+    selectable: { type: Boolean },
+    icon: {},
+    heading: {},
+    tag: {},
+    details: {},
+  };
+  declare selectable: boolean;
+  declare icon?: string;
+  declare heading: string;
+  declare tag?: string;
+  declare details?: string;
+
+  constructor() {
+    super();
+    this.selectable = false;
+    this.heading = "";
+  }
+
+  render() {
+    const { icon, tag, details } = this;
+    return Card(
+      html`
+        ${this.selectable
+          ? html`<label data-area=${Card.input} class="panel"><input type="checkbox" /></label>`
+          : nothing}
+        ${Card.content(
+          html`
+            ${icon ? html`<span data-area=${Card.content.icon}>${icon}</span>` : nothing}
+            <div data-area=${Card.content.information}>${this.heading}</div>
+            ${tag ? html`<span data-area=${Card.content.cardTag}>${tag}</span>` : nothing}
+            ${details ? html`<p data-area=${Card.content.children}>${details}</p>` : nothing}
+          `,
+          { class: "panel content" },
+        )}
+      `,
+      { class: "card" },
+    );
+  }
+}
+
+customElements.define("preference-card", PreferenceCard);
+```
+
+<a href={readmeLink("lit")}>Lit adapter reference</a>
+
+</TabItem>
+</Tabs>
+
+## ID card
+
+The [layered](/typed-grid-areas/concepts/layers/) card. On narrow cards the
+logo, the badge and the identity sit in the photo's corners, and the name
+turns white over the photo; from `@md` (448px) the photo is a column of its
+own and only the badge stays on it.
+
+<IdCardDemos
+  frames={[
+    { label: "Everything", width: NARROW, present: ["logo", "qr", "badge"] },
+    { label: "Everything", width: WIDE, present: ["logo", "qr", "badge"] },
+    { label: "No logo, no QR code", width: NARROW, present: ["badge"] },
+    { label: "No badge", width: WIDE, present: ["logo", "qr"] },
+  ]}
+/>
+
+### The definition
+
+<Code code={designSource("idCardGrid")} lang="ts" title="designs.ts" />
+
+The name turns white over the photo with a container style query on
+`--tga-over`, in your own CSS:
+
+```css
+@container style(--tga-over: photo) {
+  .identity-name {
+    color: white;
+  }
+}
+```
+
+### Rendering it
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```tsx
+import { createGridComponent } from "@typed-grid-areas/react";
+import { idCardGrid } from "./designs";
+
+const Card = createGridComponent(idCardGrid);
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+
+export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
+  return (
+    <Card className="id-card">
+      <Card.photo asChild>
+        <img src={person.photoUrl} alt="" />
+      </Card.photo>
+      <Card.logo>ACME</Card.logo>
+      {person.verified && <Card.badge>✓</Card.badge>}
+      <Card.identity>
+        <span className="identity-name">{person.name}</span>
+      </Card.identity>
+      <Card.details>{person.role}</Card.details>
+      {qrUrl && (
+        <Card.qr asChild>
+          <img src={qrUrl} alt="QR code" />
+        </Card.qr>
+      )}
+    </Card>
+  );
+}
+```
+
+</TabItem>
+<TabItem label="Vue">
+
+```vue
+<script setup lang="ts">
+import { createGridComponent } from "@typed-grid-areas/vue";
+import { idCardGrid } from "./designs";
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+defineProps<{ person: Person; qrUrl?: string }>();
+
+const Card = createGridComponent(idCardGrid);
+</script>
+
+<template>
+  <Card class="id-card">
+    <Card.photo as-child><img :src="person.photoUrl" alt="" /></Card.photo>
+    <Card.logo>ACME</Card.logo>
+    <Card.badge v-if="person.verified">✓</Card.badge>
+    <Card.identity>
+      <span class="identity-name">{{ person.name }}</span>
+    </Card.identity>
+    <Card.details>{{ person.role }}</Card.details>
+    <Card.qr v-if="qrUrl" as-child><img :src="qrUrl" alt="QR code" /></Card.qr>
+  </Card>
+</template>
+```
+
+</TabItem>
+<TabItem label="Svelte">
+
+```svelte
+<script module lang="ts">
+  import { createGridComponent } from "@typed-grid-areas/svelte";
+  import { idCardGrid } from "./designs";
+
+  const Card = createGridComponent(idCardGrid);
+</script>
+
+<script lang="ts">
+  type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+  let { person, qrUrl }: { person: Person; qrUrl?: string } = $props();
+</script>
+
+<Card class="id-card">
+  <Card.photo>
+    {#snippet child({ props })}
+      <img {...props} src={person.photoUrl} alt="" />
+    {/snippet}
+  </Card.photo>
+  <Card.logo>ACME</Card.logo>
+  {#if person.verified}
+    <Card.badge>✓</Card.badge>
+  {/if}
+  <Card.identity>
+    <span class="identity-name">{person.name}</span>
+  </Card.identity>
+  <Card.details>{person.role}</Card.details>
+  {#if qrUrl}
+    <Card.qr>
+      {#snippet child({ props })}
+        <img {...props} src={qrUrl} alt="QR code" />
+      {/snippet}
+    </Card.qr>
+  {/if}
+</Card>
+```
+
+</TabItem>
+<TabItem label="Solid">
+
+```tsx solid
+import { Show } from "solid-js";
+import { createGridComponent } from "@typed-grid-areas/solid";
+import { idCardGrid } from "./designs";
+
+const Card = createGridComponent(idCardGrid);
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+
+export function IdCard(props: { person: Person; qrUrl?: string }) {
+  return (
+    <Card class="id-card">
+      <Card.photo as="img" src={props.person.photoUrl} alt="" />
+      <Card.logo>ACME</Card.logo>
+      <Show when={props.person.verified}>
+        <Card.badge>✓</Card.badge>
+      </Show>
+      <Card.identity>
+        <span class="identity-name">{props.person.name}</span>
+      </Card.identity>
+      <Card.details>{props.person.role}</Card.details>
+      <Show when={props.qrUrl}>{url => <Card.qr as="img" src={url()} alt="QR code" />}</Show>
+    </Card>
+  );
+}
+```
+
+</TabItem>
+<TabItem label="Preact">
+
+```tsx preact
+import { createGridComponent } from "@typed-grid-areas/preact";
+import { idCardGrid } from "./designs";
+
+const Card = createGridComponent(idCardGrid);
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+
+export function IdCard({ person, qrUrl }: { person: Person; qrUrl?: string }) {
+  return (
+    <Card class="id-card">
+      <Card.photo asChild>
+        <img src={person.photoUrl} alt="" />
+      </Card.photo>
+      <Card.logo>ACME</Card.logo>
+      {person.verified && <Card.badge>✓</Card.badge>}
+      <Card.identity>
+        <span class="identity-name">{person.name}</span>
+      </Card.identity>
+      <Card.details>{person.role}</Card.details>
+      {qrUrl && (
+        <Card.qr asChild>
+          <img src={qrUrl} alt="QR code" />
+        </Card.qr>
+      )}
+    </Card>
+  );
+}
+```
+
+</TabItem>
+<TabItem label="Angular">
+
+```ts angular
+import { Component, input } from "@angular/core";
+import { createGrid, TgaArea, TgaGrid, TgaSizeContainer } from "@typed-grid-areas/angular";
+import { idCardGrid } from "./designs";
+
+const Card = createGrid(idCardGrid);
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+
+@Component({
+  selector: "app-id-card",
+  imports: [TgaGrid, TgaArea, TgaSizeContainer],
+  template: `
+    <!-- The grid has breakpoints, so it sits in its own size container. -->
+    <div tgaSizeContainer>
+      <div [tgaGrid]="Card" class="id-card">
+        <img [tgaArea]="Card.photo" [src]="person().photoUrl" alt="" />
+        <span [tgaArea]="Card.logo">ACME</span>
+        @if (person().verified) {
+          <span [tgaArea]="Card.badge">✓</span>
+        }
+        <div [tgaArea]="Card.identity">
+          <span class="identity-name">{{ person().name }}</span>
+        </div>
+        <div [tgaArea]="Card.details">{{ person().role }}</div>
+        @if (qrUrl(); as url) {
+          <img [tgaArea]="Card.qr" [src]="url" alt="QR code" />
+        }
+      </div>
+    </div>
+  `,
+})
+export class IdCardComponent {
+  protected readonly Card = Card;
+  readonly person = input.required<Person>();
+  readonly qrUrl = input<string>();
+}
+```
+
+</TabItem>
+<TabItem label="Lit">
+
+```ts lit
+import { html, LitElement, nothing } from "lit";
+import { createGrid, gridStyles } from "@typed-grid-areas/lit";
+import { idCardGrid } from "./designs";
+
+const Card = createGrid(idCardGrid);
+
+type Person = { name: string; role: string; photoUrl: string; verified?: boolean };
+
+class IdCard extends LitElement {
+  static styles = [gridStyles(Card)];
+  static properties = { person: { attribute: false }, qrUrl: {} };
+  declare person: Person;
+  declare qrUrl?: string;
+
+  render() {
+    const { person, qrUrl } = this;
+    return Card(
+      html`
+        <img data-area=${Card.photo} src=${person.photoUrl} alt="" />
+        <span data-area=${Card.logo}>ACME</span>
+        ${person.verified ? html`<span data-area=${Card.badge}>✓</span>` : nothing}
+        <div data-area=${Card.identity}>
+          <span class="identity-name">${person.name}</span>
+        </div>
+        <div data-area=${Card.details}>${person.role}</div>
+        ${qrUrl ? html`<img data-area=${Card.qr} src=${qrUrl} alt="QR code" />` : nothing}
+      `,
+      { class: "id-card" },
+    );
+  }
+}
+
+customElements.define("id-card", IdCard);
+```
+
+</TabItem>
+</Tabs>

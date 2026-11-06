@@ -1,0 +1,23 @@
+---
+/**
+ * One mistake from `typeErrors.ts`, with the line tsc reports marked, and
+ * the error tsc gave for it, as `typeErrors.node.spec.ts` captured it.
+ */
+import { Code } from "@astrojs/starlight/components";
+import captured from "../typeErrors.captured.json";
+import { mistakes } from "../typeErrors.ts";
+
+interface Props {
+  name: keyof typeof captured;
+}
+
+const { name } = Astro.props;
+const mistake = mistakes.find(candidate => candidate.name === name);
+if (mistake === undefined) {
+  throw new Error(`Mistake: no mistake named ${name} in typeErrors.ts`);
+}
+const { line, message } = captured[name];
+---
+
+<Code code={mistake.code} lang="ts" mark={line} />
+<Code code={message} lang="text" title="tsc" wrap />
