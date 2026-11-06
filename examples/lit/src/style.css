@@ -1,0 +1,20 @@
+body {
+  margin: 2rem;
+  font-family: system-ui, sans-serif;
+  color: #1b1b1f;
+}
+
+/* Drag the corner to resize: the content grid switches to one row from @sm (384px). */
+.cards {
+  display: grid;
+  gap: 1rem;
+  width: 36rem;
+  max-width: 100%;
+  min-width: 12rem;
+  padding: 0.5rem;
+  border: 1px dashed #aaa;
+  resize: horizontal;
+  overflow: hidden;
+}
+
+/* The cards' own styles are in their shadow roots: see preference-card.ts. */

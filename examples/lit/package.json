@@ -1,0 +1,20 @@
+{
+  "name": "typed-grid-areas-example-lit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@typed-grid-areas/lit": "^0.1.0",
+    "lit": "^3.3.3",
+    "typed-grid-areas": "^0.2.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5"
+  }
+}

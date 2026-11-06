@@ -1,0 +1,45 @@
+body {
+  margin: 2rem;
+  font-family: system-ui, sans-serif;
+  color: #1b1b1f;
+}
+
+/* Drag the corner to resize: the content grid switches to one row from @sm (384px). */
+.cards {
+  display: grid;
+  gap: 1rem;
+  width: 36rem;
+  max-width: 100%;
+  min-width: 12rem;
+  padding: 0.5rem;
+  border: 1px dashed #aaa;
+  resize: horizontal;
+  overflow: hidden;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.panel {
+  padding: 1rem;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #ccc;
+}
+
+.content {
+  gap: 0.5rem;
+}
+
+.tag {
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: #e0e7ff;
+  font-size: 0.75rem;
+}

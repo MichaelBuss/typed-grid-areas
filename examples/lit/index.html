@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>typed-grid-areas with Lit</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script type="module" src="/src/preference-card.ts"></script>
+  </head>
+  <body>
+    <main>
+      <h1>typed-grid-areas with Lit</h1>
+      <div class="cards">
+        <preference-card
+          selectable
+          icon="★"
+          heading="Weekly digest"
+          tag="New"
+          details="Sent on Mondays at 8:00"
+        ></preference-card>
+        <preference-card icon="★" heading="Monthly report"></preference-card>
+        <preference-card heading="Security alerts" tag="Recommended"></preference-card>
+      </div>
+    </main>
+  </body>
+</html>
