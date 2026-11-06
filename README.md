@@ -10,6 +10,9 @@ Framework-free at the core (`typed-grid-areas`); each UI framework's adapter
 is a package of its own. The React adapter, `@typed-grid-areas/react`,
 renders a definition as typed slot components (`<Card>`, `<Card.icon>`).
 
+[Docs](https://michaelbuss.github.io/typed-grid-areas/) ·
+[Try it in your browser](https://michaelbuss.github.io/typed-grid-areas/try-it/)
+
 ## Install
 
 ```sh
@@ -224,7 +227,7 @@ All generated CSS sits in the `typed-grid-areas` cascade layer, so your own
 unlayered classes on the grid or a slot (say `justify-self`) always win. The
 one exception is hiding: it is `!important`, so a `display` class on a slot
 can't bring back an area the current layout leaves out
-([ADR 0003](docs/adr/0003-hidden-areas-are-important.md)).
+([ADR 0003](https://github.com/MichaelBuss/typed-grid-areas/blob/main/docs/adr/0003-hidden-areas-are-important.md)).
 
 ## Breakpoints
 
@@ -260,7 +263,7 @@ wherever it's placed. A container query can't measure the element it
 styles, so a grid with breakpoints renders inside its own size container: a
 wrapper `div` with `container-type: inline-size` and a container name unique
 to the definition, which its `@container` queries target by name (see
-[ADR 0002](docs/adr/0002-grid-owns-its-size-container.md)). Grids without
+[ADR 0002](https://github.com/MichaelBuss/typed-grid-areas/blob/main/docs/adr/0002-grid-owns-its-size-container.md)). Grids without
 breakpoints get no wrapper and are not size containers.
 
 Inline-size containment has a cost: **a grid with breakpoints can't size to
@@ -1392,8 +1395,8 @@ just build         # compile each package's src/ into its dist/, as npm pack doe
 Each runs every package's own script of that name (or via npm directly:
 `npm test`, `npm run typecheck`, `npm run build`). Each package owns its
 toolchain, down to its TypeScript version; see
-[docs/agents/workspaces.md](docs/agents/workspaces.md) for adding an adapter
+[docs/agents/workspaces.md](https://github.com/MichaelBuss/typed-grid-areas/blob/main/docs/agents/workspaces.md) for adding an adapter
 and pinning its own TypeScript.
 
 A change to a package carries a changeset (`npm run changeset`); see
-[docs/agents/release.md](docs/agents/release.md) for how releases ship.
+[docs/agents/release.md](https://github.com/MichaelBuss/typed-grid-areas/blob/main/docs/agents/release.md) for how releases ship.

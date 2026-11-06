@@ -3,6 +3,10 @@
   "version": "0.2.0",
   "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
   "keywords": [
+    "css-grid",
+    "grid-template-areas",
+    "layout",
+    "typescript",
     "tanstack-intent"
   ],
   "type": "module",
@@ -12,7 +16,7 @@
     "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "homepage": "https://michaelbuss.github.io/typed-grid-areas/",
   "bugs": {
     "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
   },
