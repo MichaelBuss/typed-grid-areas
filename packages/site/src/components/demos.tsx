@@ -8,6 +8,7 @@
  */
 import type { CSSProperties, ReactNode } from "react";
 import { createGridComponent } from "@typed-grid-areas/react";
+import type { IdCardOptional, PreferenceCardOptional } from "@typed-grid-areas/acceptance";
 import {
   idCardGrid,
   NARROW,
@@ -77,7 +78,7 @@ function Frame({
 export function PreferenceCardDemos({
   frames,
 }: {
-  frames: ReadonlyArray<DemoFrame<"input" | "icon" | "cardTag" | "children">>;
+  frames: ReadonlyArray<DemoFrame<PreferenceCardOptional>>;
 }) {
   return (
     <div className="not-content tga-demos" data-demos="preference-card">
@@ -91,11 +92,7 @@ export function PreferenceCardDemos({
 }
 
 /** ID cards side by side, in one React tree, so React writes the definition's CSS once. */
-export function IdCardDemos({
-  frames,
-}: {
-  frames: ReadonlyArray<DemoFrame<"logo" | "qr" | "badge">>;
-}) {
+export function IdCardDemos({ frames }: { frames: ReadonlyArray<DemoFrame<IdCardOptional>> }) {
   return (
     <div className="not-content tga-demos" data-demos="id-card">
       {frames.map(({ label, width, present }) => (
@@ -115,40 +112,43 @@ export function IdCardDemos({
 export function CombinationMatrix({ design }: { design: PlaygroundDesignKey }) {
   return (
     <div className="not-content tga-demos" data-matrix={design}>
-      {design === "preference-card"
-        ? matrix(playgroundDesigns[design].optional, present => (
-            <PreferenceCard present={present} />
-          ))
-        : matrix(playgroundDesigns[design].optional, present => <IdCard present={present} />)}
+      {combinations<string>(playgroundDesigns[design].optional).flatMap(present =>
+        [NARROW, WIDE].map(width => (
+          <Frame
+            key={`${present.join()}-${width}`}
+            label={present.length === 0 ? "No optional areas" : present.join(", ")}
+            width={width}
+            present={present}
+          >
+            <DesignCard design={design} present={present} />
+          </Frame>
+        )),
+      )}
     </div>
   );
 }
 
-function matrix<TArea extends string>(
-  optional: Present<TArea>,
-  card: (present: Present<TArea>) => ReactNode,
-) {
-  return combinations(optional).flatMap(present =>
-    [NARROW, WIDE].map(width => (
-      <Frame
-        key={`${present.join()}-${width}`}
-        label={present.length === 0 ? "No optional areas" : present.join(", ")}
-        width={width}
-        present={present}
-      >
-        {card(present)}
-      </Frame>
-    )),
-  );
+/** Each playground design's card. */
+const designCards = {
+  "preference-card": PreferenceCard,
+  "id-card": IdCard,
+} satisfies Record<PlaygroundDesignKey, (props: { present: Present<string> }) => ReactNode>;
+
+/** A playground design's card, with only the given optional areas present. */
+export function DesignCard({
+  design,
+  present,
+}: {
+  design: PlaygroundDesignKey;
+  present: Present<string>;
+}) {
+  const Card = designCards[design];
+  return <Card present={present} />;
 }
 
 /** The PreferenceCard, with only the given optional areas present. */
-export function PreferenceCard({
-  present,
-}: {
-  present: Present<"input" | "icon" | "cardTag" | "children">;
-}) {
-  const has = (area: (typeof present)[number]) => present.includes(area);
+export function PreferenceCard({ present }: { present: Present<string> }) {
+  const has = (area: PreferenceCardOptional) => present.includes(area);
   return (
     <Preference style={card} data-demo="preference-card">
       {has("input") && (
@@ -220,8 +220,8 @@ const corner: CSSProperties = {
 };
 
 /** The ID card, with only the given optional areas present. */
-export function IdCard({ present }: { present: Present<"logo" | "qr" | "badge"> }) {
-  const has = (area: (typeof present)[number]) => present.includes(area);
+export function IdCard({ present }: { present: Present<string> }) {
+  const has = (area: IdCardOptional) => present.includes(area);
   return (
     <Id style={card} data-demo="id-card">
       <Id.photo
