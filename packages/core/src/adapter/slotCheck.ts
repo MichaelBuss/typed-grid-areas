@@ -20,7 +20,8 @@ export type SlotCheckOptions = {
  * until the set changes. Create one check per grid instance.
  *
  * The check runs wherever it's called; gate it on your framework's own
- * development flag (or `isDevelopment()`).
+ * development flag, or read `process.env.NODE_ENV` at the call site as
+ * `isDevelopment()` documents, so production builds drop the check.
  */
 export function createSlotCheck(
   config: GridConfig<string>,

@@ -18,6 +18,11 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 import ts from "typescript";
 import { compileScript, parse } from "vue/compiler-sfc";
 
@@ -201,6 +206,30 @@ describe("the packed Vue adapter", () => {
     expect(html).toContain('data-area="content"');
     expect(html).toContain('data-area="title"');
   });
+});
+
+describe("the packed Vue adapter in an app's bundle", () => {
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { createApp, h } from "vue";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/vue";
+const Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+createApp({ render: () => h(Card, null, () => h(Card.info, null, () => "Weekly digest")) }).mount(
+  document.body,
+);
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { external: ["vue"] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */

@@ -4,10 +4,14 @@ Type-safe CSS grid layouts that rearrange themselves based on which slots are re
 
 ## Language
 
+**Definition**:
+A grid's areas, layouts and breakpoints, declared once and rendered as any number of grids. All grids from one definition share its CSS.
+_Avoid_: Config, schema, template
+_Note_: `defineLayout` returns a definition (`LayoutDefinition`), not one layout; the API name is fixed by the spec.
+
 **Grid**:
-One declared layout surface: a set of areas plus the layouts that arrange them.
+One rendered instance of a definition on the page: an element whose slots fill the definition's areas.
 _Avoid_: Grid areas (as a noun for the whole thing), template
-_Note_: `defineLayout` and its `LayoutDefinition` define a whole grid (its areas and all its layouts), not one layout; the API name is fixed by the spec.
 
 **Area**:
 A named region of a grid that exactly one slot fills.

@@ -17,6 +17,11 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 import { preactReadmeBlocks } from "./test-utils/readmeBlocks.ts";
 
 const packageDir = resolve(__dirname, "..");
@@ -193,6 +198,32 @@ describe("the packed Preact adapter", () => {
     expect(body).toContain('data-area="information"');
     expect(body).toContain('data-area="cardTag"');
   });
+});
+
+describe("the packed Preact adapter in an app's bundle", () => {
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { h, render } from "preact";
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/preact";
+const Card = createGridComponent(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+render(h(Card, null, h(Card.info, null, "Weekly digest")), document.body);
+`,
+      );
+      return entry;
+    },
+    [
+      ...VALIDATION_MESSAGES,
+      ...SLOT_CHECK_MESSAGES,
+      "rendered on the server outside a grid style sheet",
+    ],
+    { external: ["preact"] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */

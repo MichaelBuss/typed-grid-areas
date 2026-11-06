@@ -14,7 +14,6 @@ import {
   gridMarkup,
   gridStyleTags,
   insertGridStyle,
-  isDevelopment,
 } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 
@@ -138,20 +137,30 @@ function createRoot(definition: GridConfig<string>) {
       (local.ref as ((element: Element) => void) | undefined)?.(element);
     };
 
-    // In development, check the slots after mount and whenever they change.
-    if (!isServer && isDevelopment()) {
-      const checkSlots = createSlotCheck(definition, {
-        strayChildRemedy: "make it a slot with `as`",
-      });
-      createEffect(() => {
-        resolved();
-        if (grid !== undefined) {
-          for (const warning of checkSlots(grid)) {
-            // eslint-disable-next-line no-console
-            console.warn(warning);
-          }
+    // In development, check the slots after mount and whenever they change. Written out,
+    // not `isDevelopment()`, so production builds drop the check.
+    try {
+      if (process.env.NODE_ENV === "development") {
+        if (!isServer) {
+          const checkSlots = createSlotCheck(definition, {
+            strayChildRemedy: "make it a slot with `as`",
+          });
+          createEffect(() => {
+            resolved();
+            if (grid !== undefined) {
+              for (const warning of checkSlots(grid)) {
+                // eslint-disable-next-line no-console
+                console.warn(warning);
+              }
+            }
+          });
         }
-      });
+      }
+    } catch (error) {
+      // Without a bundler, `process` may not exist: then this isn't development.
+      if (!(error instanceof ReferenceError)) {
+        throw error;
+      }
     }
 
     const element = (

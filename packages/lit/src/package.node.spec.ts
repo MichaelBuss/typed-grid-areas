@@ -17,6 +17,11 @@ import {
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import {
+  describeDevelopmentCode,
+  SLOT_CHECK_MESSAGES,
+  VALIDATION_MESSAGES,
+} from "@typed-grid-areas/acceptance/bundles";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
@@ -171,6 +176,28 @@ describe("the packed Lit adapter", () => {
     expect(html).toContain('data-area="content"');
     expect(html).toContain('data-area="title"');
   });
+});
+
+describe("the packed Lit adapter in an app's bundle", () => {
+  describeDevelopmentCode(
+    () => {
+      const entry = join(consumer, "app.js");
+      writeFileSync(
+        entry,
+        `import { html, render } from "lit";
+import { defineLayout } from "typed-grid-areas";
+import { createGrid } from "@typed-grid-areas/lit";
+const Card = createGrid(
+  defineLayout({ areas: ["icon?", "info"], layouts: [{ template: "icon info" }] }),
+);
+render(Card(html\`<div data-area=\${Card.info}>Weekly digest</div>\`), document.body);
+`,
+      );
+      return entry;
+    },
+    [...VALIDATION_MESSAGES, ...SLOT_CHECK_MESSAGES],
+    { external: ["lit"] },
+  );
 });
 
 /** Whether `version` satisfies a caret range `^x.y.z`, as npm reads it for 0.x versions. */

@@ -3,52 +3,46 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "03673c033c5d193c4e3fc8e69b89cbe9261eb241a3c1a99d3b992f6ad20461b4",
+      "fingerprint": "03c79c19999d3b09f6eb7d536ee17f3a113eaf79023824806f58537067d4ea6f",
       "snapshot": {
-        "README.md": "0210e8e1a457be63571e599b85e24a5b55af40056dd50d0a02145de5ea803e51",
+        "README.md": "120a949bbfe7ee9eaff9f3f9a50787990b133cc0770f9fb2fd2a07d2af0f9bfe",
         "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
         "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
-        "packages/core/src/adapter/slotCheck.ts": "0573a92003e76f40cd9fe9a2218b44130f2899d6e7b52942d360754b97cde176",
+        "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
-      "outcome": "updated",
-      "reason": "Moved into the core package with its references under references/; links repointed, snippets import defineLayout so Intent types them, sources declared. Guidance otherwise unchanged; README change only adds the Agent skill section.",
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
       "evidence": [
-        "packages/react/src/readme.compile.spec.ts: passed",
-        "packages/core/src/package.node.spec.ts: passed",
-        "intent maintainer check: skill validation passed",
-        "intent load in a scratch project resolves both reference links"
+        "Changed: README.md at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "38220f747317b72be963c6d38f20c5c45d56f50c4ec4c66170c8c2cd745c5b77",
+      "fingerprint": "cc35e133d0ae39437f1a36b17349561669414fdf644a08da12aef1e16cd6d1d3",
       "snapshot": {
-        "README.md": "0210e8e1a457be63571e599b85e24a5b55af40056dd50d0a02145de5ea803e51",
+        "README.md": "120a949bbfe7ee9eaff9f3f9a50787990b133cc0770f9fb2fd2a07d2af0f9bfe",
         "_artifacts/domain_map.yaml": "c12e5d50ce2a89843617102b2ddf86d228aa77b170dd56ffde7f2eb176cafaed",
         "_artifacts/skill_spec.md": "6c7d0ab5062e0f0c5a03e51e9ae2035039e2d499ba5d77f5af38513ad92225df",
         "_artifacts/skill_tree.yaml": "76918570da3a6a089f7746f69c90f19a2c4fabffe5cded7f5722c31ec20efcb9",
         "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
         "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
-        "packages/core/src/adapter/slotCheck.ts": "0573a92003e76f40cd9fe9a2218b44130f2899d6e7b52942d360754b97cde176",
+        "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "5c28744021dd9d569588d59c256162bbf08d0457",
-      "outcome": "updated",
-      "reason": "Planning records authored for #41: domain layouts, the three developer tasks, failure modes, sources, references and review.ignore.",
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
       "evidence": [
-        "_artifacts/domain_map.yaml",
-        "_artifacts/skill_spec.md",
-        "_artifacts/skill_tree.yaml",
-        "intent maintainer check: 0 authoring issues"
+        "Changed: README.md at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
@@ -87,16 +81,196 @@
         "git diff -M main: rename to packages/core/skills/typed-grid-areas/"
       ]
     },
-    "source:GLOSSARY.md": {
-      "fingerprint": "e0023fffa9457e720c43b170a7cb6bdedb9a810713d5ca4ae4ebd6a93ab0f7fc",
+    "source:packages/acceptance/src/bundles.ts": {
+      "fingerprint": "405847e73cb43896beb673866bed1fa26d4e9be6e87d1b6ffbe95f00e1742633",
       "snapshot": {
-        "GLOSSARY.md": "1aad0360307df44195be5744d332458272b013ac433423f3fa920e01bcf47dd6"
+        "packages/acceptance/src/bundles.ts": "a86228da9d426ceb585bb959fb7315bb0e4758d089f6044a0a5e3f24a1d7b31d"
       },
-      "head": "7fa9357cb33fcae2d27faab44096791cf27646bb",
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
       "outcome": "no-change",
-      "reason": "GLOSSARY.md only gains terms (server-only grid, precompiled definition) for features planned in #47 and #48 that don't exist yet; the skill's guidance on writing, converting and debugging layouts is unaffected",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
       "evidence": [
-        "Changed: GLOSSARY.md at 7fa9357cb33fcae2d27faab44096791cf27646bb"
+        "Changed: packages/acceptance/src/bundles.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/angular/src/directives.ts": {
+      "fingerprint": "a0016a3a0bb7e6442646b8f626d2a19e09e8a67d221bd5b80a90dcf62f0aebc5",
+      "snapshot": {
+        "packages/angular/src/directives.ts": "db925b694dfe337eeba598c5648289c8b9e4963cac6cb2b0c15fd63438cccf45"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/angular/src/directives.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/core/src/defineLayout.ts": {
+      "fingerprint": "b462fff24ac7528367db44b8fae4b3742643f7a93ff41122110a18ea7cd23bea",
+      "snapshot": {
+        "packages/core/src/defineLayout.ts": "757be80cb31c1675cac28b87fe587b3d6e9d26d25eb85f90a30ca0c43edc78be"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/core/src/defineLayout.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/core/src/isDevelopment.ts": {
+      "fingerprint": "899d48d469089a87a01f689c75b9166d2a9f8a7dbce920584992d302bfdeed27",
+      "snapshot": {
+        "packages/core/src/isDevelopment.ts": "364205097c238b6e39c6d2c9d60c00c151443d6d42b5ba3ea40ce54734491186"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/core/src/isDevelopment.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/lit/src/gridElement.ts": {
+      "fingerprint": "ba7cfe198d241513e2daeb113ab377222c7aeda811419e9e685298ac763340cf",
+      "snapshot": {
+        "packages/lit/src/gridElement.ts": "8e64ff9c42bf32078c525eaa9b8aad16c999736400463c3a7ae868855170c1d0"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/lit/src/gridElement.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/octane/src/gridComponent.tsx": {
+      "fingerprint": "f77fd96383e3472bdd6cdde35d0b9f745f898ad58126d2195e2a4f3591b47cc2",
+      "snapshot": {
+        "packages/octane/src/gridComponent.tsx": "449c27fc49c0823e9bd459448f79425f7314847b47bb318ccd91af64e979300d"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/octane/src/gridComponent.tsx at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/preact/src/gridComponent.tsx": {
+      "fingerprint": "e73d17880b416a6f62409bacc779183524c72fcc1c50400356f45207745b6a7e",
+      "snapshot": {
+        "packages/preact/src/gridComponent.tsx": "559a9dc31ed1c5a7d6587fc02b769e1d65026336971cfb2c8d5a4527be9bb8c3"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/preact/src/gridComponent.tsx at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/preact/src/styleSheet.ts": {
+      "fingerprint": "9151061c602cd76c1434ed54e65bbe5757757111b1444483eb5d4d56f94c0528",
+      "snapshot": {
+        "packages/preact/src/styleSheet.ts": "a9a84ca370599c41c873cdf9388c18546f2a6c3022c033e5767cb78a6c82541a"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/preact/src/styleSheet.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/react/src/gridComponent.tsx": {
+      "fingerprint": "fd7a94e50490d527d27b61ae1cb06a8f974e8c2e0484154c5e8b23f40a31604c",
+      "snapshot": {
+        "packages/react/src/gridComponent.tsx": "e0f318681618356f0ae58adb10fe16d57804cdfadc1c09dd08595cb56ac04a8a"
+      },
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "evidence": [
+        "Changed: packages/react/src/gridComponent.tsx at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+      ]
+    },
+    "source:packages/solid/src/gridComponent.tsx": {
+      "fingerprint": "ee0acab616d83e2c5ee119b657f714d588538373e604b71dc1de6b307b3fc90b",
+      "snapshot": {
+        "packages/solid/src/gridComponent.tsx": "ea83409338d09fb174272d57b330c69637713e7d0e107413d0400e16b845ef89"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/solid/src/gridComponent.tsx at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/vue/src/gridComponent.ts": {
+      "fingerprint": "939f6348363f65d036f1717d57d0eb63de3d76af7a7e35d8b129f1420a5685ab",
+      "snapshot": {
+        "packages/vue/src/gridComponent.ts": "e43dd463551fd2daa86d68f7261f052c1536f36168718ed36be3c4ea44e81aca"
+      },
+      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
+      "outcome": "no-change",
+      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "evidence": [
+        "Changed: packages/vue/src/gridComponent.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+      ]
+    },
+    "source:packages/react/src/test-setup.browser.ts": {
+      "fingerprint": "2d3decc802ca83871a473d2e634ac8ac1cc33072376ad2c4fd8bb4783ef0c5d8",
+      "snapshot": {
+        "packages/react/src/test-setup.browser.ts": "dac9efcfdd1cad7c23ef42a5bb5fce1a0b163edb8143760fb579a2e9612afe57"
+      },
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "evidence": [
+        "Changed: packages/react/src/test-setup.browser.ts at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+      ]
+    },
+    "source:packages/react/src/test-utils/reactCompiler.ts": {
+      "fingerprint": "8e8f56a3048f6afeb63be2e6dd603c199b43fda698ff58a7f1813c447600f9f5",
+      "snapshot": {
+        "packages/react/src/test-utils/reactCompiler.ts": "2031fb078e28addb94314c01a5ca61d209b70651fa564f12be53cee484fd4fbf"
+      },
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "evidence": [
+        "Changed: packages/react/src/test-utils/reactCompiler.ts at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+      ]
+    },
+    "source:packages/react/tsconfig.build.json": {
+      "fingerprint": "cb15db0170ddffd646396b7d329d611678af0b984cd05bfd4ace04f7978f1104",
+      "snapshot": {
+        "packages/react/tsconfig.build.json": "36610e2f15f2e76dec5260a2b7499d66d004ef878eab870deba606e2d3251845"
+      },
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "evidence": [
+        "Changed: packages/react/tsconfig.build.json at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+      ]
+    },
+    "source:packages/react/vitest.config.ts": {
+      "fingerprint": "c5d8e82f9c874b48d794aa7b6c80dd244a9e58f10dbfb228d7cf268f262a2258",
+      "snapshot": {
+        "packages/react/vitest.config.ts": "55774ca9934d4719a7c88215a37faa92122e77ded5f08888c23c11ffd9b5ade0"
+      },
+      "head": "7a0e342dea7f77a088614be089aa02a6585c2dbe",
+      "outcome": "no-change",
+      "reason": "React Compiler and Strict Mode support changes no API, markup or types; the README gains one sentence that the React adapter works under both, which the skill's guidance on writing layouts doesn't depend on.",
+      "evidence": [
+        "Changed: packages/react/vitest.config.ts at 7a0e342dea7f77a088614be089aa02a6585c2dbe"
+      ]
+    },
+    "source:GLOSSARY.md": {
+      "fingerprint": "ed229e9c831a72c3b41c55a830e26d7cdf999a76b4270c5804b74bd445990e12",
+      "snapshot": {
+        "GLOSSARY.md": "ec8d6ab74de4a54fef0b8b7fc6dca7542bf94f9bb57b37003d6e52dfc8e696b1"
+      },
+      "head": "2fc7ec84808cbebf1c8d5199246f58c5c3e0bbd1",
+      "outcome": "no-change",
+      "reason": "GLOSSARY.md adds Definition, narrows Grid to a rendered instance, and adds Server-only grid and Precompiled definition for features planned in #47 and #48; the skill already uses 'definition' for what defineLayout returns, and its guidance on writing, converting and debugging layouts is unaffected",
+      "evidence": [
+        "Changed: GLOSSARY.md at 2fc7ec84808cbebf1c8d5199246f58c5c3e0bbd1"
       ]
     }
   }

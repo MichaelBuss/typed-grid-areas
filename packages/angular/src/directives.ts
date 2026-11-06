@@ -6,7 +6,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   OnChanges,
   PLATFORM_ID,
 } from "@angular/core";
@@ -62,10 +61,42 @@ export class TgaGrid implements OnChanges {
   );
 
   constructor() {
-    // In development, in the browser, check the slots after every render.
-    if (isDevMode() && inject(PLATFORM_ID) === "browser") {
-      const host: Element = inject(ElementRef).nativeElement;
-      afterEveryRender(this.developmentCheck(host));
+    // In development, in the browser, check the slots after every render; each set of
+    // problems is warned about once. The condition is `isDevMode()` written out, and the
+    // check inline, so production builds (which define `ngDevMode` as false) drop it.
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      if (inject(PLATFORM_ID) === "browser") {
+        const host: Element = inject(ElementRef).nativeElement;
+        let definition: GridConfig<string> | undefined;
+        let checkSlots: (grid: Element) => Array<string> = () => [];
+        let wasUncontained = false;
+        afterEveryRender(() => {
+          const current = this.tgaGrid()[GRID].definition;
+          if (current !== definition) {
+            definition = current;
+            checkSlots = createSlotCheck(current, {
+              strayChildRemedy: "make it a slot with [tgaArea]",
+            });
+          }
+          const warnings = checkSlots(host);
+
+          const uncontained =
+            this.elements().sizeContainer !== undefined &&
+            !(this.hasOwnSizeContainer() && this.sizeContainer?.element === host.parentElement);
+          if (uncontained && !wasUncontained) {
+            warnings.push(
+              "typed-grid-areas: a grid with breakpoints needs its own size container as its " +
+                "parent element. Wrap the grid in an element marked tgaSizeContainer.",
+            );
+          }
+          wasUncontained = uncontained;
+
+          for (const warning of warnings) {
+            // eslint-disable-next-line no-console
+            console.warn(warning);
+          }
+        });
+      }
     }
   }
 
@@ -75,39 +106,6 @@ export class TgaGrid implements OnChanges {
 
   private hasOwnSizeContainer(): boolean {
     return this.sizeContainer?.grid() === this;
-  }
-
-  /** The development check of one grid instance: each set of problems is warned about once. */
-  private developmentCheck(host: Element): () => void {
-    let definition: GridConfig<string> | undefined;
-    let checkSlots: (grid: Element) => Array<string> = () => [];
-    let wasUncontained = false;
-    return () => {
-      const current = this.tgaGrid()[GRID].definition;
-      if (current !== definition) {
-        definition = current;
-        checkSlots = createSlotCheck(current, {
-          strayChildRemedy: "make it a slot with [tgaArea]",
-        });
-      }
-      const warnings = checkSlots(host);
-
-      const uncontained =
-        this.elements().sizeContainer !== undefined &&
-        !(this.hasOwnSizeContainer() && this.sizeContainer?.element === host.parentElement);
-      if (uncontained && !wasUncontained) {
-        warnings.push(
-          "typed-grid-areas: a grid with breakpoints needs its own size container as its " +
-            "parent element. Wrap the grid in an element marked tgaSizeContainer.",
-        );
-      }
-      wasUncontained = uncontained;
-
-      for (const warning of warnings) {
-        // eslint-disable-next-line no-console
-        console.warn(warning);
-      }
-    };
   }
 }
 

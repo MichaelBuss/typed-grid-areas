@@ -8,7 +8,6 @@ import {
   LayoutConfig,
   LayoutDefinition,
 } from "./types.ts";
-import { isDevelopment } from "./isDevelopment.ts";
 import { validateGridConfig } from "./validateGridConfig.ts";
 
 /**
@@ -133,10 +132,18 @@ export function defineLayout<
     layouts: definition.layouts.map(layout => toLayout<TAreaName>(layout)),
   };
 
-  if (isDevelopment()) {
-    for (const warning of validateGridConfig(config)) {
-      // eslint-disable-next-line no-console
-      console.warn(`defineLayout: ${warning}`);
+  // Written out, not `isDevelopment()`, so production builds drop the validation.
+  try {
+    if (process.env.NODE_ENV === "development") {
+      for (const warning of validateGridConfig(config)) {
+        // eslint-disable-next-line no-console
+        console.warn(`defineLayout: ${warning}`);
+      }
+    }
+  } catch (error) {
+    // Without a bundler, `process` may not exist: then this isn't development.
+    if (!(error instanceof ReferenceError)) {
+      throw error;
     }
   }
 

@@ -39,6 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@typed-grid-areas/acceptance": "*",
     "@types/node": "^22.10.5",
     "@vitest/browser-playwright": "^5.0.1",
     "happy-dom": "^20.14.5",

@@ -6,7 +6,8 @@
   "type": "module",
   "license": "MIT",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./bundles": "./src/bundles.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,11 +17,15 @@
     "typed-grid-areas": "*"
   },
   "peerDependencies": {
+    "esbuild": "^0.28.2",
+    "vite": "^8.3.5",
     "vitest": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
+    "vite": "^8.3.5",
     "vitest": "^5.0.1"
   }
 }

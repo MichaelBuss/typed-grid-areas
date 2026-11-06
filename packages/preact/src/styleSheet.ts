@@ -5,7 +5,7 @@
  * `createGridStyleSheet()` the app renders inside.
  */
 import { createContext, h, type VNode } from "preact";
-import { gridStyleTags, insertGridStyle, isDevelopment } from "typed-grid-areas/adapter";
+import { gridStyleTags, insertGridStyle } from "typed-grid-areas/adapter";
 import type { GridConfig } from "typed-grid-areas";
 
 /** The definitions rendered inside one sheet's `collect`. */
@@ -59,13 +59,25 @@ export function putGridStyle(sheet: Collected | undefined, definition: GridConfi
     sheet.add(definition);
   } else if (typeof document !== "undefined") {
     insertGridStyle(document, definition);
-  } else if (isDevelopment() && !warnedWithoutSheet.has(definition)) {
-    warnedWithoutSheet.add(definition);
-    // eslint-disable-next-line no-console
-    console.warn(
-      "typed-grid-areas: a grid was rendered on the server outside a grid style sheet, so its " +
-        "CSS isn't in the page. Render with `const sheet = createGridStyleSheet()` and " +
-        "`renderToString(sheet.collect(<App />))`, and put `${sheet}` in <head>.",
-    );
+  } else {
+    // Written out, not `isDevelopment()`, so production builds drop the warning.
+    try {
+      if (process.env.NODE_ENV === "development") {
+        if (!warnedWithoutSheet.has(definition)) {
+          warnedWithoutSheet.add(definition);
+          // eslint-disable-next-line no-console
+          console.warn(
+            "typed-grid-areas: a grid was rendered on the server outside a grid style sheet, so " +
+              "its CSS isn't in the page. Render with `const sheet = createGridStyleSheet()` and " +
+              "`renderToString(sheet.collect(<App />))`, and put `${sheet}` in <head>.",
+          );
+        }
+      }
+    } catch (error) {
+      // Without a bundler, `process` may not exist: then this isn't development.
+      if (!(error instanceof ReferenceError)) {
+        throw error;
+      }
+    }
   }
 }
