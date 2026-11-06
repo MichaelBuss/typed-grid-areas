@@ -74,4 +74,52 @@ describe("syncVersions", () => {
       }).changed,
     ).toEqual([]);
   });
+
+  it("moves each example app's ranges on published packages to their new versions", () => {
+    const example = {
+      dir: "examples/react",
+      manifest: {
+        dependencies: {
+          "@typed-grid-areas/react": "^0.1.0",
+          react: "^19.3.0",
+          "typed-grid-areas": "^0.2.0",
+        },
+        devDependencies: { typescript: "~6.0.3" },
+      },
+    };
+    const result = syncVersions({
+      workspaces: [
+        { dir: "packages/core", manifest: { name: "typed-grid-areas", version: "0.3.0" } },
+        { dir: "packages/react", manifest: { name: "@typed-grid-areas/react", version: "0.1.1" } },
+        {
+          dir: "packages/acceptance",
+          manifest: { name: "@typed-grid-areas/acceptance", version: "0.0.0", private: true },
+        },
+      ],
+      lock: undefined,
+      examples: [example],
+    });
+    expect(result.changed).toEqual(["examples/react/package.json"]);
+    expect(example.manifest).toEqual({
+      dependencies: {
+        "@typed-grid-areas/react": "^0.1.1",
+        react: "^19.3.0",
+        "typed-grid-areas": "^0.3.0",
+      },
+      devDependencies: { typescript: "~6.0.3" },
+    });
+  });
+
+  it("leaves an example app alone when its ranges are at the current versions", () => {
+    const result = syncVersions({
+      workspaces: [
+        { dir: "packages/core", manifest: { name: "typed-grid-areas", version: "0.2.0" } },
+      ],
+      lock: undefined,
+      examples: [
+        { dir: "examples/react", manifest: { dependencies: { "typed-grid-areas": "^0.2.0" } } },
+      ],
+    });
+    expect(result.changed).toEqual([]);
+  });
 });

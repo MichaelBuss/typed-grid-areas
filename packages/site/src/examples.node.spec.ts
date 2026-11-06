@@ -25,6 +25,10 @@ type Manifest = {
 
 const manifest = (path: string): Manifest => JSON.parse(readFileSync(path, "utf8"));
 
+/** A workspace's current version. */
+const version = (workspace: string): string =>
+  JSON.parse(readFileSync(join(repoDir, "packages", workspace, "package.json"), "utf8")).version;
+
 /** An example's own source files (not its dependencies or build output). */
 const sources = (adapter: string) =>
   globSync("src/**/*.{ts,tsx,vue,svelte}", { cwd: join(examplesDir, adapter) }).map(file =>
@@ -55,11 +59,12 @@ describe("the example apps", () => {
     const dir = join(examplesDir, adapter);
     const pkg = () => manifest(join(dir, "package.json"));
 
-    it("depends on the published core and adapter through ^ ranges, never the private acceptance package", () => {
+    it("depends on the current core and adapter through ^ ranges, never the private acceptance package", () => {
       const { dependencies = {}, devDependencies = {} } = pkg();
       const all = { ...dependencies, ...devDependencies };
-      expect(dependencies["typed-grid-areas"]).toMatch(/^\^\d+\.\d+\.\d+$/);
-      expect(dependencies[`@typed-grid-areas/${adapter}`]).toMatch(/^\^\d+\.\d+\.\d+$/);
+      // `npm run version` (scripts/sync-version.ts) moves these with each release.
+      expect(dependencies["typed-grid-areas"]).toBe(`^${version("core")}`);
+      expect(dependencies[`@typed-grid-areas/${adapter}`]).toBe(`^${version(adapter)}`);
       expect(Object.keys(all)).not.toContain("@typed-grid-areas/acceptance");
       for (const [name, range] of Object.entries(all)) {
         expect(range, name).not.toMatch(/^(file|link|workspace):|^\*$/);
