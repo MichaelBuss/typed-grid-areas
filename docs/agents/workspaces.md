@@ -51,6 +51,11 @@ An Astro Starlight site (#1, ADR 0007), deployed to GitHub Pages at `https://mic
 - **Type errors** on the Reading type errors page are tsc's real output for `src/typeErrors.ts`, captured in `src/typeErrors.captured.json`. When the error format changes, `src/typeErrors.node.spec.ts` fails: re-capture with `npx vitest run --project node -u` in the workspace, and re-read the page.
 - **`test:browser`** builds the site and checks `dist/`: the page order, the generated content, and the Examples page's demos laying out in Chromium with JavaScript turned off.
 - **Deploying:** `.github/workflows/pages.yml` runs only when `publish.yml` calls it after a release (a release tag at the released commit) or on manual dispatch, never on a push.
+- **The playground** on Try it (`src/components/playground.tsx`) is the site's one React island; it's also embedded, without its CSS view, on the optional-areas page. `src/tryIt.built.spec.ts` drives it in Chromium.
+
+## The example apps: `examples/`
+
+`examples/<adapter>/` holds one small app per stable adapter, which the Try it page opens in StackBlitz (`https://stackblitz.com/github/MichaelBuss/typed-grid-areas/tree/main/examples/<adapter>`). They are **not** workspaces: each installs the published packages through `^` ranges, keeps no lockfile (`.npmrc` has `package-lock=false`), and pins TypeScript 6, since TypeScript 7's native binaries don't run in StackBlitz. Each has its own `typecheck` and `build` scripts, and its `designs.ts` is the acceptance package's PreferenceCard, copied (`packages/site/src/examples.node.spec.ts` checks it). `.github/workflows/examples.yml` installs, type-checks and builds every example on PRs that touch `examples/`, and after each release (`publish.yml` calls it). When a release bumps a package out of an example's range (a 0.x minor), move the range in the examples. Nothing in `examples/` needs a changeset.
 
 ## Pinning a workspace's own TypeScript
 
