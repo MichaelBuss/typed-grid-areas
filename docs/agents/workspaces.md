@@ -22,7 +22,7 @@ The root holds no package, only what spans them: the workspace list, the release
 
 Everything an adapter needs lives in its own folder; root config stays untouched, with one exception (an `overrides` entry, below).
 
-- **Folder and name:** `packages/<framework>`, named `@typed-grid-areas/<framework>`, starting at `"version": "0.0.0"`. Its first changeset (`minor`) releases 0.1.0.
+- **Folder and name:** `packages/<framework>`, named `@typed-grid-areas/<framework>`, starting at `"version": "0.0.0"`. Its first changeset (`minor`) releases 0.1.0. Its `keywords` are `css-grid`, `grid-template-areas`, `layout`, `typescript` and `<framework>`, the folder's name (`scripts/npm-page.spec.ts` checks them).
 - **Scripts:** its own `build`, `test` (unit and node projects), `test:browser` and `typecheck`, over its own `vitest.config.ts`, `tsconfig.json` and build config. Copy `packages/react` as the template, including `prepack` and `postpack`, which copy the repo's README and LICENSE into the tarball.
 - **The core is a dependency like any other:** `"typed-grid-areas": "^<the core's current version>"`, imported only through its public entries (`typed-grid-areas`, `typed-grid-areas/adapter`). The workspace link resolves them to the core's built `dist/`, so the root recipes build the core first; before running one workspace's scripts on their own, run `npm run build:core`.
 - **Acceptance tests:** add `"@typed-grid-areas/acceptance": "*"` to devDependencies and, in a browser spec, call `describePreferenceCard(mount)` and `describeIdCard(mount)`, where `mount` renders the design with your framework and returns its outermost element. Each `describe…` documents the markup it expects; `packages/react/src/acceptance.browser.spec.tsx` is the reference.
