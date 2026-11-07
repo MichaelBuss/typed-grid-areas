@@ -27,12 +27,13 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "REFERENCE.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
-    "postpack": "rm README.md LICENSE",
+    "prepack": "npm run build && cp ../../README.md ../../REFERENCE.md ../../LICENSE .",
+    "postpack": "rm README.md REFERENCE.md LICENSE",
     "test": "vitest run --project unit --project node",
     "test:browser": "vitest run --project browser --project browser-development",
     "typecheck": "node scripts/vue-tsc.cjs --noEmit"

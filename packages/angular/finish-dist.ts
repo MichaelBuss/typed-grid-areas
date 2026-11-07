@@ -1,7 +1,8 @@
 /**
  * Finishes the package ng-packagr wrote into `dist/`, which is what's
- * published (`publishConfig.directory`): adds the repo's README and LICENSE,
- * and drops the workspace-only fields ng-packagr copies into its manifest.
+ * published (`publishConfig.directory`): adds the repo's README, REFERENCE
+ * and LICENSE, and drops the workspace-only fields ng-packagr copies into
+ * its manifest.
  * `files` names `dist` itself, so inside `dist` it would ship nothing.
  */
 import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,7 +12,7 @@ const packageDir = import.meta.dirname;
 const dist = join(packageDir, "dist");
 const root = resolve(packageDir, "..", "..");
 
-for (const file of ["README.md", "LICENSE"]) {
+for (const file of ["README.md", "REFERENCE.md", "LICENSE"]) {
   copyFileSync(join(root, file), join(dist, file));
 }
 

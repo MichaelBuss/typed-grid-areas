@@ -3,7 +3,7 @@ title: Getting started
 description: Install the core and your framework's adapter, and write a first definition.
 ---
 
-import { readmeLink } from "../../readme.ts";
+import { referenceLink } from "../../reference.ts";
 
 ## Install
 
@@ -87,24 +87,24 @@ export function Example({ tag }: { tag?: string }) {
 ## Your adapter
 
 How each adapter renders a grid, its slots and nested grids, and where it
-puts the CSS, is in the README's section for it, as of the release this
-site was built from:
+puts the CSS, is in its section of the API reference (`REFERENCE.md`), as
+of the release this site was built from:
 
-| Framework | Package                     | Reference                                                       |
-| --------- | --------------------------- | --------------------------------------------------------------- |
-| React     | `@typed-grid-areas/react`   | <a href={readmeLink("react")}>Rendering with React</a>          |
-| Vue       | `@typed-grid-areas/vue`     | <a href={readmeLink("vue")}>Rendering with Vue</a>              |
-| Svelte    | `@typed-grid-areas/svelte`  | <a href={readmeLink("svelte")}>Rendering with Svelte</a>        |
-| Solid     | `@typed-grid-areas/solid`   | <a href={readmeLink("solid")}>Rendering with Solid</a>          |
-| Preact    | `@typed-grid-areas/preact`  | <a href={readmeLink("preact")}>Rendering with Preact</a>        |
-| Angular   | `@typed-grid-areas/angular` | <a href={readmeLink("angular")}>Rendering with Angular</a>      |
-| Lit       | `@typed-grid-areas/lit`     | <a href={readmeLink("lit")}>Rendering with Lit</a>              |
-| Octane    | `@typed-grid-areas/octane`  | <a href={readmeLink("octane")}>Rendering with Octane</a> (experimental) |
+| Framework | Package                     | Reference                                                                  |
+| --------- | --------------------------- | -------------------------------------------------------------------------- |
+| React     | `@typed-grid-areas/react`   | <a href={referenceLink("react")}>Rendering with React</a>                  |
+| Vue       | `@typed-grid-areas/vue`     | <a href={referenceLink("vue")}>Rendering with Vue</a>                      |
+| Svelte    | `@typed-grid-areas/svelte`  | <a href={referenceLink("svelte")}>Rendering with Svelte</a>                |
+| Solid     | `@typed-grid-areas/solid`   | <a href={referenceLink("solid")}>Rendering with Solid</a>                  |
+| Preact    | `@typed-grid-areas/preact`  | <a href={referenceLink("preact")}>Rendering with Preact</a>                |
+| Angular   | `@typed-grid-areas/angular` | <a href={referenceLink("angular")}>Rendering with Angular</a>              |
+| Lit       | `@typed-grid-areas/lit`     | <a href={referenceLink("lit")}>Rendering with Lit</a>                      |
+| Octane    | `@typed-grid-areas/octane`  | <a href={referenceLink("octane")}>Rendering with Octane</a> (experimental) |
 
 For a framework without an adapter, the core's `typed-grid-areas/adapter`
 entry has what every adapter builds on:
-<a href={readmeLink("withoutFramework")}>Without React</a>.
+<a href={referenceLink("withoutFramework")}>Without React</a>.
 
 The core also ships an agent skill that walks a coding agent through
 writing and debugging layouts:
-<a href={readmeLink("agentSkill")}>Agent skill</a>.
+<a href={referenceLink("agentSkill")}>Agent skill</a>.

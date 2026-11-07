@@ -24,13 +24,14 @@ describe("shipped paths", () => {
     expect(shipping("packages/react/src/gridComponent.tsx")).toEqual(["@typed-grid-areas/react"]);
   });
 
-  it("count each package's package.json, and the repo's README.md and LICENSE for every package", () => {
+  it("count each package's package.json, and the repo's README.md, REFERENCE.md and LICENSE for every package", () => {
     expect(shipping("packages/core/package.json")).toEqual(["typed-grid-areas"]);
     expect(shipping("packages/react/package.json")).toEqual(["@typed-grid-areas/react"]);
     // Every public workspace, adapters added since included.
     const all = packages.map(({ name }) => name);
     expect(all).toEqual(expect.arrayContaining(["typed-grid-areas", "@typed-grid-areas/react"]));
     expect(shipping("README.md")).toEqual(all);
+    expect(shipping("REFERENCE.md")).toEqual(all);
     expect(shipping("LICENSE")).toEqual(all);
   });
 

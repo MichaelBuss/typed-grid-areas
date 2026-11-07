@@ -3,7 +3,7 @@ title: Nested grids
 description: Nest when the design has panels of their own; stay flat otherwise.
 ---
 
-import { readmeLink } from "../../../readme.ts";
+import { referenceLink } from "../../../reference.ts";
 
 A **nested grid** is a grid that is itself the slot of an area in another
 grid. Every adapter has a way to say so (`nest` in most of them), and the
@@ -67,5 +67,5 @@ The grid places areas. It doesn't need to own everything inside them:
   library writes placement, tracks and alignment, in a cascade layer, so
   your own classes always win over it.
 
-Reference: the nesting part of your adapter's section in the README, for
-example <a href={readmeLink("react")}>Rendering with React</a>.
+Reference: the nesting part of your adapter's section in the API reference, for
+example <a href={referenceLink("react")}>Rendering with React</a>.

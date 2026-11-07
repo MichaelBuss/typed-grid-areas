@@ -3,11 +3,11 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "c7adad44bb7eeb1e09136b9031d5e7867916b1fe7ec1f34f0f95d75ec36f4312",
+      "fingerprint": "cdd948531a69168bc487d7b4b4e9a5d6983f8f8d05c35020ef67004da534db45",
       "snapshot": {
-        "README.md": "718637dd192116ae94cb8727f46b0b0ace9d6b319cf03fd6063cc584bf9dc4f4",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
-        "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
+        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
@@ -15,22 +15,22 @@
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "976be3c0091d343aa3895c14e2edc5910e275098",
-      "outcome": "no-change",
-      "reason": "The README gains a line linking the docs site and Try it page, and its links to ADRs and agent docs become absolute GitHub URLs; no API, behavior or section the skill points agents to changes, so its guidance and planning records still hold.",
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "outcome": "updated",
+      "reason": "The API reference moved unchanged, headings included, from the README to REFERENCE.md, which ships beside the README in every package (#63, ADR 0007). The skill's source is now REFERENCE.md, and SKILL.md step 8 and references/errors.md send agents to node_modules/typed-grid-areas/REFERENCE.md for their adapter's section.",
       "evidence": [
-        "Changed: README.md at 976be3c0091d343aa3895c14e2edc5910e275098"
+        "SKILL.md sources and step 8; references/errors.md; REFERENCE.md headings unchanged (packages/site/src/reference.node.spec.ts)"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "622eadc5a186ec4c7bdf8409308a1ec346377135302ba7f607805de32a418a68",
+      "fingerprint": "1c76264398618d65d0e2eac8817f9e96986c0111a79a719204fbace48b84c595",
       "snapshot": {
-        "README.md": "718637dd192116ae94cb8727f46b0b0ace9d6b319cf03fd6063cc584bf9dc4f4",
-        "_artifacts/domain_map.yaml": "c12e5d50ce2a89843617102b2ddf86d228aa77b170dd56ffde7f2eb176cafaed",
-        "_artifacts/skill_spec.md": "6c7d0ab5062e0f0c5a03e51e9ae2035039e2d499ba5d77f5af38513ad92225df",
-        "_artifacts/skill_tree.yaml": "e72c03c678578f5b3dfc1ce5b7562f5ce9c4ee8327f5fe643d3f703d35250ba4",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "dd31c148bfb4e1ca1d4e73067266e0a8e4295123443f2b94ea9d73bb52e6ee08",
-        "packages/core/skills/typed-grid-areas/references/errors.md": "76aeaf262457444eff5525b3e0f446082f48c976b5e71664a2c9aa534d2359e6",
+        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
+        "_artifacts/domain_map.yaml": "b860380083d88b4e652a56702d349bc68a9f96981c35aedb99c1ed765b64e660",
+        "_artifacts/skill_spec.md": "41ff0c605a25d062ccc4020db2b618227934dca83f636683690c6223c2b1647d",
+        "_artifacts/skill_tree.yaml": "6ba8ae5e57334ae2d62b4aba9a6e57a467a88d279b1ffc533f5ea0f6cc5ced2f",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
@@ -38,11 +38,11 @@
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "976be3c0091d343aa3895c14e2edc5910e275098",
-      "outcome": "no-change",
-      "reason": "The README gains a line linking the docs site and Try it page, and its links to ADRs and agent docs become absolute GitHub URLs; no API, behavior or section the skill points agents to changes, so its guidance and planning records still hold.",
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "outcome": "updated",
+      "reason": "The planning records follow the move: skill_tree.yaml lists REFERENCE.md as the source (intent maintainer sync), domain_map.yaml and skill_spec.md cite REFERENCE.md (Breakpoints), and skill_spec.md records #63 in its history.",
       "evidence": [
-        "Changed: README.md at 976be3c0091d343aa3895c14e2edc5910e275098"
+        "_artifacts/skill_tree.yaml, domain_map.yaml, skill_spec.md"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
@@ -274,15 +274,15 @@
       ]
     },
     "source:packages/acceptance/src/designs.ts": {
-      "fingerprint": "cabb216f0f73944df94822197a6243e28b5b2dae1009aebd1dd5681045638504",
+      "fingerprint": "5730c21851cee8101b9ef2425ecab4dc6321b71d1cf720d9e1a0c5a014a6c595",
       "snapshot": {
-        "packages/acceptance/src/designs.ts": "06d7d521dccf52d1ead72c1f55eca34ab0369a738907b90abe39dc9dd6f1fda1"
+        "packages/acceptance/src/designs.ts": "9a6a719ddeca0c814e7246e28a8e9cf51cec80569f08863bf5647e182451c3b8"
       },
-      "head": "72aa63c2b00b70383207618b8019e5c640953329",
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
       "outcome": "no-change",
-      "reason": "The skill relies on the README, not the docs site (ADR 0007), so packages/site and examples are on the review ignore list; the acceptance package only gained a ./designs entry and moved NARROW/WIDE into designs.ts, which changes no guidance.",
+      "reason": "A comment now names REFERENCE.md instead of the README; the designs are unchanged.",
       "evidence": [
-        "Changed: packages/acceptance/src/designs.ts at 72aa63c2b00b70383207618b8019e5c640953329"
+        "packages/acceptance/src/designs.ts"
       ]
     },
     "source:packages/acceptance/src/index.ts": {
@@ -295,6 +295,54 @@
       "reason": "The skill relies on the README, not the docs site (ADR 0007), so packages/site and examples are on the review ignore list; the acceptance package only gained a ./designs entry and moved NARROW/WIDE into designs.ts, which changes no guidance.",
       "evidence": [
         "Changed: packages/acceptance/src/index.ts at 72aa63c2b00b70383207618b8019e5c640953329"
+      ]
+    },
+    "source:.out-of-scope/qwik-adapter.md": {
+      "fingerprint": "e0a3d676643985e2fd4216f33bc4a1a6c90bddfa8e99e3bf5ca2620878188a57",
+      "snapshot": {
+        ".out-of-scope/qwik-adapter.md": "844f5d6f92c41a09718083abdaad9f6c2ac7295cedd6280bb19bde4868f745a7"
+      },
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "outcome": "no-change",
+      "reason": "Only renames the README to REFERENCE.md in a pointer to the Without React section; nothing the skill says changes.",
+      "evidence": [
+        ".out-of-scope/qwik-adapter.md"
+      ]
+    },
+    "source:README.md": {
+      "fingerprint": "66af98c5a1e80d2c3fa816cae62f0ac163e25d70209eb30335786204804de23a",
+      "snapshot": {
+        "README.md": "778bc19994027196c82452e20feb4ffc65ff3fa79864ed62bb2ddb4e34f82cd1"
+      },
+      "head": "ea797a95fbb579d913bb1753770a0b54f54b57ed",
+      "outcome": "no-change",
+      "reason": "The README's pitch gains a line under the tagline (zero-dependency core, a few kB gzipped, built on web standards) and two sentences are tightened; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
+      "evidence": [
+        "README.md; REFERENCE.md unchanged"
+      ]
+    },
+    "source:packages/angular/finish-dist.ts": {
+      "fingerprint": "e3838cb04c61c6839e836e9e49870bce019b769b55642825b293a7ccd3a71b43",
+      "snapshot": {
+        "packages/angular/finish-dist.ts": "7c9853b1e43f60f71a8f7646ff5987796bc6cbdeff975472de4802e6d6ccad87"
+      },
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "outcome": "no-change",
+      "reason": "The Angular build also copies REFERENCE.md into dist; no API or behaviour the skill describes changes.",
+      "evidence": [
+        "packages/angular/finish-dist.ts"
+      ]
+    },
+    "source:packages/preact/src/test-utils/readmeBlocks.ts": {
+      "fingerprint": "4063cc9a820c45a364405e19f529cfd101a674319824266b2e43b4898576b522",
+      "snapshot": {
+        "packages/preact/src/test-utils/readmeBlocks.ts": "583f8246a664f62494529c0472f2c1e0850f919ae3e28b04e0fff71784b9c75b"
+      },
+      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "outcome": "no-change",
+      "reason": "A test helper now reads the Preact blocks of both the README and REFERENCE.md; no API or behaviour changes.",
+      "evidence": [
+        "packages/preact/src/test-utils/readmeBlocks.ts"
       ]
     }
   }

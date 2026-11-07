@@ -1,7 +1,7 @@
 {
   "name": "typed-grid-areas",
   "version": "0.3.0",
-  "description": "Type-safe CSS grid-template-areas with automatic :has() selector generation.",
+  "description": "Type-safe CSS grid layouts: describe a grid once, and every combination of slots lays itself out, at every breakpoint.",
   "keywords": [
     "css-grid",
     "grid-template-areas",
@@ -32,12 +32,13 @@
   },
   "files": [
     "dist",
-    "skills/typed-grid-areas"
+    "skills/typed-grid-areas",
+    "REFERENCE.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepack": "npm run build && cp ../../README.md ../../LICENSE .",
-    "postpack": "rm README.md LICENSE",
+    "prepack": "npm run build && cp ../../README.md ../../REFERENCE.md ../../LICENSE .",
+    "postpack": "rm README.md REFERENCE.md LICENSE",
     "test": "vitest run --project unit --project node",
     "test:browser": "vitest run --project browser",
     "typecheck": "tsc --noEmit"

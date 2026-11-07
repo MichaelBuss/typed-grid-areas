@@ -1,6 +1,6 @@
 /**
- * Type-checks every `ts` and `tsx` code block in the repo's README and in the
- * agent skill the core ships (`packages/core/skills/typed-grid-areas/`, its
+ * Type-checks every `ts` and `tsx` code block in the repo's README and
+ * REFERENCE.md, and in the agent skill the core ships (`packages/core/skills/typed-grid-areas/`, its
  * `references/` included), each as its own module, with
  * `@typed-grid-areas/react` resolving to this package's `src/` and
  * `typed-grid-areas` (and its `/adapter` entry) to the built core, as a
@@ -13,7 +13,7 @@ import { basename, dirname, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
 const repoDir = resolve(packageDir, "..", "..");
-const readmePath = join(repoDir, "README.md");
+const markdownPaths = [join(repoDir, "README.md"), join(repoDir, "REFERENCE.md")];
 const skillDir = join(repoDir, "packages", "core", "skills", "typed-grid-areas");
 const cacheDir = join(packageDir, "node_modules", ".cache");
 const tsc = join(
@@ -77,9 +77,9 @@ function typeCheckBlocks(cacheName: string, paths: ReadonlyArray<string>): strin
   }
 }
 
-describe("the README", () => {
-  it("has examples whose code type-checks", () => {
-    expect(typeCheckBlocks("readme", [readmePath])).toBe("");
+describe("the README and REFERENCE.md", () => {
+  it("have examples whose code type-checks, in each file", () => {
+    expect(typeCheckBlocks("readme", markdownPaths)).toBe("");
   });
 });
 

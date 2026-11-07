@@ -3,13 +3,42 @@ title: Introduction
 description: Type-safe CSS grid layouts that rearrange themselves based on which slots are rendered and how much room they get.
 ---
 
-import { LinkCard } from "@astrojs/starlight/components";
+import { Badge, LinkCard } from "@astrojs/starlight/components";
+import { AreasExplainer } from "../../components/areasExplainer.tsx";
 
-typed-grid-areas is for components whose slots come and go: a card with an
-optional icon, a tag that only some items have, a checkbox that only shows
-in a selection mode. Each combination of present slots, at each width,
-needs its own arrangement, and writing those by hand means a pile of
-`:has()` rules or layout JavaScript that drifts from the design.
+typed-grid-areas is CSS grid template areas, type-checked, for components
+whose slots come and go: a card with an optional icon, a tag that only some
+items have, a checkbox that only shows in a selection mode.
+
+<Badge text="Zero-dependency core" variant="note" size="medium" />{" "}
+<Badge text="A few kB gzipped" variant="note" size="medium" />{" "}
+<Badge text="Built on web standards" variant="note" size="medium" />
+
+## Grid template areas, in one picture
+
+CSS can draw a layout as text. With
+[`grid-template-areas`](https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas)
+you name a grid's regions and write the names down the way the regions sit
+on screen; each child then takes its region by name. The template is a
+picture of the component:
+
+<AreasExplainer client:visible />
+
+Hover an area to find it in both. Untick a slot, and typed-grid-areas
+redraws the picture for the slots that are left; the card follows.
+
+## Simple on paper, hard in practice
+
+- **The names are unchecked strings.** Misspell one, in the template or on
+  a child, and the child quietly lands somewhere else. Nothing reports it.
+- **One picture fits one set of children.** Leave out the tag and its cells
+  stay behind as an empty column. Every combination of optional slots needs
+  its own picture, switched on with a `:has()` rule: two optional slots
+  make four pictures, three make eight.
+- **Every breakpoint multiplies them**, and each picture's track sizes have
+  to be kept in step with it by hand.
+
+## What typed-grid-areas does
 
 Instead, you describe a grid once, as a **definition**: its areas, and a
 few layouts drawn as text templates. The library works out the layout for
@@ -34,6 +63,29 @@ Render it with your framework's adapter, leave out the `cardTag` slot, and
 the grid takes the derived layout `icon information`: the tag's column is
 gone, with no code of yours deciding so.
 
+## Why one grid, not nested flexboxes
+
+The usual alternative is a flexbox inside a flexbox: a row for the icon and
+the rest, a column inside that for the title and body, and a class or a
+prop that swaps the arrangement when a slot is missing or the card is
+narrow. It works, but the layout lives in the markup and in your state.
+
+- **One flat grid.** Every slot is a direct child, placed by name. There
+  are no wrapper elements that only exist to group things for one layout,
+  so a new arrangement is a new picture, not new markup.
+- **It follows what's actually rendered.** The CSS reacts to which slots
+  are in the page. There's no `hasIcon` or `compact` prop to pass down and
+  keep in step with the classes it toggles.
+- **Hard to break by accident.** Every area name is type-checked, every
+  combination of slots has a layout, even the one nobody tried, and the
+  generated CSS has zero specificity, so your own classes always win over
+  it.
+- **Easy to reason about.** The template is the layout, so a change to it
+  reads, in review, as a change to the picture.
+- **Good to write, for people and agents.** Type errors name the problem
+  where you wrote it, and the core ships an agent skill that walks a coding
+  agent through writing, converting and debugging layouts.
+
 ## It's all CSS
 
 **Placement is pure CSS: no JavaScript measures, observes or moves
@@ -47,6 +99,10 @@ TypeScript's job is to check the definition.**
   once, however many grids render from it.
 - A typo in an area name, a row with a missing cell or a track list that
   doesn't match the template is a type error, reported where you wrote it.
+- **It's small, and it's all web standards.** The core has no dependencies
+  and is a few kB, minified and gzipped; each adapter is a thin layer over
+  its framework. What runs in the browser is CSS grid, `:has()`, container
+  queries and cascade layers, in every current browser.
 
 The [Examples](/typed-grid-areas/examples/) page shows it: its cards are
 rendered to static HTML, and lay out with JavaScript turned off.
@@ -55,9 +111,9 @@ rendered to static HTML, and lay out with JavaScript turned off.
 
 This site explains why the library works the way it does, how its CSS
 works, and shows it working. The API reference, with every option of the
-core and of each adapter, is the README, which also ships inside every
-package, so the copy in your `node_modules` always matches the version you
-installed.
+core and of each adapter, is `REFERENCE.md`, which ships inside every
+package next to its README, so the copy in your `node_modules` always
+matches the version you installed.
 
 <LinkCard
   title="Getting started"

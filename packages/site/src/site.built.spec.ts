@@ -1,7 +1,7 @@
 /**
  * The built site, in `dist/` (`npm run test:browser` builds it first): its
  * pages and their order, the How it works and Reading type errors pages'
- * generated content, its links to the README, and the Examples page's demos
+ * generated content, its links to REFERENCE.md, and the Examples page's demos
  * laying out in Chromium with JavaScript turned off.
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -74,11 +74,11 @@ describe("the built site", () => {
     }
   });
 
-  it("links to the README only at a release tag, never at a branch", () => {
+  it("links to REFERENCE.md only at a release tag, never at a branch", () => {
     const pages = ["getting-started", "concepts/areas", "examples"].map(page);
     const blob = `${repoUrl}/blob/`;
     const links = pages.flatMap(html =>
-      Array.from(html.matchAll(/"(https:[^"#]+)\/README\.md\b/g), match => match[1]!)
+      Array.from(html.matchAll(/"(https:[^"#]+)\/REFERENCE\.md\b/g), match => match[1]!)
         .filter(url => url.startsWith(blob))
         .map(url => url.slice(blob.length)),
     );

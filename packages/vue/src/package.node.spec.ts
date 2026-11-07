@@ -1,7 +1,7 @@
 /**
  * Packs `@typed-grid-areas/vue` and the core the way `npm publish` does,
  * installs both tarballs into a clean project, and checks what a consumer
- * gets: the tarball's files and manifest, and the README's Vue example
+ * gets: the tarball's files and manifest, and REFERENCE.md's Vue example
  * type-checking with vue-tsc and server rendering, through the README's
  * server entry, on stock Node.
  */
@@ -28,7 +28,7 @@ import { compileScript, parse } from "vue/compiler-sfc";
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const referencePath = resolve(packageDir, "..", "..", "REFERENCE.md");
 const vueTsc = join(packageDir, "scripts", "vue-tsc.cjs");
 const require = createRequire(import.meta.url);
 
@@ -81,11 +81,11 @@ function linkInstalled(name: string): void {
   symlinkSync(installed!, link, "dir");
 }
 
-/** The README's code block in `language` that imports from `@typed-grid-areas/vue`. */
+/** REFERENCE.md's code block in `language` that imports from `@typed-grid-areas/vue`. */
 function readmeExample(language: string): string {
-  const readme = readFileSync(readmePath, "utf8");
+  const reference = readFileSync(referencePath, "utf8");
   const example = Array.from(
-    readme.matchAll(new RegExp(`^\`\`\`${language}\\n([\\s\\S]*?)^\`\`\``, "gm")),
+    reference.matchAll(new RegExp(`^\`\`\`${language}\\n([\\s\\S]*?)^\`\`\``, "gm")),
     match => match[1]!,
   ).find(code => code.includes('from "@typed-grid-areas/vue"'));
   if (example === undefined) {
@@ -120,11 +120,12 @@ afterAll(() => {
 });
 
 describe("the packed Vue adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -133,6 +134,7 @@ describe("the packed Vue adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|\.vue$/.test(file))).toEqual([]);
@@ -150,7 +152,7 @@ describe("the packed Vue adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
-  it("type-checks the README's Vue example with vue-tsc", () => {
+  it("type-checks REFERENCE.md's Vue example with vue-tsc", () => {
     writeFileSync(join(consumer, "Example.vue"), readmeExample("vue"));
     writeFileSync(
       join(consumer, "tsconfig.json"),
@@ -180,7 +182,7 @@ describe("the packed Vue adapter", () => {
     expect(output).toBe("");
   }, 60_000);
 
-  it("server-renders the README's Vue example through the README's server entry", () => {
+  it("server-renders REFERENCE.md's Vue example through its server entry", () => {
     writeFileSync(join(consumer, "Example.js"), compileForServer(readmeExample("vue")));
     writeFileSync(join(consumer, "server.js"), readmeExample("js"));
 

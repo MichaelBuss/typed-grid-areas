@@ -1,6 +1,6 @@
 /**
- * Type-checks every Preact code block in the repo's README (fenced
- * ` ```tsx preact `), each as its own module, with `@typed-grid-areas/preact`
+ * Type-checks every Preact code block in the repo's README and REFERENCE.md
+ * (fenced ` ```tsx preact `), each as its own module, with `@typed-grid-areas/preact`
  * resolving to this package's `src/` and `typed-grid-areas` (and its
  * `/adapter` entry) to the built core, as a consumer gets them.
  */
@@ -18,15 +18,15 @@ const tsc = join(
   "tsc",
 );
 
-describe("the README", () => {
-  it("has Preact examples whose code type-checks", () => {
+describe("the README and REFERENCE.md", () => {
+  it("have Preact examples whose code type-checks", () => {
     const blocks = preactReadmeBlocks();
     expect(blocks.length).toBeGreaterThan(0);
 
     rmSync(workDir, { recursive: true, force: true });
     mkdirSync(workDir, { recursive: true });
-    const files = blocks.map(({ code, line }) => {
-      const file = `readme-line-${line}.tsx`;
+    const files = blocks.map(({ code, file: markdown, line }) => {
+      const file = `${markdown}-line-${line}.tsx`;
       // `export {}` keeps each block its own module, even without imports.
       writeFileSync(join(workDir, file), `${code}\nexport {};\n`);
       return file;

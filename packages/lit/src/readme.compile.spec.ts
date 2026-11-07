@@ -1,16 +1,18 @@
 /**
- * Type-checks the README's Lit examples (every code block fenced `ts lit`,
- * which other packages' README checks skip), each as its own module, with
+ * Type-checks the Lit examples of the README and REFERENCE.md (every code
+ * block fenced `ts lit`, which other packages' checks skip), each as its own module, with
  * `@typed-grid-areas/lit` resolving to this package's `src/` and
  * `typed-grid-areas` to the built core, as a consumer gets them.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const markdownPaths = ["README.md", "REFERENCE.md"].map(file =>
+  resolve(packageDir, "..", "..", file),
+);
 const workDir = join(packageDir, "node_modules", ".cache", "typed-grid-areas-lit-readme");
 const tsc = join(
   dirname(createRequire(import.meta.url).resolve("typescript/package.json")),
@@ -18,23 +20,26 @@ const tsc = join(
   "tsc",
 );
 
-function litBlocks(): Array<{ code: string; line: number }> {
-  const readme = readFileSync(readmePath, "utf8");
-  return Array.from(readme.matchAll(/^```ts lit\n([\s\S]*?)^```/gm), match => ({
-    code: match[1]!,
-    line: readme.slice(0, match.index).split("\n").length,
-  }));
+function litBlocks(): Array<{ code: string; file: string; line: number }> {
+  return markdownPaths.flatMap(path => {
+    const markdown = readFileSync(path, "utf8");
+    return Array.from(markdown.matchAll(/^```ts lit\n([\s\S]*?)^```/gm), match => ({
+      code: match[1]!,
+      file: basename(path, ".md"),
+      line: markdown.slice(0, match.index).split("\n").length,
+    }));
+  });
 }
 
-describe("the README", () => {
-  it("has Lit examples whose code type-checks", () => {
+describe("the README and REFERENCE.md", () => {
+  it("have Lit examples whose code type-checks", () => {
     const blocks = litBlocks();
     expect(blocks.length).toBeGreaterThan(0);
 
     rmSync(workDir, { recursive: true, force: true });
     mkdirSync(workDir, { recursive: true });
-    const files = blocks.map(({ code, line }) => {
-      const file = `readme-line-${line}.ts`;
+    const files = blocks.map(({ code, file: markdown, line }) => {
+      const file = `${markdown}-line-${line}.ts`;
       // Short snippets leave out the import of `defineLayout`.
       const prelude = code.includes('from "typed-grid-areas"')
         ? ""

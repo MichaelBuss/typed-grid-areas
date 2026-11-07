@@ -52,7 +52,7 @@ let manifest: {
 
 beforeAll(() => {
   consumer = mkdtempSync(join(tmpdir(), "typed-grid-areas-consumer-"));
-  // With lifecycle scripts, as `npm publish` runs them: prepack builds and adds the README and LICENSE.
+  // With lifecycle scripts, as `npm publish` runs them: prepack builds and adds the README, REFERENCE and LICENSE.
   const [pack] = JSON.parse(
     execFileSync("npm", ["pack", "--json", "--pack-destination", consumer], {
       cwd: packageDir,
@@ -80,11 +80,12 @@ afterAll(() => {
 });
 
 describe("the packed core", () => {
-  it("holds only the build output, the agent skill, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, the agent skill, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -95,6 +96,7 @@ describe("the packed core", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
       "skills/typed-grid-areas/SKILL.md",
       "skills/typed-grid-areas/references/errors.md",

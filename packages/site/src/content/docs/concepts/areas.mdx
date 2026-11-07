@@ -4,7 +4,7 @@ description: Draw only the layout with every area present, mark areas optional w
 ---
 
 import { Playground } from "../../../components/playground.tsx";
-import { readmeLink } from "../../../readme.ts";
+import { referenceLink } from "../../../reference.ts";
 
 An **area** is a named region of a grid that exactly one slot fills. A
 definition lists its areas once, and every template, condition and
@@ -97,5 +97,5 @@ applies, whatever `display` the slot's own styles give it. Render a slot
 even while the current layout hides it; leave it out only to make an
 optional area absent.
 
-The exact rules and options are in the README:
-<a href={readmeLink("optionalAreas")}>Optional areas and derived layouts</a>.
+The exact rules and options are in the API reference:
+<a href={referenceLink("optionalAreas")}>Optional areas and derived layouts</a>.

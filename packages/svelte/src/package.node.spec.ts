@@ -2,7 +2,7 @@
  * Packs `@typed-grid-areas/svelte` and the core the way `npm publish` does,
  * installs both tarballs into a clean project with the repo's Svelte, and
  * checks what a consumer gets: the tarball's files and manifest, and the
- * README's Svelte example type-checking (`svelte-check`) and rendering on
+ * REFERENCE.md's Svelte example type-checking (`svelte-check`) and rendering on
  * the server through Vite, as a Svelte app builds it.
  */
 import { execFileSync } from "node:child_process";
@@ -27,7 +27,7 @@ import {
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const referencePath = resolve(packageDir, "..", "..", "REFERENCE.md");
 const require = createRequire(import.meta.url);
 const svelteCheck = join(
   dirname(require.resolve("svelte-check/package.json")),
@@ -84,10 +84,10 @@ function linkInstalled(name: string): void {
   symlinkSync(installed!, link, "dir");
 }
 
-/** The README's Svelte examples. */
+/** REFERENCE.md's Svelte examples. */
 function readmeExamples(): Array<string> {
-  const readme = readFileSync(readmePath, "utf8");
-  return Array.from(readme.matchAll(/^```svelte\n([\s\S]*?)^```/gm), match => match[1]!);
+  const reference = readFileSync(referencePath, "utf8");
+  return Array.from(reference.matchAll(/^```svelte\n([\s\S]*?)^```/gm), match => match[1]!);
 }
 
 beforeAll(() => {
@@ -107,11 +107,12 @@ afterAll(() => {
 });
 
 describe("the packed Svelte adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -122,6 +123,7 @@ describe("the packed Svelte adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|fixtures|test-utils|acceptance|types\//.test(file))).toEqual(
@@ -150,7 +152,7 @@ describe("the packed Svelte adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
-  it("type-checks the README's Svelte examples", () => {
+  it("type-checks REFERENCE.md's Svelte examples", () => {
     const examples = readmeExamples();
     expect(examples.length).toBeGreaterThan(0);
     const names = examples.map((code, index) => {
@@ -195,7 +197,7 @@ describe("the packed Svelte adapter", () => {
     expect(output).toMatch(/COMPLETED \d+ FILES 0 ERRORS 0 WARNINGS/);
   }, 60_000);
 
-  it("server-renders the README's example through Vite", () => {
+  it("server-renders REFERENCE.md's example through Vite", () => {
     writeFileSync(join(consumer, "Example.svelte"), readmeExamples()[0]!);
     // A child process, with the consumer's own Vite and Svelte plugin.
     const script = `

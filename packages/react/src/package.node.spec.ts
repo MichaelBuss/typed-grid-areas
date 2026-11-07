@@ -93,11 +93,12 @@ afterAll(() => {
 });
 
 describe("the packed React adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -106,6 +107,7 @@ describe("the packed React adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|test-setup|acceptance/.test(file))).toEqual([]);
