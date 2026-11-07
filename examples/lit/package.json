@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typed-grid-areas/lit": "^0.1.1",
+    "@typed-grid-areas/lit": "^0.1.2",
     "lit": "^3.3.3",
-    "typed-grid-areas": "^0.3.0"
+    "typed-grid-areas": "^0.3.1"
   },
   "devDependencies": {
     "typescript": "~6.0.3",

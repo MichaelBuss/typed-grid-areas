@@ -9,10 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typed-grid-areas/react": "^0.1.1",
+    "@typed-grid-areas/react": "^0.1.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "typed-grid-areas": "^0.3.0"
+    "typed-grid-areas": "^0.3.1"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
