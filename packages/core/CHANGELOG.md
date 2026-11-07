@@ -1,5 +1,17 @@
 # typed-grid-areas
 
+## 0.3.0
+
+### Minor Changes
+
+- [#43](https://github.com/MichaelBuss/typed-grid-areas/pull/43) [`1007398`](https://github.com/MichaelBuss/typed-grid-areas/commit/100739836f3e71b4654310fa377cc82ae78b2690) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - Ship the typed-grid-areas agent skill in the package, versioned with each release. Run `npx @tanstack/intent@latest install` in your project to let your coding agent load it: it walks the agent through writing a layout, converting hand-written `:has()` CSS or layout JavaScript, and debugging type errors and development warnings.
+
+### Patch Changes
+
+- [`63db22d`](https://github.com/MichaelBuss/typed-grid-areas/commit/63db22d3cfffcd59025461e86a8d79bd56d7673d) Thanks [@man-trackunit](https://github.com/man-trackunit)! - The npm page links to the docs site, which explains how layouts are derived and lets you try the library in your browser: the package's homepage is now https://michaelbuss.github.io/typed-grid-areas/, and the README opens with links to the docs and the Try it page. Every link in the README works on npm, and the package is easier to find by searching for CSS grid layouts and your framework. The code is unchanged.
+
+- [#51](https://github.com/MichaelBuss/typed-grid-areas/pull/51) [`cb8e633`](https://github.com/MichaelBuss/typed-grid-areas/commit/cb8e6336f59fdd3def054ac0b7586c622c01fcd9) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - Production builds no longer include the development-only checks. The config validation `defineLayout` runs and each grid's slot check, with their warning messages, are now dropped when your bundler (such as Vite or esbuild) builds for production, so they cost nothing in your app's bundle. In development they warn as before, and importing the library without a bundler, where `process` doesn't exist, still works and logs nothing.
+
 ## 0.2.0
 
 ### Minor Changes
