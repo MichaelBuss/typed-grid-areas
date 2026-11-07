@@ -3,12 +3,16 @@ title: Introduction
 description: Type-safe CSS grid layouts that rearrange themselves based on which slots are rendered and how much room they get.
 ---
 
-import { LinkCard } from "@astrojs/starlight/components";
+import { Badge, LinkCard } from "@astrojs/starlight/components";
 import { AreasExplainer } from "../../components/areasExplainer.tsx";
 
 typed-grid-areas is CSS grid template areas, type-checked, for components
 whose slots come and go: a card with an optional icon, a tag that only some
 items have, a checkbox that only shows in a selection mode.
+
+<Badge text="Zero-dependency core" variant="note" size="medium" />{" "}
+<Badge text="A few kB gzipped" variant="note" size="medium" />{" "}
+<Badge text="Built on web standards" variant="note" size="medium" />
 
 ## Grid template areas, in one picture
 
@@ -95,6 +99,10 @@ TypeScript's job is to check the definition.**
   once, however many grids render from it.
 - A typo in an area name, a row with a missing cell or a track list that
   doesn't match the template is a type error, reported where you wrote it.
+- **It's small, and it's all web standards.** The core has no dependencies
+  and is a few kB, minified and gzipped; each adapter is a thin layer over
+  its framework. What runs in the browser is CSS grid, `:has()`, container
+  queries and cascade layers, in every current browser.
 
 The [Examples](/typed-grid-areas/examples/) page shows it: its cards are
 rendered to static HTML, and lay out with JavaScript turned off.

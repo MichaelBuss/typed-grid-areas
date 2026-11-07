@@ -129,6 +129,14 @@ describe("the README, the body of every npm page", () => {
     ]);
   });
 
+  it("calls the core zero-dependency only while its manifest lists none", () => {
+    const core = published.find(workspace => workspace.name === "typed-grid-areas")!;
+    const manifest = JSON.parse(readFileSync(join(repo, core.dir, "package.json"), "utf8"));
+    expect(readmeProse).toContain("Zero-dependency core");
+    expect(manifest.dependencies ?? {}).toEqual({});
+    expect(manifest.peerDependencies ?? {}).toEqual({});
+  });
+
   it("explains grid template areas, linking MDN, with the template-beside-card picture", () => {
     expect(readmeTargets).toContain(
       "https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas",

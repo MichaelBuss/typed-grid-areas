@@ -8,6 +8,8 @@
 
 **Describe a grid once. Every combination of slots lays itself out.**
 
+**Zero-dependency core** · **a few kB gzipped** · **built on web standards**: CSS grid, `:has()`, container queries and cascade layers
+
 ![The PreferenceCard example rendered with four different combinations of slots, each laid out without any CSS written for it](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/hero.png)
 
 ## Grid template areas, in one picture
@@ -82,9 +84,8 @@ function Example({ tag }: { tag?: string }) {
 }
 ```
 
-Without a tag, the card lays out as `icon information`, with the tag's
-column gone. Nothing in your code handles that case. A misspelled area, a
-ragged row or a track list that doesn't match is a compile error.
+Without a tag, the card lays out as `icon information`; nothing in your code
+handles that case. A misspelled area or a ragged row is a compile error.
 
 ## Why one grid, not nested flexboxes
 
@@ -130,9 +131,8 @@ Swap `react` for your framework's package from the table above.
 
 ## Agent skill
 
-The core ships a skill that walks a coding agent through writing, converting
-and debugging layouts, versioned with each release. Enable it with
-[TanStack Intent](https://tanstack.com/intent):
+The core ships a skill that walks coding agents through writing, converting
+and debugging layouts. Enable it with [TanStack Intent](https://tanstack.com/intent):
 
 ```sh
 npx @tanstack/intent@latest install

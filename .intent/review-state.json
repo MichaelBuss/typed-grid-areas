@@ -310,13 +310,13 @@
       ]
     },
     "source:README.md": {
-      "fingerprint": "8d706696d15aa88596c32a25e1f2efd2f38612e98856067b80536595659d5f58",
+      "fingerprint": "66af98c5a1e80d2c3fa816cae62f0ac163e25d70209eb30335786204804de23a",
       "snapshot": {
-        "README.md": "c15319345c0dcdf927b39d80c827e02888351788017ba5c1c7d0c6dbc23efea1"
+        "README.md": "778bc19994027196c82452e20feb4ffc65ff3fa79864ed62bb2ddb4e34f82cd1"
       },
-      "head": "01dd327352afdf38587c6f548a877b749e0c0034",
+      "head": "ea797a95fbb579d913bb1753770a0b54f54b57ed",
       "outcome": "no-change",
-      "reason": "The README's pitch replaces its Why bullets with a short case for one flat grid over nested flexboxes, and drops its License section (the badge links the license); the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
+      "reason": "The README's pitch gains a line under the tagline (zero-dependency core, a few kB gzipped, built on web standards) and two sentences are tightened; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
       "evidence": [
         "README.md; REFERENCE.md unchanged"
       ]
