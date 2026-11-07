@@ -3,10 +3,10 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "cdd948531a69168bc487d7b4b4e9a5d6983f8f8d05c35020ef67004da534db45",
+      "fingerprint": "f9fef3c74446a3b8edc38ed3fe0e96f6be2a83659d3bde5a64ff2286c6746d5f",
       "snapshot": {
-        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
+        "REFERENCE.md": "c7fc398849578acc19b1f359f84758012689670eb705916e61d40d3208a291ac",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "8128bff4899fea2c70fafe13b2d4ef1bc3e169ebb3b120656c13d32d47318239",
         "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
@@ -15,21 +15,21 @@
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "head": "01dd327352afdf38587c6f548a877b749e0c0034",
       "outcome": "updated",
-      "reason": "The API reference moved unchanged, headings included, from the README to REFERENCE.md, which ships beside the README in every package (#63, ADR 0007). The skill's source is now REFERENCE.md, and SKILL.md step 8 and references/errors.md send agents to node_modules/typed-grid-areas/REFERENCE.md for their adapter's section.",
+      "reason": "REFERENCE.md gained an \"Accessibility: reading order\" section (#42): keyboard focus follows the DOM while layouts reorder slots, and reading-flow: grid-rows on the grid's class makes focus follow the current layout in Chrome and Edge 137+. SKILL.md step 8's \"Across adapters\" list now tells agents to render slots in the most important layout's order and add that class when layouts reorder interactive slots, pointing at the new section instead of repeating it.",
       "evidence": [
-        "SKILL.md sources and step 8; references/errors.md; REFERENCE.md headings unchanged (packages/site/src/reference.node.spec.ts)"
+        "SKILL.md step 8 new bullet; REFERENCE.md \"Accessibility: reading order\"; packages/react/src/readme.compile.spec.ts passes"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "1c76264398618d65d0e2eac8817f9e96986c0111a79a719204fbace48b84c595",
+      "fingerprint": "469c6658f0b4bd0538be5515128a46046e0e269285385098631d30b3e7aeabcf",
       "snapshot": {
-        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
+        "REFERENCE.md": "c7fc398849578acc19b1f359f84758012689670eb705916e61d40d3208a291ac",
         "_artifacts/domain_map.yaml": "b860380083d88b4e652a56702d349bc68a9f96981c35aedb99c1ed765b64e660",
         "_artifacts/skill_spec.md": "41ff0c605a25d062ccc4020db2b618227934dca83f636683690c6223c2b1647d",
         "_artifacts/skill_tree.yaml": "6ba8ae5e57334ae2d62b4aba9a6e57a467a88d279b1ffc533f5ea0f6cc5ced2f",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "8128bff4899fea2c70fafe13b2d4ef1bc3e169ebb3b120656c13d32d47318239",
         "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
@@ -38,11 +38,11 @@
         "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
         "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
-      "outcome": "updated",
-      "reason": "The planning records follow the move: skill_tree.yaml lists REFERENCE.md as the source (intent maintainer sync), domain_map.yaml and skill_spec.md cite REFERENCE.md (Breakpoints), and skill_spec.md records #63 in its history.",
+      "head": "01dd327352afdf38587c6f548a877b749e0c0034",
+      "outcome": "no-change",
+      "reason": "The new REFERENCE.md section and SKILL.md bullet are docs only: no new skill, domain, task, failure mode or source, and the skill's sources and reference list are unchanged, so skill_tree.yaml, domain_map.yaml and skill_spec.md still hold.",
       "evidence": [
-        "_artifacts/skill_tree.yaml, domain_map.yaml, skill_spec.md"
+        "intent maintainer check reports 0 files to sync and 0 authoring issues"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
