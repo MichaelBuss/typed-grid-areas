@@ -358,6 +358,55 @@ The library's own tests only run in Chromium. In older browsers the query
 simply never matches, so write the unlayered look as the default and the
 layered look inside the query.
 
+## Accessibility: reading order
+
+A grid places every slot by its area name, so each layout and breakpoint can
+show the slots in a different visual order. The DOM order stays the same, and
+keyboard focus follows the DOM, not the layout: one DOM order can't match
+every layout, so in some of them Tab jumps around the grid.
+
+`reading-flow: grid-rows` on the grid makes keyboard focus follow the layout
+that currently applies: row by row, in the order the grid shows its slots,
+switching with the layout at every breakpoint. Use `grid-columns` instead
+when the design reads down columns first. Give the grid a class of your own:
+
+```css
+.card {
+  reading-flow: grid-rows;
+}
+```
+
+Every adapter puts your class on the grid element itself, never on its size
+container: `className` in React, `class` in Vue, Svelte, Solid, Preact (or
+`className`) and Octane, `class` on the element carrying `[tgaGrid]` in
+Angular, and the `class` option in Lit. With Tailwind, the arbitrary property
+`[reading-flow:grid-rows]` works. `reading-flow` isn't inherited, so a nested
+grid needs the class too.
+
+**It's a progressive enhancement.** Support: Chrome and Edge 137+; other
+browsers keep DOM order. So still render the slots in the order that reads
+correctly in the most important layout
+([WCAG 1.3.2, Meaningful Sequence](https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html)),
+and let `reading-flow` correct the others where it's supported.
+
+**Layers.** Slots are sorted by the cell each one starts in. A layer that
+starts in the same cell as its base ties with it, and a tie falls back to DOM
+order: render whichever of the two should be read first earlier. With
+`photo+badge` in the top-left cell, rendering `badge` before `photo` focuses
+the badge first.
+
+What this promises is keyboard focus order, checked in Chromium. The spec also
+makes `reading-flow` the reading order assistive technology gets, but the
+library hasn't been tested with a screen reader.
+
+**`order` is not the tool.** It only moves auto-placed items, and every slot
+is placed by its area name, so it moves nothing here; it doesn't change focus
+order either.
+
+**The library doesn't set `reading-flow` itself.** The generated CSS never
+includes it, because it would override a DOM order you chose on purpose.
+Whether focus follows the layout or the DOM is your call, per grid.
+
 ## Rendering with React: grid components
 
 `createGridComponent(definition)` turns a definition into the component it
