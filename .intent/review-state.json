@@ -310,15 +310,15 @@
       ]
     },
     "source:README.md": {
-      "fingerprint": "1e891409b8e113fc74735c7e11dd3a40f40469c03c7aba509401428107dd9148",
+      "fingerprint": "0271ab00c2fab5895eced2028a96cc5efa0fb11fe5b22e07b0d22ab87618a733",
       "snapshot": {
-        "README.md": "c40b61758fbccb29bdb8023d5bef8f31757c5c6dd9937f3e83407d4d74519dd7"
+        "README.md": "b6d8289632e36ab5a57688161289754d7d41237b83ecfbd8a20d7d7213290ac7"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "head": "a07ce414b0db9c3a02d0bd323b7ac0cf76749f6b",
       "outcome": "no-change",
-      "reason": "The README is now a short pitch for npm and GitHub; the skill no longer lists it as a source and relies on REFERENCE.md, which holds the former README unchanged.",
+      "reason": "The README's pitch gains a short explainer of CSS grid template areas (with an MDN link and a picture of a template beside the card it lays out) and why they're hard with slots that come and go; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
       "evidence": [
-        "README.md; SKILL.md sources"
+        "README.md; REFERENCE.md unchanged"
       ]
     },
     "source:packages/angular/finish-dist.ts": {

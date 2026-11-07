@@ -4,12 +4,37 @@ description: Type-safe CSS grid layouts that rearrange themselves based on which
 ---
 
 import { LinkCard } from "@astrojs/starlight/components";
+import { AreasExplainer } from "../../components/areasExplainer.tsx";
 
-typed-grid-areas is for components whose slots come and go: a card with an
-optional icon, a tag that only some items have, a checkbox that only shows
-in a selection mode. Each combination of present slots, at each width,
-needs its own arrangement, and writing those by hand means a pile of
-`:has()` rules or layout JavaScript that drifts from the design.
+typed-grid-areas is CSS grid template areas, type-checked, for components
+whose slots come and go: a card with an optional icon, a tag that only some
+items have, a checkbox that only shows in a selection mode.
+
+## Grid template areas, in one picture
+
+CSS can draw a layout as text. With
+[`grid-template-areas`](https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas)
+you name a grid's regions and write the names down the way the regions sit
+on screen; each child then takes its region by name. The template is a
+picture of the component:
+
+<AreasExplainer client:visible />
+
+Hover an area to find it in both. Untick a slot, and typed-grid-areas
+redraws the picture for the slots that are left; the card follows.
+
+## Simple on paper, hard in practice
+
+- **The names are unchecked strings.** Misspell one, in the template or on
+  a child, and the child quietly lands somewhere else. Nothing reports it.
+- **One picture fits one set of children.** Leave out the tag and its cells
+  stay behind as an empty column. Every combination of optional slots needs
+  its own picture, switched on with a `:has()` rule: two optional slots
+  make four pictures, three make eight.
+- **Every breakpoint multiplies them**, and each picture's track sizes have
+  to be kept in step with it by hand.
+
+## What typed-grid-areas does
 
 Instead, you describe a grid once, as a **definition**: its areas, and a
 few layouts drawn as text templates. The library works out the layout for

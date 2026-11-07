@@ -10,45 +10,50 @@
 
 ![The PreferenceCard example rendered with four different combinations of slots, each laid out without any CSS written for it](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/hero.png)
 
-## The problem
+## Grid template areas, in one picture
 
-A card with an optional icon and an optional tag has four layouts, one for
-each combination of slots. In plain CSS, each one is a `:has()` rule you
-write, and keep in step, by hand; add a third optional slot or a breakpoint
-and the count doubles.
+CSS can draw a layout as text. With
+[`grid-template-areas`](https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas)
+you name a grid's regions and write the names down the way the regions sit
+on screen; each child then takes its region by name. The template is a
+picture of the component:
+
+![A template whose area names, icon, title, tag and body, are laid out in the same shape and colours as the card they arrange](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/areas.png)
+
+## Simple on paper, hard in practice
+
+- **The names are unchecked strings.** A typo, in the template or on a
+  child, quietly puts the child somewhere else. Nothing reports it.
+- **One picture fits one set of children.** Leave out the tag and its cells
+  stay behind as an empty column. Every combination of optional slots needs
+  its own picture behind a `:has()` rule, and every breakpoint multiplies
+  them. For a card with an optional icon and tag:
 
 ```css
 .card {
   display: grid;
-  grid-template-areas: "icon information tag";
+  grid-template-areas: "icon information cardTag";
   grid-template-columns: min-content minmax(0, 1fr) auto;
 }
 .card:not(:has(> .icon)) {
-  grid-template-areas: "information tag";
+  grid-template-areas: "information cardTag";
   grid-template-columns: minmax(0, 1fr) auto;
 }
-.card:not(:has(> .tag)) {
+.card:not(:has(> .cardTag)) {
   grid-template-areas: "icon information";
   grid-template-columns: min-content minmax(0, 1fr);
 }
-.card:not(:has(> .icon, > .tag)) {
+.card:not(:has(> .icon, > .cardTag)) {
   grid-template-areas: "information";
   grid-template-columns: minmax(0, 1fr);
 }
 /* …and a grid-area rule for each slot */
 ```
 
-With typed-grid-areas you draw the full layout once, and the other three
-are derived for you:
+## With typed-grid-areas
 
-```ts
-const cardGrid = defineLayout({
-  areas: ["icon?", "information", "tag?"],
-  layouts: [{ template: "icon information tag", columns: "min-content minmax(0, 1fr) auto" }],
-});
-```
-
-## At a glance
+Draw the picture once, with every slot present. The library derives the
+other three, checks every area name at compile time, and writes the CSS:
 
 ```tsx
 import { defineLayout } from "typed-grid-areas";
@@ -78,17 +83,15 @@ function Example({ tag }: { tag?: string }) {
 ```
 
 Without a tag, the card lays out as `icon information`, with the tag's
-column gone. Nothing in your code handles that case.
+column gone. Nothing in your code handles that case. A misspelled area, a
+ragged row or a track list that doesn't match is a compile error.
 
 ## Why typed-grid-areas
 
-- **Every area name is type-checked.** A typo in a template, a ragged row or
-  a track count that doesn't match is a compile error, on the line that has it.
-- **Every combination of slots is laid out.** Draw each layout with all its
-  areas present; the layouts without them are derived. Override only the
-  ones you'd arrange differently.
 - **Breakpoints follow the grid's own width**, not the viewport's, so a grid
   behaves the same wherever it's placed.
+- **Override only what you'd arrange differently.** Every other combination
+  of slots keeps its derived layout.
 - **Pure CSS at runtime.** The library generates the CSS; no JavaScript
   measures or lays anything out in the browser.
 - **One definition, any framework.** Adapters for React, Vue, Svelte, Solid,

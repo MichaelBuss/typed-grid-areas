@@ -6,7 +6,7 @@
  * README's relative links or images, so those are absolute, and point at the
  * docs site or GitHub.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import GithubSlugger from "github-slugger";
 import { readWorkspaces } from "./workspaces.ts";
@@ -129,6 +129,24 @@ describe("the README, the body of every npm page", () => {
     ]);
   });
 
+  it("explains grid template areas, linking MDN, with the template-beside-card picture", () => {
+    expect(readmeTargets).toContain(
+      "https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas",
+    );
+    expect(readmeTargets).toContain(
+      "https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/areas.png",
+    );
+  });
+
+  it("shows images that are committed to the repo", () => {
+    const raw = "https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/";
+    const images = readmeTargets.filter(target => target.startsWith(raw));
+    expect(images.length).toBeGreaterThan(0);
+    for (const image of images) {
+      expect(existsSync(join(repo, image.slice(raw.length))), image).toBe(true);
+    }
+  });
+
   it.each(published.map(workspace => [workspace.name] as const))(
     "gives %s a row in the frameworks table, with its install command",
     name => {
@@ -154,7 +172,7 @@ describe("the README, the body of every npm page", () => {
     expect(readmeTargets.filter(target => !/^(https:\/\/|#)/.test(target))).toEqual([]);
   });
 
-  it("links only to stable URLs: the docs site or GitHub, never a preview or a pull request", () => {
+  it("links only to stable URLs: the docs site, GitHub or MDN, never a preview or a pull request", () => {
     const absolute = readmeTargets.filter(target => target.startsWith("https://"));
     expect(absolute.filter(target => /\/pull\/\d+|preview|pr-\d+/i.test(target))).toEqual([]);
   });
