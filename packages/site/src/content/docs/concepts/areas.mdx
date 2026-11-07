@@ -1,0 +1,101 @@
+---
+title: Areas, optional areas and derived layouts
+description: Draw only the layout with every area present, mark areas optional with ?, and let the library derive the rest.
+---
+
+import { Playground } from "../../../components/playground.tsx";
+import { readmeLink } from "../../../readme.ts";
+
+An **area** is a named region of a grid that exactly one slot fills. A
+definition lists its areas once, and every template, condition and
+alignment names them from that list, so TypeScript catches a misspelled
+one.
+
+## Optional areas
+
+Mark an area **optional** with a trailing `?`: its slot may be absent.
+Every other area is required, and its slot is always expected to be
+rendered. The `?` is only in `areas`; everywhere else the area is called
+by its name.
+
+```ts
+defineLayout({
+  areas: ["icon?", "information", "cardTag?", "children?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information
+        children    children`,
+    },
+  ],
+});
+```
+
+## Draw the layout with everything present
+
+With three optional areas, this card has eight combinations of present
+slots. You draw one: the layout with every area present. For each other
+combination the library produces a **derived layout**, the authored one
+with the absent areas taken out:
+
+```ts
+defineLayout({
+  areas: ["icon?", "information", "cardTag?", "children?"],
+  layouts: [
+    {
+      template: `
+        icon        cardTag
+        information information
+        children    children`,
+    },
+  ],
+});
+// without children: icon cardTag / information information
+// without cardTag:  icon / information / children
+```
+
+Try it on the PreferenceCard, whose content grid is the one above: untick
+an area to take its slot out. Every combination, and the CSS behind them,
+is on the [Try it](/typed-grid-areas/try-it/) page.
+
+<Playground client:visible design="preference-card" showCss={false} />
+
+Taking an area out follows three rules:
+
+1. **A row or column that held only absent areas is dropped**, with its
+   track size. An area that spans into that track becomes one track
+   shorter.
+2. **Neighbours grow into gaps.** A hole that can't be dropped, because
+   another area still needs that track, is filled by a neighbouring area if
+   that area stays a rectangle: left first, then right, up, down.
+   Otherwise the hole stays empty.
+3. **Cells written as `.` are never dropped or filled.** Use them to keep
+   space that should stay empty.
+
+The order neighbours grow in is a convention, not something that follows
+from your layout. Where a derived layout isn't the arrangement you want,
+write an [override](/typed-grid-areas/concepts/overrides/) for that case.
+
+## Why derive instead of listing every case
+
+Writing each combination by hand doubles the layouts with each optional
+area, so in practice optional content gets kept out of the grid. Deriving
+keeps a definition about the length of the picture it describes, and an
+optional area costs one `?`.
+
+The cost is CSS: every combination gets its own rules, so the generated
+CSS grows with 2ⁿ for n optional areas in one grid. The library emits only
+the rules that differ, and [nesting grids](/typed-grid-areas/concepts/nested-grids/)
+keeps n small per grid: the two-grid PreferenceCard on the
+[Examples](/typed-grid-areas/examples/) page stays under 10 KB.
+
+## Hidden areas
+
+An area that a layout's template leaves out is hidden while that layout
+applies, whatever `display` the slot's own styles give it. Render a slot
+even while the current layout hides it; leave it out only to make an
+optional area absent.
+
+The exact rules and options are in the README:
+<a href={readmeLink("optionalAreas")}>Optional areas and derived layouts</a>.

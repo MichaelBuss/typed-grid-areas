@@ -1,9 +1,15 @@
 /**
  * The two target designs from issue #4, defined with the public API only.
  * Every adapter's browser acceptance tests render them; the CSS budget check
- * measures them. Keep the README's examples in step with these.
+ * measures them; the docs site (`packages/site`) shows and renders them, from
+ * this entry (`@typed-grid-areas/acceptance/designs`), which imports nothing
+ * from Vitest. Keep the README's examples in step with these.
  */
 import { defineLayout } from "typed-grid-areas";
+
+/** The narrow and the wide card width the designs are checked at, in px. */
+export const NARROW = 300;
+export const WIDE = 560;
 
 /**
  * PreferenceCard, outer grid: an optional input panel beside the content

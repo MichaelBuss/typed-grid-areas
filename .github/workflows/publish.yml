@@ -13,6 +13,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.released.outputs.released }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,3 +32,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+      # scripts/release.ts tags each package it publishes at this commit, so
+      # a tag here means this run released something (a push that only opens
+      # or updates the Version Packages PR tags nothing).
+      - id: released
+        run: |
+          if [ -n "$(git tag --points-at HEAD)" ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  docs:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+
+  # Every example app, installed from what this release just published.
+  examples:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/examples.yml

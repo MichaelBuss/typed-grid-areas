@@ -1,0 +1,80 @@
+/* The Examples page's live demos: a wrapping row of cards at fixed widths. */
+.tga-demos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 1.5rem;
+  margin-block: 1.5rem;
+}
+
+/* The playground (Try it): controls above a container you can resize. */
+.tga-playground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.tga-playground-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.tga-playground fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.tga-playground legend {
+  float: left;
+  margin-inline-end: 0.5rem;
+  font-weight: 600;
+}
+
+.tga-playground label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tga-playground-width output {
+  min-width: 4ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.tga-playground-frame {
+  box-sizing: content-box;
+  min-width: 200px;
+  max-width: 100%;
+  padding-block-end: 1rem;
+  outline: 1px dashed var(--sl-color-gray-4);
+  outline-offset: 4px;
+  resize: horizontal;
+  overflow: hidden;
+}
+
+.tga-playground-css pre {
+  max-height: 20rem;
+  overflow: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-7, var(--sl-color-black));
+  font-size: 0.8rem;
+}
+
+.tga-playground-css figure {
+  margin: 0 0 1rem;
+}
+
+/* The ID card's name turns white while it sits over the photo. */
+@container style(--tga-over: photo) {
+  .tga-identity-name {
+    color: white;
+  }
+}

@@ -1,0 +1,71 @@
+---
+title: Nested grids
+description: Nest when the design has panels of their own; stay flat otherwise.
+---
+
+import { readmeLink } from "../../../readme.ts";
+
+A **nested grid** is a grid that is itself the slot of an area in another
+grid. Every adapter has a way to say so (`nest` in most of them), and the
+nested grid's root element is the outer area's slot: there's no extra
+element between them.
+
+```tsx
+import { defineLayout } from "typed-grid-areas";
+import { createGridComponent } from "@typed-grid-areas/react";
+
+const Content = createGridComponent(
+  defineLayout({ areas: ["icon?", "title"], layouts: [{ template: "icon title" }] }),
+);
+
+const Card = createGridComponent(
+  defineLayout({ areas: ["input?", "content"], layouts: [{ template: "input content" }] }),
+  { nest: { content: Content } },
+);
+
+export function Example() {
+  return (
+    <Card>
+      <Card.content style={{ padding: 16 }}>
+        <Card.content.icon>★</Card.content.icon>
+        <Card.content.title>Title</Card.content.title>
+      </Card.content>
+    </Card>
+  );
+}
+```
+
+## When to nest
+
+**Nest when the design has panels with their own padding, background or
+border.** The PreferenceCard is a row of two panels: an input panel, and a
+content panel with its own padding. The content panel is a nested grid, so
+its padding is just the slot's padding, and its icon, information and tag
+line up inside it.
+
+**Stay flat otherwise.** One grid that places everything is simpler to
+read, and its areas line up across the whole component. A flat ID card can
+put a badge on the corner of the photo; split into nested grids, it
+couldn't.
+
+Nesting also keeps each grid's CSS small. Each grid derives layouts only
+for its own optional areas, and the CSS grows with 2ⁿ for n optional areas
+in one grid: four optional areas split two and two cost far less than four
+in one grid.
+
+A nested grid with breakpoints measures its own area, not the outer grid:
+see [Breakpoints](/typed-grid-areas/concepts/breakpoints/).
+
+## What stays outside the grid
+
+The grid places areas. It doesn't need to own everything inside them:
+
+- **Small layouts inside a slot** use plain CSS. A title with a tag beside
+  it, inside the `information` slot, is a flex row; it never changes
+  arrangement, so it doesn't need an area of its own.
+- **Gaps and padding** are your own styles, on the grid and its slots. The
+  library writes placement, tracks and alignment, in a cascade layer, so
+  your own classes always win over it.
+
+Reference: the nesting part of your adapter's section in the README, for
+example <a href={readmeLink("react")}>Rendering with React</a>.

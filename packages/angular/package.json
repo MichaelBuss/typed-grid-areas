@@ -2,6 +2,13 @@
   "name": "@typed-grid-areas/angular",
   "version": "0.1.0",
   "description": "Angular adapter for typed-grid-areas: typed grid and slot directives on your own elements.",
+  "keywords": [
+    "css-grid",
+    "grid-template-areas",
+    "layout",
+    "typescript",
+    "angular"
+  ],
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -9,7 +16,7 @@
     "url": "git+https://github.com/MichaelBuss/typed-grid-areas.git",
     "directory": "packages/angular"
   },
-  "homepage": "https://github.com/MichaelBuss/typed-grid-areas#readme",
+  "homepage": "https://michaelbuss.github.io/typed-grid-areas/",
   "bugs": {
     "url": "https://github.com/MichaelBuss/typed-grid-areas/issues"
   },

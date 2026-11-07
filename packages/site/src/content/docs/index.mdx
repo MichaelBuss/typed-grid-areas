@@ -1,0 +1,71 @@
+---
+title: Introduction
+description: Type-safe CSS grid layouts that rearrange themselves based on which slots are rendered and how much room they get.
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+typed-grid-areas is for components whose slots come and go: a card with an
+optional icon, a tag that only some items have, a checkbox that only shows
+in a selection mode. Each combination of present slots, at each width,
+needs its own arrangement, and writing those by hand means a pile of
+`:has()` rules or layout JavaScript that drifts from the design.
+
+Instead, you describe a grid once, as a **definition**: its areas, and a
+few layouts drawn as text templates. The library works out the layout for
+every combination of present slots, at every breakpoint, and TypeScript
+checks every area name you write.
+
+```ts
+import { defineLayout } from "typed-grid-areas";
+
+export const cardGrid = defineLayout({
+  areas: ["icon?", "information", "cardTag?"],
+  layouts: [
+    {
+      template: "icon information cardTag",
+      columns: "min-content minmax(0, 1fr) auto",
+    },
+  ],
+});
+```
+
+Render it with your framework's adapter, leave out the `cardTag` slot, and
+the grid takes the derived layout `icon information`: the tag's column is
+gone, with no code of yours deciding so.
+
+## It's all CSS
+
+**Placement is pure CSS: no JavaScript measures, observes or moves
+anything. JavaScript only writes the CSS, once per definition.
+TypeScript's job is to check the definition.**
+
+- The CSS reacts to which slots are actually in the page, with `:has()`,
+  and to the space the grid is given, with container queries. Nothing
+  listens for resizes or re-renders to move a slot.
+- The adapter for your framework puts each definition's CSS on the page
+  once, however many grids render from it.
+- A typo in an area name, a row with a missing cell or a track list that
+  doesn't match the template is a type error, reported where you wrote it.
+
+The [Examples](/typed-grid-areas/examples/) page shows it: its cards are
+rendered to static HTML, and lay out with JavaScript turned off.
+
+## Where to read what
+
+This site explains why the library works the way it does, how its CSS
+works, and shows it working. The API reference, with every option of the
+core and of each adapter, is the README, which also ships inside every
+package, so the copy in your `node_modules` always matches the version you
+installed.
+
+<LinkCard
+  title="Getting started"
+  description="Install the core and your framework's adapter, and write a first definition."
+  href="/typed-grid-areas/getting-started/"
+/>
+<LinkCard
+  title="Concepts"
+  description="Areas and derived layouts, overrides, breakpoints, layers and nested grids."
+  href="/typed-grid-areas/concepts/areas/"
+/>

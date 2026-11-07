@@ -14,6 +14,7 @@ The repo is an npm-workspaces monorepo (ADR 0004). Every package is a workspace 
 | `packages/lit`        | `@typed-grid-areas/lit`        | yes               |
 | `packages/octane`     | `@typed-grid-areas/octane`     | yes, as source    |
 | `packages/acceptance` | `@typed-grid-areas/acceptance` | never (`private`) |
+| `packages/site`       | `@typed-grid-areas/site`       | never (`private`) |
 
 The root holds no package, only what spans them: the workspace list, the release scripts (`scripts/`, with their own tests), the Changesets config and the `just` recipes. `just build`, `just test`, `just test-browser` and `just typecheck` run each workspace's own `build`, `test`, `test:browser` and `typecheck` script with `npm run <script> --workspaces --if-present`, so a workspace without one is skipped. The root's `workspaces` lists `packages/core` before `packages/*`, so the core always builds first.
 
@@ -21,7 +22,7 @@ The root holds no package, only what spans them: the workspace list, the release
 
 Everything an adapter needs lives in its own folder; root config stays untouched, with one exception (an `overrides` entry, below).
 
-- **Folder and name:** `packages/<framework>`, named `@typed-grid-areas/<framework>`, starting at `"version": "0.0.0"`. Its first changeset (`minor`) releases 0.1.0.
+- **Folder and name:** `packages/<framework>`, named `@typed-grid-areas/<framework>`, starting at `"version": "0.0.0"`. Its first changeset (`minor`) releases 0.1.0. Its `keywords` are `css-grid`, `grid-template-areas`, `layout`, `typescript` and `<framework>`, the folder's name (`scripts/npm-page.spec.ts` checks them).
 - **Scripts:** its own `build`, `test` (unit and node projects), `test:browser` and `typecheck`, over its own `vitest.config.ts`, `tsconfig.json` and build config. Copy `packages/react` as the template, including `prepack` and `postpack`, which copy the repo's README and LICENSE into the tarball.
 - **The core is a dependency like any other:** `"typed-grid-areas": "^<the core's current version>"`, imported only through its public entries (`typed-grid-areas`, `typed-grid-areas/adapter`). The workspace link resolves them to the core's built `dist/`, so the root recipes build the core first; before running one workspace's scripts on their own, run `npm run build:core`.
 - **Acceptance tests:** add `"@typed-grid-areas/acceptance": "*"` to devDependencies and, in a browser spec, call `describePreferenceCard(mount)` and `describeIdCard(mount)`, where `mount` renders the design with your framework and returns its outermost element. Each `describe…` documents the markup it expects; `packages/react/src/acceptance.browser.spec.tsx` is the reference.
@@ -40,6 +41,23 @@ Add one only when `npm install` fails without it, scope it to the package that d
 
 - `vitest-browser-preact` → `preact: ^11.0.0`: it peers on `preact: ^10.0.0`; the Preact adapter targets Preact 11.
 - `octane` → `typescript: $typescript` (the root's range): Octane peers on `typescript: ^5.9.3 || ^6.0.0 || >=7.1.0-0`, which rejects the root's 7.0.
+
+## The docs site: `packages/site`
+
+An Astro Starlight site (#1, ADR 0007), deployed to GitHub Pages at `https://michaelbuss.github.io/typed-grid-areas/` (base path `/typed-grid-areas/`). It renders live demos with the React adapter only, so its `build`, `typecheck` and `dev` scripts build `@typed-grid-areas/react` first. It pins TypeScript 6 for `astro check`; its tests compile code with the root's TypeScript 7, as the packages are checked.
+
+- **Where it lives:** the repo slug, the Pages origin and the base path are in `src/site.ts`; the Astro config, the links the site builds and its specs read them there.
+- **Stable adapters** are `src/examples.ts`'s list: the Try it page links each one's example, the code-block spec checks each one's blocks, and the specs check the Examples page has a code tab and `src/readme.ts` a README section for each. `examples.yml`'s matrix repeats it, and `src/examples.node.spec.ts` checks the two and the `examples/` folders agree.
+- **Pages** are `src/content/docs/**/*.mdx`; their order is `src/sidebar.ts`. Link to the README with `readmeLink()` from `src/readme.ts` (each section at its package's release tag), never by hand.
+- **Code blocks:** `src/codeBlocks.node.spec.ts` type-checks every ` ```ts `, ` ```tsx `, ` ```vue ` and ` ```svelte ` block, with the README's info strings for other adapters (` ```tsx preact `, ` ```tsx solid `, ` ```ts lit `, ` ```ts angular `). Each adapter's blocks are checked by its workspace's own checker on that workspace's TypeScript: `ngc` for Angular, the Vue workspace's `scripts/vue-tsc.cjs`, the Svelte workspace's `svelte-check`, the root's `tsc` for the rest. The adapters are the stable ones in `src/examples.ts`. A block can import the example designs from `./designs`. The spec writes the blocks to `.cache/` (git-ignored), not `node_modules`, where `svelte-check` reports nothing.
+- **Type errors** on the Reading type errors page are tsc's real output for `src/typeErrors.ts`, captured in `src/typeErrors.captured.json`. When the error format changes, `src/typeErrors.node.spec.ts` fails: re-capture with `npx vitest run --project node -u` in the workspace, and re-read the page.
+- **`test:browser`** builds the site and checks `dist/`: the page order, the generated content, and the Examples page's demos laying out in Chromium with JavaScript turned off.
+- **Deploying:** `.github/workflows/pages.yml` runs only when `publish.yml` calls it after a release (a release tag at the released commit) or on manual dispatch, never on a push.
+- **The playground** on Try it (`src/components/playground.tsx`) is the site's one React island; it's also embedded, without its CSS view, on the optional-areas page. `src/tryIt.built.spec.ts` drives it in Chromium.
+
+## The example apps: `examples/`
+
+`examples/<adapter>/` holds one small app per stable adapter, which the Try it page opens in StackBlitz (`https://stackblitz.com/github/MichaelBuss/typed-grid-areas/tree/main/examples/<adapter>`). They are **not** workspaces: each installs the published packages through `^` ranges, keeps no lockfile (`.npmrc` has `package-lock=false`), and pins TypeScript 6, since TypeScript 7's native binaries don't run in StackBlitz. Each has its own `typecheck` and `build` scripts, and its `designs.ts` is the acceptance package's PreferenceCard, copied (`packages/site/src/examples.node.spec.ts` checks it). `.github/workflows/examples.yml` installs, type-checks and builds every example on PRs that touch `examples/`, and after each release (`publish.yml` calls it). An example's ranges on the core and its adapter are `^<current version>`, never edited by hand: the Version Packages PR moves them with each release (`scripts/sync-version.ts`, after `changeset version`), so the post-release run installs what that release published, and the site's examples spec fails when they lag. Nothing in `examples/` needs a changeset.
 
 ## Pinning a workspace's own TypeScript
 

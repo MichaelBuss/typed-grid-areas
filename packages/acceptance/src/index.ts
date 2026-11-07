@@ -15,7 +15,9 @@
  */
 import { describe, expect, it } from "vitest";
 
-export { idCardGrid, preferenceCardGrid, preferenceContentGrid } from "./designs.ts";
+import { NARROW, WIDE } from "./designs.ts";
+
+export { idCardGrid, NARROW, preferenceCardGrid, preferenceContentGrid, WIDE } from "./designs.ts";
 
 /** The optional areas of the PreferenceCard: the outer grid's input, and the content grid's others. */
 export type PreferenceCardOptional = "input" | "icon" | "cardTag" | "children";
@@ -83,10 +85,6 @@ export function measureDesign(root: HTMLElement): MeasuredDesign {
 
   return { slot, rect, bounds: () => rect(root) };
 }
-
-/** The narrow and the wide card width the designs are checked at, in px. */
-export const NARROW = 300;
-export const WIDE = 560;
 
 const right = (rect: Rect) => rect.x + rect.width;
 const bottom = (rect: Rect) => rect.y + rect.height;

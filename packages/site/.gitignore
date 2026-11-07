@@ -1,0 +1,5 @@
+# Astro's generated types and content cache.
+.astro/
+
+# The code-block spec's scratch folder.
+.cache/
