@@ -48,7 +48,7 @@ skills:
         status: active
       - mistake: Nested grid with breakpoints in an auto track
         mechanism: A grid with breakpoints is a size container and collapses to zero width in an auto or min-content track.
-        source: README.md (Breakpoints)
+        source: REFERENCE.md (Breakpoints)
         priority: HIGH
         status: active
       - mistake: Slot wrapped instead of a direct child

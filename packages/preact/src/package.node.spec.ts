@@ -1,7 +1,7 @@
 /**
  * Packs `@typed-grid-areas/preact` and the core the way `npm publish` does,
  * installs both tarballs into a clean project with Preact 11, and checks
- * what a consumer gets: the tarball's files and manifest, and the README's
+ * what a consumer gets: the tarball's files and manifest, and REFERENCE.md's
  * Preact example type-checking and server rendering on stock Node.
  */
 import { execFileSync } from "node:child_process";
@@ -93,11 +93,12 @@ afterAll(() => {
 });
 
 describe("the packed Preact adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -106,6 +107,7 @@ describe("the packed Preact adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|test-setup|acceptance/.test(file))).toEqual([]);
@@ -141,7 +143,7 @@ describe("the packed Preact adapter", () => {
     );
   });
 
-  it("runs the README's Preact example, type-checked, on stock Node", () => {
+  it("runs REFERENCE.md's Preact example, type-checked, on stock Node", () => {
     const example = preactReadmeBlocks().find(({ code }) =>
       code.includes('from "@typed-grid-areas/preact"'),
     )?.code;

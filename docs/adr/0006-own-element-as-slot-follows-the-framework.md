@@ -13,4 +13,4 @@ React's adapter makes your own element a slot (or the grid) with `asChild`, whic
 ## Consequences
 
 - The core's slot check can't name the remedy in its stray-child warning: each adapter supplies its own wording ("make it a slot with asChild", "… with `as`", "… with a `child` snippet").
-- The README teaches the concept once and each adapter's section names its spelling.
+- The reference (`REFERENCE.md`) teaches the concept once and each adapter's section names its spelling.

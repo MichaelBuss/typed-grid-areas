@@ -25,14 +25,15 @@
   },
   "files": [
     "src/index.ts",
-    "src/gridComponent.tsx"
+    "src/gridComponent.tsx",
+    "REFERENCE.md"
   ],
   "octane": {
     "source": true
   },
   "scripts": {
-    "prepack": "cp ../../README.md ../../LICENSE .",
-    "postpack": "rm README.md LICENSE",
+    "prepack": "cp ../../README.md ../../REFERENCE.md ../../LICENSE .",
+    "postpack": "rm README.md REFERENCE.md LICENSE",
     "test": "vitest run --project unit --project node",
     "test:browser": "vitest run --project browser --project browser-development",
     "typecheck": "tsc --noEmit && tsrx-tsc --noEmit -p tsconfig.json"

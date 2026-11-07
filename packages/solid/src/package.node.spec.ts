@@ -1,7 +1,7 @@
 /**
  * Packs `@typed-grid-areas/solid` and the core the way `npm publish` does,
  * installs both tarballs into a clean project with Solid 1.x, and checks
- * what a consumer gets: the tarball's files and manifest, and the README's
+ * what a consumer gets: the tarball's files and manifest, and REFERENCE.md's
  * Solid example type-checking, then compiled by Vite's Solid plugin and
  * rendered on the server.
  */
@@ -27,7 +27,7 @@ import {
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const referencePath = resolve(packageDir, "..", "..", "REFERENCE.md");
 const require = createRequire(import.meta.url);
 const tsc = join(dirname(require.resolve("typescript/package.json")), "bin", "tsc");
 
@@ -114,11 +114,12 @@ afterAll(() => {
 });
 
 describe("the packed Solid adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.jsx",
@@ -128,6 +129,7 @@ describe("the packed Solid adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|acceptance/.test(file))).toEqual([]);
@@ -149,8 +151,8 @@ describe("the packed Solid adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
-  it("runs the README's Solid example, type-checked, compiled by Vite and rendered on the server", async () => {
-    const readme = readFileSync(readmePath, "utf8");
+  it("runs REFERENCE.md's Solid example, type-checked, compiled by Vite and rendered on the server", async () => {
+    const readme = readFileSync(referencePath, "utf8");
     const example = Array.from(
       readme.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm),
       match => match[1]!,

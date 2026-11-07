@@ -3,7 +3,7 @@
  * published) and the core the way `npm publish` does, installs both tarballs
  * into a clean Angular 22 project alongside Angular from npm's registry, and
  * checks what a consumer gets: the tarball's files and manifest, the install
- * resolving its dependencies and peers, and the README's Angular example
+ * resolving its dependencies and peers, and REFERENCE.md's Angular example
  * compiling with `strictTemplates` and rendering on the server. Needs the
  * network (or npm's cache) for Angular.
  */
@@ -19,11 +19,11 @@ import {
 
 const packageDir = resolve(import.meta.dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const referencePath = resolve(packageDir, "..", "..", "REFERENCE.md");
 
 /**
  * A clean Angular 22 project's dependencies, from the registry: what the
- * README's example imports, and the compiler and TypeScript it builds with.
+ * REFERENCE.md's example imports, and the compiler and TypeScript it builds with.
  */
 const ANGULAR_PROJECT = [
   "@angular/common@^22.0.0",
@@ -104,11 +104,12 @@ afterAll(() => {
 });
 
 describe("the packed Angular adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "fesm2022/typed-grid-areas-angular.mjs",
         "types/typed-grid-areas-angular.d.ts",
@@ -117,6 +118,7 @@ describe("the packed Angular adapter", () => {
     expect(files.filter(path => !/^(fesm2022|types)\//.test(path)).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|test-setup|acceptance/.test(file))).toEqual([]);
@@ -144,8 +146,8 @@ describe("the packed Angular adapter", () => {
     expect(adapter["typed-grid-areas"]?.version).toBe(core.version);
   });
 
-  it("compiles the README's Angular example with strictTemplates, and renders it on the server", () => {
-    const readme = readFileSync(readmePath, "utf8");
+  it("compiles REFERENCE.md's Angular example with strictTemplates, and renders it on the server", () => {
+    const readme = readFileSync(referencePath, "utf8");
     const example = Array.from(
       readme.matchAll(/^```ts angular\n([\s\S]*?)^```/gm),
       match => match[1]!,

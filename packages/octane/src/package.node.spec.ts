@@ -2,7 +2,7 @@
  * Packs `@typed-grid-areas/octane` and the core the way `npm publish` does,
  * installs both tarballs into a clean project with the supported Octane, and
  * checks what a consumer gets: the tarball's files and manifest, and the
- * README's Octane example type-checking (`tsrx-tsc`, and plain `tsc` over the
+ * REFERENCE.md's Octane example type-checking (`tsrx-tsc`, and plain `tsc` over the
  * package's source) and rendering on the server, compiled by Octane's Vite
  * plugin as in an app.
  */
@@ -29,7 +29,7 @@ import {
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
 const rootDir = resolve(packageDir, "..", "..");
-const readmePath = join(rootDir, "README.md");
+const referencePath = join(rootDir, "REFERENCE.md");
 
 type Manifest = {
   name: string;
@@ -118,7 +118,7 @@ beforeAll(() => {
     }),
   );
 
-  const readme = readFileSync(readmePath, "utf8");
+  const readme = readFileSync(referencePath, "utf8");
   const example = Array.from(
     readme.matchAll(/^```tsrx\n([\s\S]*?)^```/gm),
     match => match[1]!,
@@ -149,10 +149,11 @@ afterAll(() => {
 });
 
 describe("the packed Octane adapter", () => {
-  it("holds its source without specs or test helpers, LICENSE, README.md and package.json", () => {
+  it("holds its source without specs or test helpers, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files.sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
       "src/gridComponent.tsx",
       "src/index.ts",
@@ -170,7 +171,7 @@ describe("the packed Octane adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
-  it("type-checks the README's Octane example with tsrx-tsc", () => {
+  it("type-checks REFERENCE.md's Octane example with tsrx-tsc", () => {
     expect(readFileSync(join(consumer, "example.tsrx"), "utf8")).toContain("createGridComponent");
 
     const tsrxTsc = join(consumer, "node_modules", "@tsrx", "typescript-plugin", "dist", "tsc.js");
@@ -207,7 +208,7 @@ describe("the packed Octane adapter", () => {
     rmSync(join(consumer, "plain.ts"));
   });
 
-  it("renders the README's Octane example on the server, compiled by Octane's Vite plugin", () => {
+  it("renders REFERENCE.md's Octane example on the server, compiled by Octane's Vite plugin", () => {
     // The way an app runs it: the bundler plugin compiles the adapter's source
     // along with the app's own components.
     writeFileSync(

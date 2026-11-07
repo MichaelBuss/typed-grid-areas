@@ -7,7 +7,7 @@ sources:
   - src/engine/rules.ts
   - src/validateGridConfig.ts
   - src/adapter/slotCheck.ts
-  - MichaelBuss/typed-grid-areas:README.md
+  - MichaelBuss/typed-grid-areas:REFERENCE.md
 ---
 
 # typed-grid-areas
@@ -60,7 +60,7 @@ Worked examples of the whole process, a nested card and a layered ID card, are i
    - An override replaces every arrangement of the earlier layout, its breakpoints included: an override without `breakpoints` applies at every width. Give it its own breakpoints when it should still change with width.
    - An override is itself derived for the optional areas its condition doesn't name. Walk those too (step 6), and repeat until nothing is marked _wrong_.
 
-8. **Render it with the adapter** for the project's framework. Its section of the README ("Rendering with React", "Rendering with Vue", …) is in `node_modules/typed-grid-areas/README.md`. Across adapters:
+8. **Render it with the adapter** for the project's framework. Its section of the API reference ("Rendering with React", "Rendering with Vue", …) is in `node_modules/typed-grid-areas/REFERENCE.md`. Across adapters:
    - Each slot is a direct child of its grid (fragments and conditionals are fine). Use the adapter's own-element option (`asChild`, `as`, `render`, a `child` snippet, `[tgaArea]` or Lit's `data-area=${Card.icon}` on your element) instead of wrapping a `<label>` or `<img>` in a slot.
    - Leave a slot out only to make an optional area absent. Render a slot whose area the current layout hides, and every required slot, always.
    - A nested grid is the outer area's slot (`nest: { content: Content }`, then `<Card.content.icon>`).

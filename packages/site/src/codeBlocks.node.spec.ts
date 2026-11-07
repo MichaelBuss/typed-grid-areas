@@ -1,13 +1,13 @@
 /**
  * Type-checks every code block on the site's pages, each as its own module,
- * the way the README's are checked: `typed-grid-areas` resolves to the built
- * core, as a consumer gets it, and an adapter to its package's source,
+ * the way REFERENCE.md's are checked: `typed-grid-areas` resolves to the
+ * built core, as a consumer gets it, and an adapter to its package's source,
  * checked with that package's own compiler options and checker. Angular
  * blocks compile with Angular's compiler (`ngc`, `strictTemplates`), Vue
  * blocks with `vue-tsc` and Svelte blocks with `svelte-check`, each on its
  * workspace's own TypeScript, so their templates are checked too.
  *
- * Info strings are the README's: ` ```vue ` and ` ```svelte ` are those
+ * Info strings are REFERENCE.md's: ` ```vue ` and ` ```svelte ` are those
  * adapters' components; ` ```tsx ` is React (or no framework), and a `ts` or
  * `tsx` block names any other adapter after the language (` ```tsx solid `,
  * ` ```ts angular `). A block can import the example designs from

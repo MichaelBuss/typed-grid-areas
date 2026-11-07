@@ -3,7 +3,7 @@
  * Every adapter's browser acceptance tests render them; the CSS budget check
  * measures them; the docs site (`packages/site`) shows and renders them, from
  * this entry (`@typed-grid-areas/acceptance/designs`), which imports nothing
- * from Vitest. Keep the README's examples in step with these.
+ * from Vitest. Keep REFERENCE.md's examples in step with these.
  */
 import { defineLayout } from "typed-grid-areas";
 

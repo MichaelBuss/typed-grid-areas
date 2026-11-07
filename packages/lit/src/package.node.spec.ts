@@ -1,7 +1,7 @@
 /**
  * Packs `@typed-grid-areas/lit` and the core the way `npm publish` does,
  * installs both tarballs into a clean project with Lit, and checks what a
- * consumer gets: the tarball's files and manifest, and the README's Lit
+ * consumer gets: the tarball's files and manifest, and REFERENCE.md's Lit
  * example type-checking and rendering with `@lit-labs/ssr` on stock Node.
  */
 import { execFileSync } from "node:child_process";
@@ -25,7 +25,7 @@ import {
 
 const packageDir = resolve(__dirname, "..");
 const coreDir = resolve(packageDir, "..", "core");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const referencePath = resolve(packageDir, "..", "..", "REFERENCE.md");
 const require = createRequire(import.meta.url);
 const tsc = join(dirname(require.resolve("typescript/package.json")), "bin", "tsc");
 
@@ -93,11 +93,12 @@ afterAll(() => {
 });
 
 describe("the packed Lit adapter", () => {
-  it("holds only the build output, LICENSE, README.md and package.json", () => {
+  it("holds only the build output, LICENSE, README.md, REFERENCE.md and package.json", () => {
     expect(files).toEqual(
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "REFERENCE.md",
         "package.json",
         "dist/index.js",
         "dist/index.d.ts",
@@ -106,6 +107,7 @@ describe("the packed Lit adapter", () => {
     expect(files.filter(path => !path.startsWith("dist/")).sort()).toEqual([
       "LICENSE",
       "README.md",
+      "REFERENCE.md",
       "package.json",
     ]);
     expect(files.filter(file => /spec|test-utils|test-setup|acceptance/.test(file))).toEqual([]);
@@ -121,8 +123,8 @@ describe("the packed Lit adapter", () => {
     expect(manifest.optionalDependencies).toBeUndefined();
   });
 
-  it("runs the README's Lit example, type-checked, on stock Node", () => {
-    const readme = readFileSync(readmePath, "utf8");
+  it("runs REFERENCE.md's Lit example, type-checked, on stock Node", () => {
+    const readme = readFileSync(referencePath, "utf8");
     const example = Array.from(
       readme.matchAll(/^```ts lit\n([\s\S]*?)^```/gm),
       match => match[1]!,

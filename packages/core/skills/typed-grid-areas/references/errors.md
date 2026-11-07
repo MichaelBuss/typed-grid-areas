@@ -109,7 +109,7 @@ defineLayout({
 
 ### Errors on a slot component, such as `Property 'iconn' does not exist on type …`
 
-A slot names an area the grid doesn't have, or reaches a nested grid's area through the wrong outer area. Slot members are named exactly like the areas (`<Card.icon>`, `<Card.content.icon>` through `nest`). The adapter's README section lists how its framework reports this (Vue through `vue-tsc`, Svelte through `svelte-check`, Angular with `strictTemplates`).
+A slot names an area the grid doesn't have, or reaches a nested grid's area through the wrong outer area. Slot members are named exactly like the areas (`<Card.icon>`, `<Card.content.icon>` through `nest`). The adapter's section of `REFERENCE.md` lists how its framework reports this (Vue through `vue-tsc`, Svelte through `svelte-check`, Angular with `strictTemplates`).
 
 ## Development warnings
 

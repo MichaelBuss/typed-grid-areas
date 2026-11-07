@@ -1,5 +1,5 @@
 /**
- * Type-checks the Solid code blocks in the repo's README (fenced
+ * Type-checks the Solid code blocks in the repo's README and REFERENCE.md (fenced
  * ```` ```tsx solid ````), each as its own module, with
  * `@typed-grid-areas/solid` resolving to this package's `src/` and
  * `typed-grid-areas` (and its `/adapter` entry) to the built core, as a
@@ -8,10 +8,12 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
-const readmePath = resolve(packageDir, "..", "..", "README.md");
+const readmePaths = ["README.md", "REFERENCE.md"].map(file =>
+  resolve(packageDir, "..", "..", file),
+);
 const workDir = join(packageDir, "node_modules", ".cache", "typed-grid-areas-readme");
 const tsc = join(
   dirname(createRequire(import.meta.url).resolve("typescript/package.json")),
@@ -19,24 +21,27 @@ const tsc = join(
   "tsc",
 );
 
-/** The README's Solid code blocks, with the line each starts on. */
-function solidReadmeBlocks(): Array<{ code: string; line: number }> {
-  const readme = readFileSync(readmePath, "utf8");
-  return Array.from(readme.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm), match => ({
-    code: match[1]!,
-    line: readme.slice(0, match.index).split("\n").length,
-  }));
+/** The Solid code blocks of the README and REFERENCE.md, with the file and line each starts on. */
+function solidReadmeBlocks(): Array<{ code: string; file: string; line: number }> {
+  return readmePaths.flatMap(path => {
+    const markdown = readFileSync(path, "utf8");
+    return Array.from(markdown.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm), match => ({
+      code: match[1]!,
+      file: basename(path, ".md"),
+      line: markdown.slice(0, match.index).split("\n").length,
+    }));
+  });
 }
 
-describe("the README's Solid section", () => {
-  it("has examples whose code type-checks", () => {
+describe("the Solid examples of the README and REFERENCE.md", () => {
+  it("type-check", () => {
     const blocks = solidReadmeBlocks();
     expect(blocks.length).toBeGreaterThan(0);
 
     rmSync(workDir, { recursive: true, force: true });
     mkdirSync(workDir, { recursive: true });
-    const files = blocks.map(({ code, line }) => {
-      const file = `readme-line-${line}.tsx`;
+    const files = blocks.map(({ code, file: markdown, line }) => {
+      const file = `${markdown}-line-${line}.tsx`;
       // `export {}` keeps each block its own module, even without imports.
       writeFileSync(join(workDir, file), `${code}\nexport {};\n`);
       return file;

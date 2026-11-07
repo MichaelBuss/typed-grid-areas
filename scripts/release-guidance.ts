@@ -6,10 +6,10 @@
 //
 // Every public workspace is a package of its own. What a package ships is
 // what `npm pack` puts in its tarball: its package.json, the entries of its
-// `files`, and the repo's README.md and LICENSE (copied in when it packs). A
-// `files` entry that is the build's output directory ships the sources the
-// build compiles into it (see `shippedSources`), so a PR that changes those
-// sources changes what ships.
+// `files`, and the repo's README.md, REFERENCE.md and LICENSE (copied in when
+// it packs). A `files` entry that is the build's output directory ships the
+// sources the build compiles into it (see `shippedSources`), so a PR that
+// changes those sources changes what ships.
 
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
@@ -47,16 +47,24 @@ function andBelow(path: string): string[] {
   return normalized.includes("*") ? [normalized] : [normalized, `${normalized}/**`];
 }
 
+/** The repo-root files every package copies in when it packs, and so ships. */
+const copiedAtPack = ["README.md", "REFERENCE.md", "LICENSE"];
+
 /**
- * The repo paths one `files` entry of a workspace ships. An entry that is the
- * build's output folder ships the sources the build compiles into it: those
- * the workspace declares for it in its manifest's `buildSources` (for a build
- * tool that reads no tsconfig.build.json, such as svelte-package), else those
- * its tsconfig.build.json includes when that config's `outDir` is the entry
- * (tsc, ng-packagr). Any other entry ships itself.
+ * The repo paths one `files` entry of a workspace ships. An entry naming a
+ * file copied in at pack time (`copiedAtPack`) ships the repo's. An entry
+ * that is the build's output folder ships the sources the build compiles
+ * into it: those the workspace declares for it in its manifest's
+ * `buildSources` (for a build tool that reads no tsconfig.build.json, such as
+ * svelte-package), else those its tsconfig.build.json includes when that
+ * config's `outDir` is the entry (tsc, ng-packagr). Any other entry ships
+ * itself.
  */
 export function shippedSources(root: string, workspace: Workspace, entry: string): Shipped {
   const within = (path: string) => `${normalize(workspace.dir)}/${normalize(path)}`;
+  if (copiedAtPack.includes(normalize(entry))) {
+    return { include: [normalize(entry)], exclude: [] };
+  }
   const declared = workspace.buildSources?.[normalize(entry)];
   if (declared !== undefined) {
     return { include: declared.map(within).flatMap(andBelow), exclude: [] };
@@ -84,15 +92,15 @@ export function shippingPackages(root: string): ShippingPackage[] {
     .filter(workspace => !workspace.private)
     .map(workspace => {
       const within = (path: string) => `${normalize(workspace.dir)}/${normalize(path)}`;
-      const include = [within("package.json"), within("README.md"), within("LICENSE")];
+      const include = [within("package.json"), ...copiedAtPack.map(within)];
       const exclude: string[] = [];
       for (const entry of workspace.files ?? []) {
         const sources = shippedSources(root, workspace, entry);
         include.push(...sources.include);
         exclude.push(...sources.exclude);
       }
-      // Every package carries the repo's README and LICENSE.
-      include.push("README.md", "LICENSE");
+      // Every package carries the repo's copies.
+      include.push(...copiedAtPack);
       return { name: workspace.name, shipped: { include, exclude } };
     });
 }

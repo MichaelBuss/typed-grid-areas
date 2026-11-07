@@ -1,5 +1,5 @@
 /**
- * Links to the README, the API reference (ADR 0007). Each section is linked
+ * Links to REFERENCE.md, the API reference (ADR 0007). Each section is linked
  * as of the release of the package it documents (its `<name>@<version>` git
  * tag), so the site never points at unreleased API on `main`.
  */
@@ -19,8 +19,8 @@ import { repoUrl } from "./site.ts";
 
 type Package = { name: string; version: string };
 
-/** README sections the site links to: the package each documents, and its heading. */
-export const readmeSections = {
+/** REFERENCE.md sections the site links to: the package each documents, and its heading. */
+export const referenceSections = {
   defineLayout: { package: core, heading: "Defining a grid: `defineLayout()`" },
   optionalAreas: { package: core, heading: "Optional areas and derived layouts" },
   overrides: { package: core, heading: "Overrides: `when` and `unless`" },
@@ -42,11 +42,11 @@ export const readmeSections = {
   },
 } satisfies Record<string, { package: Package; heading: string }>;
 
-export type ReadmeSection = keyof typeof readmeSections;
+export type ReferenceSection = keyof typeof referenceSections;
 
-/** The README's section, on GitHub, as of the release of the package it documents. */
-export function readmeLink(section: ReadmeSection): string {
-  const { package: pkg, heading } = readmeSections[section];
+/** REFERENCE.md's section, on GitHub, as of the release of the package it documents. */
+export function referenceLink(section: ReferenceSection): string {
+  const { package: pkg, heading } = referenceSections[section];
   const anchor = new GithubSlugger().slug(heading.replaceAll("`", ""));
-  return `${repoUrl}/blob/${pkg.name}@${pkg.version}/README.md#${anchor}`;
+  return `${repoUrl}/blob/${pkg.name}@${pkg.version}/REFERENCE.md#${anchor}`;
 }

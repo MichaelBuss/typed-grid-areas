@@ -22,7 +22,7 @@ skills:
       - src/engine/rules.ts
       - src/validateGridConfig.ts
       - src/adapter/slotCheck.ts
-      - MichaelBuss/typed-grid-areas:README.md
+      - MichaelBuss/typed-grid-areas:REFERENCE.md
     requires: []
 review:
   ignore:
@@ -34,6 +34,6 @@ review:
     - "**/*.spec.ts"
     - "**/*.spec.tsx"
     # The docs site and its examples explain the library; the skill relies on
-    # the README, not the site (ADR 0007).
+    # REFERENCE.md, not the site (ADR 0007).
     - "packages/site/**"
     - "examples/**"

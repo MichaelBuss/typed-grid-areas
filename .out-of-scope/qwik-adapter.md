@@ -10,7 +10,7 @@ The library's adapters stay small because each one leans on what its framework a
 - **The CSS isn't in `<head>`.** Server-rendered styles land inline before the first grid, and Qwik only moves them into `<head>` when it resumes. For nested grids, the inner definition's `<style>` becomes a direct child of the outer grid, so the core's slot check needs a Qwik-only exception.
 - **The target is moving.** Qwik 1 was the stable major when this was decided, while Qwik 2 (`@qwik.dev/core`) was a release candidate whose peer ranges conflict with this repo's test setup (Vitest 5). An adapter built on Qwik 1 would need rewriting for Qwik 2, and Qwik 2's tooling didn't yet fit the repo's.
 
-A Qwik user can still use the core directly: `generateCss`, `gridId` and `createSlots` (README, "Without React") give the CSS and the attributes, and Qwik's own `useStyles$` can take the CSS string when it's written into the component's source.
+A Qwik user can still use the core directly: `generateCss`, `gridId` and `createSlots` (`REFERENCE.md`, "Without React") give the CSS and the attributes, and Qwik's own `useStyles$` can take the CSS string when it's written into the component's source.
 
 Reconsider when Qwik offers a public way to register runtime-generated styles once per page, and its current major runs on the repo's test tooling.
 
