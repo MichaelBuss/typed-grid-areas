@@ -86,20 +86,27 @@ Without a tag, the card lays out as `icon information`, with the tag's
 column gone. Nothing in your code handles that case. A misspelled area, a
 ragged row or a track list that doesn't match is a compile error.
 
-## Why typed-grid-areas
+## Why one grid, not nested flexboxes
 
+- **One flat grid.** Every slot is a direct child, placed by name: no
+  wrapper divs that only exist to group things for one layout. A new
+  arrangement is a new picture, not new markup.
+- **It follows what's actually rendered.** `:has()` sees which slots are in
+  the page. No `hasIcon` or `compact` props to keep your state and your
+  classes in step.
+- **Hard to break by accident.** Every area name is type-checked, every
+  combination of slots has a layout, even the one nobody tried, and the
+  generated CSS has zero specificity, so your own classes always win.
 - **Breakpoints follow the grid's own width**, not the viewport's, so a grid
   behaves the same wherever it's placed.
-- **Override only what you'd arrange differently.** Every other combination
-  of slots keeps its derived layout.
-- **Pure CSS at runtime.** The library generates the CSS; no JavaScript
-  measures or lays anything out in the browser.
-- **One definition, any framework.** Adapters for React, Vue, Svelte, Solid,
-  Preact, Angular, Lit and Octane, and a framework-free core.
+- **Easy to read, for people and agents.** The template is the layout. Type
+  errors name the problem where you wrote it, and an agent skill ships with
+  the package.
+- **Pure CSS at runtime, in any framework.** No JavaScript lays anything
+  out. Adapters for React, Vue, Svelte, Solid, Preact, Angular, Lit and
+  Octane, and a framework-free core.
 
 ## Frameworks
-
-Each adapter is a package of its own, next to the core.
 
 | Framework             | Install                                            | Reference                                                                                                                                                 |
 | --------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -119,8 +126,7 @@ Each adapter is a package of its own, next to the core.
 npm i typed-grid-areas @typed-grid-areas/react
 ```
 
-Swap `react` for your framework from the table above. The core on its own
-has no framework dependency.
+Swap `react` for your framework's package from the table above.
 
 ## Agent skill
 
@@ -141,7 +147,3 @@ npx @tanstack/intent@latest install
 - [The full API reference](https://github.com/MichaelBuss/typed-grid-areas/blob/main/REFERENCE.md):
   every option and every adapter. It also ships in every package, matching
   the version you installed: `node_modules/typed-grid-areas/REFERENCE.md`.
-
-## License
-
-[MIT](https://github.com/MichaelBuss/typed-grid-areas/blob/main/LICENSE)

@@ -310,13 +310,13 @@
       ]
     },
     "source:README.md": {
-      "fingerprint": "0271ab00c2fab5895eced2028a96cc5efa0fb11fe5b22e07b0d22ab87618a733",
+      "fingerprint": "8d706696d15aa88596c32a25e1f2efd2f38612e98856067b80536595659d5f58",
       "snapshot": {
-        "README.md": "b6d8289632e36ab5a57688161289754d7d41237b83ecfbd8a20d7d7213290ac7"
+        "README.md": "c15319345c0dcdf927b39d80c827e02888351788017ba5c1c7d0c6dbc23efea1"
       },
-      "head": "a07ce414b0db9c3a02d0bd323b7ac0cf76749f6b",
+      "head": "01dd327352afdf38587c6f548a877b749e0c0034",
       "outcome": "no-change",
-      "reason": "The README's pitch gains a short explainer of CSS grid template areas (with an MDN link and a picture of a template beside the card it lays out) and why they're hard with slots that come and go; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
+      "reason": "The README's pitch replaces its Why bullets with a short case for one flat grid over nested flexboxes, and drops its License section (the badge links the license); the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
       "evidence": [
         "README.md; REFERENCE.md unchanged"
       ]

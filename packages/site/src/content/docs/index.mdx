@@ -59,6 +59,29 @@ Render it with your framework's adapter, leave out the `cardTag` slot, and
 the grid takes the derived layout `icon information`: the tag's column is
 gone, with no code of yours deciding so.
 
+## Why one grid, not nested flexboxes
+
+The usual alternative is a flexbox inside a flexbox: a row for the icon and
+the rest, a column inside that for the title and body, and a class or a
+prop that swaps the arrangement when a slot is missing or the card is
+narrow. It works, but the layout lives in the markup and in your state.
+
+- **One flat grid.** Every slot is a direct child, placed by name. There
+  are no wrapper elements that only exist to group things for one layout,
+  so a new arrangement is a new picture, not new markup.
+- **It follows what's actually rendered.** The CSS reacts to which slots
+  are in the page. There's no `hasIcon` or `compact` prop to pass down and
+  keep in step with the classes it toggles.
+- **Hard to break by accident.** Every area name is type-checked, every
+  combination of slots has a layout, even the one nobody tried, and the
+  generated CSS has zero specificity, so your own classes always win over
+  it.
+- **Easy to reason about.** The template is the layout, so a change to it
+  reads, in review, as a change to the picture.
+- **Good to write, for people and agents.** Type errors name the problem
+  where you wrote it, and the core ships an agent skill that walks a coding
+  agent through writing, converting and debugging layouts.
+
 ## It's all CSS
 
 **Placement is pure CSS: no JavaScript measures, observes or moves
