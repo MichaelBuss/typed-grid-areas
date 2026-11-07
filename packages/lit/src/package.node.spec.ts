@@ -124,9 +124,9 @@ describe("the packed Lit adapter", () => {
   });
 
   it("runs REFERENCE.md's Lit example, type-checked, on stock Node", () => {
-    const readme = readFileSync(referencePath, "utf8");
+    const reference = readFileSync(referencePath, "utf8");
     const example = Array.from(
-      readme.matchAll(/^```ts lit\n([\s\S]*?)^```/gm),
+      reference.matchAll(/^```ts lit\n([\s\S]*?)^```/gm),
       match => match[1]!,
     ).find(code => code.includes('from "@typed-grid-areas/lit"'));
     expect(example).toBeDefined();

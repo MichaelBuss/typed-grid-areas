@@ -13,7 +13,7 @@ import { basename, dirname, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
 const repoDir = resolve(packageDir, "..", "..");
-const readmePaths = [join(repoDir, "README.md"), join(repoDir, "REFERENCE.md")];
+const markdownPaths = [join(repoDir, "README.md"), join(repoDir, "REFERENCE.md")];
 const skillDir = join(repoDir, "packages", "core", "skills", "typed-grid-areas");
 const cacheDir = join(packageDir, "node_modules", ".cache");
 const tsc = join(
@@ -79,7 +79,7 @@ function typeCheckBlocks(cacheName: string, paths: ReadonlyArray<string>): strin
 
 describe("the README and REFERENCE.md", () => {
   it("have examples whose code type-checks, in each file", () => {
-    expect(typeCheckBlocks("readme", readmePaths)).toBe("");
+    expect(typeCheckBlocks("readme", markdownPaths)).toBe("");
   });
 });
 

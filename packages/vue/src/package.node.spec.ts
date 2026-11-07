@@ -83,9 +83,9 @@ function linkInstalled(name: string): void {
 
 /** REFERENCE.md's code block in `language` that imports from `@typed-grid-areas/vue`. */
 function readmeExample(language: string): string {
-  const readme = readFileSync(referencePath, "utf8");
+  const reference = readFileSync(referencePath, "utf8");
   const example = Array.from(
-    readme.matchAll(new RegExp(`^\`\`\`${language}\\n([\\s\\S]*?)^\`\`\``, "gm")),
+    reference.matchAll(new RegExp(`^\`\`\`${language}\\n([\\s\\S]*?)^\`\`\``, "gm")),
     match => match[1]!,
   ).find(code => code.includes('from "@typed-grid-areas/vue"'));
   if (example === undefined) {

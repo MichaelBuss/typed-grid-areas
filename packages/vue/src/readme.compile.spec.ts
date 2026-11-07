@@ -9,14 +9,14 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
-const readmePaths = ["README.md", "REFERENCE.md"].map(file =>
+const markdownPaths = ["README.md", "REFERENCE.md"].map(file =>
   resolve(packageDir, "..", "..", file),
 );
 const workDir = join(packageDir, "node_modules", ".cache", "typed-grid-areas-readme");
 const vueTsc = join(packageDir, "scripts", "vue-tsc.cjs");
 
 function readmeBlocks(): Array<{ language: string; code: string; file: string; line: number }> {
-  return readmePaths.flatMap(path => {
+  return markdownPaths.flatMap(path => {
     const markdown = readFileSync(path, "utf8");
     return Array.from(markdown.matchAll(/^```(vue|js)\n([\s\S]*?)^```/gm), match => ({
       language: match[1]!,

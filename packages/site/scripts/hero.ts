@@ -1,7 +1,7 @@
 /**
- * Renders the README's hero image, `docs/images/hero.png`: one definition,
- * the acceptance package's PreferenceCard, in four combinations of present
- * slots, as the built Try it page's matrix lays them out in Chromium.
+ * Renders the README's hero image, `docs/images/hero.png`: the acceptance
+ * package's PreferenceCard design in four combinations of present slots,
+ * as the built Try it page's matrix lays them out in Chromium.
  *
  *     npm run build -w @typed-grid-areas/site
  *     node packages/site/scripts/hero.ts
@@ -19,13 +19,8 @@ import { serveDist } from "../src/test-utils/serve.ts";
 
 const output = join(repoDir, "docs", "images", "hero.png");
 
-/** The combinations shown, each a distinct layout of the one definition. */
-const combinations = [
-  "input,icon,cardTag",
-  "icon,cardTag,children",
-  "input,icon",
-  "cardTag",
-];
+/** The combinations shown, each a distinct layout of the design. */
+const combinations = ["input,icon,cardTag", "icon,cardTag,children", "input,icon", "cardTag"];
 
 const server = await serveDist();
 const browser = await chromium.launch();
@@ -56,7 +51,7 @@ try {
           `[data-matrix="preference-card"] [data-present="${present}"][style*="width:${width}px"]`,
         );
         if (frame === null) {
-          throw new Error(`hero: no ${width}px frame with ${present || "no optional areas"}`);
+          throw new Error(`hero: no ${width}px frame with ${present}`);
         }
         hero.append(frame.cloneNode(true));
       }

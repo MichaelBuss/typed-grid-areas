@@ -8,7 +8,7 @@
 
 **Describe a grid once. Every combination of slots lays itself out.**
 
-![One PreferenceCard definition, rendered with four different combinations of slots: each arranges itself without any CSS written for it](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/hero.png)
+![The PreferenceCard example rendered with four different combinations of slots, each laid out without any CSS written for it](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/hero.png)
 
 ## The problem
 
@@ -87,8 +87,8 @@ column gone. Nothing in your code handles that case.
 - **Every combination of slots is laid out.** Draw each layout with all its
   areas present; the layouts without them are derived. Override only the
   ones you'd arrange differently.
-- **Breakpoints follow the grid's own width**, not the viewport's, so a card
-  adapts the same in a sidebar as in the main column.
+- **Breakpoints follow the grid's own width**, not the viewport's, so a grid
+  behaves the same wherever it's placed.
 - **Pure CSS at runtime.** The library generates the CSS; no JavaScript
   measures or lays anything out in the browser.
 - **One definition, any framework.** Adapters for React, Vue, Svelte, Solid,

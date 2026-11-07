@@ -147,9 +147,9 @@ describe("the packed Angular adapter", () => {
   });
 
   it("compiles REFERENCE.md's Angular example with strictTemplates, and renders it on the server", () => {
-    const readme = readFileSync(referencePath, "utf8");
+    const reference = readFileSync(referencePath, "utf8");
     const example = Array.from(
-      readme.matchAll(/^```ts angular\n([\s\S]*?)^```/gm),
+      reference.matchAll(/^```ts angular\n([\s\S]*?)^```/gm),
       match => match[1]!,
     ).find(code => code.includes('from "@typed-grid-areas/angular"'));
     expect(example).toBeDefined();

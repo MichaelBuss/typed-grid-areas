@@ -152,9 +152,9 @@ describe("the packed Solid adapter", () => {
   });
 
   it("runs REFERENCE.md's Solid example, type-checked, compiled by Vite and rendered on the server", async () => {
-    const readme = readFileSync(referencePath, "utf8");
+    const reference = readFileSync(referencePath, "utf8");
     const example = Array.from(
-      readme.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm),
+      reference.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm),
       match => match[1]!,
     ).find(code => code.includes("<Show when={props.tag}>"));
     expect(example).toBeDefined();

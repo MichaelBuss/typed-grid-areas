@@ -99,7 +99,8 @@ describe("every published package's npm page", () => {
 
 describe("the README, the body of every npm page", () => {
   it("is a short pitch, with the API reference in REFERENCE.md", () => {
-    expect(readme.split("\n").length).toBeLessThanOrEqual(160);
+    // #63 sized the pitch at roughly 100 to 150 lines: options belong in REFERENCE.md.
+    expect(readme.split("\n").length).toBeLessThanOrEqual(150);
     expect(readmeTargets).toContain(reference);
   });
 

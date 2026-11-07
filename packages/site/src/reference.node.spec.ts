@@ -10,7 +10,11 @@ import { referenceLink, referenceSections } from "./reference.ts";
 import { repoUrl } from "./site.ts";
 import { repoDir } from "./test-utils/tsc.ts";
 
-const reference = readFileSync(join(repoDir, "REFERENCE.md"), "utf8");
+/** REFERENCE.md without its fenced code blocks, whose `#` lines aren't headings. */
+const reference = readFileSync(join(repoDir, "REFERENCE.md"), "utf8").replace(
+  /^```[\s\S]*?^```/gm,
+  "",
+);
 
 /** The anchors GitHub gives REFERENCE.md's headings. */
 const anchors = (() => {

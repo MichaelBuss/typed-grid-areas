@@ -4,10 +4,10 @@ import { basename, resolve } from "node:path";
 const repoDir = resolve(__dirname, "..", "..", "..", "..");
 
 /** The repo's README and REFERENCE.md, which every package ships. */
-export const readmePaths = [resolve(repoDir, "README.md"), resolve(repoDir, "REFERENCE.md")];
+export const markdownPaths = [resolve(repoDir, "README.md"), resolve(repoDir, "REFERENCE.md")];
 
 /** REFERENCE.md, the API reference, where the Preact section is. */
-export const referencePath = readmePaths[1]!;
+export const referencePath = markdownPaths[1]!;
 
 /**
  * The Preact code blocks of the README and REFERENCE.md, fenced as
@@ -16,7 +16,7 @@ export const referencePath = readmePaths[1]!;
  * file (`README`, `REFERENCE`) and the line it starts on.
  */
 export function preactReadmeBlocks(): Array<{ code: string; file: string; line: number }> {
-  return readmePaths.flatMap(path => {
+  return markdownPaths.flatMap(path => {
     const markdown = readFileSync(path, "utf8");
     return Array.from(markdown.matchAll(/^```tsx preact\n([\s\S]*?)^```/gm), match => ({
       code: match[1]!,

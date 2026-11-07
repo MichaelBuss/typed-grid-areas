@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 
 const packageDir = resolve(__dirname, "..");
-const readmePaths = ["README.md", "REFERENCE.md"].map(file =>
+const markdownPaths = ["README.md", "REFERENCE.md"].map(file =>
   resolve(packageDir, "..", "..", file),
 );
 const workDir = join(packageDir, "node_modules", ".cache", "typed-grid-areas-readme");
@@ -23,7 +23,7 @@ const tsc = join(
 
 /** The Solid code blocks of the README and REFERENCE.md, with the file and line each starts on. */
 function solidReadmeBlocks(): Array<{ code: string; file: string; line: number }> {
-  return readmePaths.flatMap(path => {
+  return markdownPaths.flatMap(path => {
     const markdown = readFileSync(path, "utf8");
     return Array.from(markdown.matchAll(/^```tsx solid\n([\s\S]*?)^```/gm), match => ({
       code: match[1]!,

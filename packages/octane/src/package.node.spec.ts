@@ -118,9 +118,9 @@ beforeAll(() => {
     }),
   );
 
-  const readme = readFileSync(referencePath, "utf8");
+  const reference = readFileSync(referencePath, "utf8");
   const example = Array.from(
-    readme.matchAll(/^```tsrx\n([\s\S]*?)^```/gm),
+    reference.matchAll(/^```tsrx\n([\s\S]*?)^```/gm),
     match => match[1]!,
   ).find(code => code.includes('from "@typed-grid-areas/octane"'));
   writeFileSync(join(consumer, "example.tsrx"), example ?? "");

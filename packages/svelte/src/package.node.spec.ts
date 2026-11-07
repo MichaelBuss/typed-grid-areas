@@ -86,8 +86,8 @@ function linkInstalled(name: string): void {
 
 /** REFERENCE.md's Svelte examples. */
 function readmeExamples(): Array<string> {
-  const readme = readFileSync(referencePath, "utf8");
-  return Array.from(readme.matchAll(/^```svelte\n([\s\S]*?)^```/gm), match => match[1]!);
+  const reference = readFileSync(referencePath, "utf8");
+  return Array.from(reference.matchAll(/^```svelte\n([\s\S]*?)^```/gm), match => match[1]!);
 }
 
 beforeAll(() => {
