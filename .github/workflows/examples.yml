@@ -17,6 +17,9 @@ permissions:
 
 jobs:
   example:
+    # The Version Packages PR moves the ranges to versions npm only has once
+    # it merges; the run after the release checks them instead.
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
