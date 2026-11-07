@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/angular",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Angular adapter for typed-grid-areas: typed grid and slot directives on your own elements.",
   "keywords": [
     "css-grid",
@@ -37,7 +37,7 @@
     "@angular/core": "^22.0.0"
   },
   "dependencies": {
-    "typed-grid-areas": "^0.2.0"
+    "typed-grid-areas": "^0.3.0"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.9.0",
