@@ -137,13 +137,14 @@ describe("the README, the body of every npm page", () => {
     expect(manifest.peerDependencies ?? {}).toEqual({});
   });
 
-  it("explains grid template areas, linking MDN, with the template-beside-card picture", () => {
+  it("explains grid template areas, linking MDN, with the template-beside-card picture and its live version", () => {
     expect(readmeTargets).toContain(
       "https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas",
     );
     expect(readmeTargets).toContain(
       "https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/areas.png",
-    );
+    ); // The picture is a screenshot of the Introduction page's live explainer, which it links.
+    expect(readmeTargets).toContain(`${docsSite}#grid-template-areas-in-one-picture`);
   });
 
   it("shows images that are committed to the repo", () => {
@@ -166,6 +167,22 @@ describe("the README, the body of every npm page", () => {
       expect(rows.filter(row => row.includes(install))).toHaveLength(1);
     },
   );
+
+  it("links the docs site's Introduction only by headings it has", () => {
+    const slugger = new GithubSlugger();
+    const introduction = readFileSync(
+      join(repo, "packages", "site", "src", "content", "docs", "index.mdx"),
+      "utf8",
+    ).replace(/^```[\s\S]*?^```/gm, "");
+    const anchors = Array.from(introduction.matchAll(/^#{1,6} (.+)$/gm), match =>
+      slugger.slug(match[1]!.replaceAll("`", "")),
+    );
+    const linked = readmeTargets.filter(target => target.startsWith(`${docsSite}#`));
+    expect(linked.length).toBeGreaterThan(0);
+    for (const target of linked) {
+      expect(anchors, target).toContain(target.split("#")[1]);
+    }
+  });
 
   it("links REFERENCE.md's sections only by headings it has", () => {
     const sections = readmeTargets.filter(target => target.startsWith(`${reference}#`));
