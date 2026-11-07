@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/svelte",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Svelte adapter for typed-grid-areas: render a grid definition as typed slot components.",
   "keywords": [
     "css-grid",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "esm-env": "^1.2.2",
-    "typed-grid-areas": "^0.3.0"
+    "typed-grid-areas": "^0.3.1"
   },
   "devDependencies": {
     "@sveltejs/package": "^3.0.1",

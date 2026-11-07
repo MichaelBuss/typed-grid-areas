@@ -1,6 +1,6 @@
 {
   "name": "@typed-grid-areas/vue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Vue adapter for typed-grid-areas: render a grid definition as typed slot components.",
   "keywords": [
     "css-grid",
@@ -42,7 +42,7 @@
     "vue": "^3.5.0"
   },
   "dependencies": {
-    "typed-grid-areas": "^0.3.0"
+    "typed-grid-areas": "^0.3.1"
   },
   "devDependencies": {
     "@typed-grid-areas/acceptance": "*",

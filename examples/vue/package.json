@@ -9,8 +9,8 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@typed-grid-areas/vue": "^0.1.1",
-    "typed-grid-areas": "^0.3.0",
+    "@typed-grid-areas/vue": "^0.1.2",
+    "typed-grid-areas": "^0.3.1",
     "vue": "^3.5.44"
   },
   "devDependencies": {
