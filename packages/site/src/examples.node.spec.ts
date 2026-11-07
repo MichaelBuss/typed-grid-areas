@@ -129,6 +129,10 @@ describe("the examples workflow", () => {
     expect(runs).toEqual(["npm install", "npm run typecheck", "npm run build"]);
   });
 
+  it("skips the Version Packages PR, whose ranges name versions npm doesn't have until it merges", () => {
+    expect(jobs[0]!.if).toBe("github.head_ref != 'changeset-release/main'");
+  });
+
   it("runs after each release, against what was just published", () => {
     const release = workflow("publish.yml");
     const callers = Object.values(release.jobs).filter(
