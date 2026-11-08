@@ -405,16 +405,16 @@ and the grid's `class` option in Lit. With Tailwind, the arbitrary property
   layer that starts in the same cell as its base ties with it, and a tie
   falls back to DOM order: render whichever of the two should be read first
   earlier.
-- **Not `order`.** `order` only moves auto-placed items, and every slot is
-  placed by its area name, so it moves nothing. It doesn't change focus
+- **Not `order`.** `order` only moves auto-placed elements, and every slot
+  is placed by its area name, so it moves nothing. It doesn't change focus
   order either.
 - **Why it isn't built in.** Setting `reading-flow` in the generated CSS
   would override a DOM order you chose on purpose.
 
 What this gives you is keyboard focus that follows the layout. The CSS
 specification applies `reading-flow` to the reading order passed to
-assistive technology too, but only keyboard focus has been checked, not
-screen readers.
+assistive technology too, but it has been checked for keyboard focus in
+Chromium only, not with screen readers.
 
 ## Rendering with React: grid components
 
