@@ -196,7 +196,8 @@ describe("generateCss and createSlots", () => {
         .split("@container")
         .filter(block => block.includes("[data-area=b]") && block.includes("display: none"));
 
-      expect(hidesB.length).toBeGreaterThan(0);
+      // Hidden from zero width, not only from the 20ch breakpoint on.
+      expect(hidesB.some(block => !/\(min-width: (?!40ch)/.test(block))).toBe(true);
       for (const block of hidesB) {
         // Hidden only below 40ch: every hide rule for b ends there.
         expect(block).toContain("(not (min-width: 40ch))");

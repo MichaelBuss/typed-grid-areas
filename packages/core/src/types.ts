@@ -37,7 +37,9 @@ export type BreakpointUnit = (typeof BREAKPOINT_UNITS)[number];
 /**
  * A breakpoint at an arbitrary width, in Tailwind's arbitrary-value syntax:
  * `"@[27rem]"` switches when the grid is given at least 27rem. The width is a
- * plain, non-negative number and a {@link BreakpointUnit}.
+ * number and a {@link BreakpointUnit}; `defineLayout` also requires the
+ * number to be plain and non-negative (`"@[-5px]"` and `"@[1e3px]"` are
+ * rejected there).
  */
 export type ArbitraryBreakpoint = `@[${number}${BreakpointUnit}]`;
 

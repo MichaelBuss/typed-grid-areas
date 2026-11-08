@@ -134,7 +134,8 @@ one problem at a time.
 
 In development, `defineLayout` also runs `validateGridConfig()` once per
 definition and logs what types can't check: areas and layers that aren't
-rectangles, malformed cells, and breakpoint keys that aren't literals. `validateGridConfig()` returns those
+rectangles, malformed cells, and breakpoint keys that aren't allowed or
+mix units (also when the keys aren't literals). `validateGridConfig()` returns those
 warnings as strings, so it is also useful for definitions assembled
 dynamically.
 

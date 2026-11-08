@@ -6,6 +6,7 @@ import {
   TrackSize,
   GridConfig,
   BREAKPOINT_UNITS,
+  BreakpointUnit,
 } from "./types.ts";
 import { cellAreas, parseCell } from "./engine/cells.ts";
 import { breakpointUnit } from "./engine/rules.ts";
@@ -291,7 +292,7 @@ function validateBreakpointKeys<TAreaName extends string>(
   layouts: Array<LayoutConfig<TAreaName>>,
 ): Array<string> {
   const warnings: Array<string> = [];
-  const units: Array<{ key: string; unit: string }> = [];
+  const units: Array<{ key: string; unit: BreakpointUnit }> = [];
 
   layouts.forEach(({ breakpoints }, i) => {
     for (const key of Object.keys(breakpoints ?? {})) {
