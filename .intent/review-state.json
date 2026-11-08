@@ -3,10 +3,10 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "2958182f6fad8d524a372247c94ceb3ca0afe8b6c85c0883e0ceb445b28a742a",
+      "fingerprint": "3fc05896a7a3956b97df5cb7f3b16171577cd87a9286f9932a5f86ef45eeea95",
       "snapshot": {
-        "REFERENCE.md": "99d98578d18892808f0001cbf8e54dfcde73c39e5f76fa1240c03032b494b2fd",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "8d87556bd1962d47c2cbb46aa4829996e32281c266ebfadffa28ffdb08c280ca",
+        "REFERENCE.md": "dadb851d10fcce8ac956754dff9ceed59dd4f403b6b160af263de7793ef7bcc8",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "fe290c489773741eddb28a5231def0e1046efd7a695a0662d3a3412127e3b4b9",
         "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
@@ -15,21 +15,21 @@
         "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
         "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "head": "24684d5922f082551cc1fd15d1e0fc6221ed472a",
       "outcome": "updated",
-      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
+      "reason": "Skill step 8 and REFERENCE.md now cover reading-flow: render slots in the most important layout's order and add reading-flow: grid-rows on the grid so keyboard focus follows the current layout (Chrome and Edge 137+).",
       "evidence": [
-        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/errors.md, packages/core/src/engine/rules.ts, packages/core/src/validateGridConfig.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md at 24684d5922f082551cc1fd15d1e0fc6221ed472a"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "3a2c52fbef4f92e05a66296c060ef391fd397036bff8866b6b0539da292cd18f",
+      "fingerprint": "11a734713059889c8894ca75c601d69ea263cb0cbc5ab8bca5b094fee6ed4e74",
       "snapshot": {
-        "REFERENCE.md": "99d98578d18892808f0001cbf8e54dfcde73c39e5f76fa1240c03032b494b2fd",
+        "REFERENCE.md": "dadb851d10fcce8ac956754dff9ceed59dd4f403b6b160af263de7793ef7bcc8",
         "_artifacts/domain_map.yaml": "b860380083d88b4e652a56702d349bc68a9f96981c35aedb99c1ed765b64e660",
         "_artifacts/skill_spec.md": "41ff0c605a25d062ccc4020db2b618227934dca83f636683690c6223c2b1647d",
         "_artifacts/skill_tree.yaml": "6ba8ae5e57334ae2d62b4aba9a6e57a467a88d279b1ffc533f5ea0f6cc5ced2f",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "8d87556bd1962d47c2cbb46aa4829996e32281c266ebfadffa28ffdb08c280ca",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "fe290c489773741eddb28a5231def0e1046efd7a695a0662d3a3412127e3b4b9",
         "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
@@ -38,11 +38,11 @@
         "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
         "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "head": "24684d5922f082551cc1fd15d1e0fc6221ed472a",
       "outcome": "updated",
-      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
+      "reason": "Skill step 8 and REFERENCE.md now cover reading-flow: render slots in the most important layout's order and add reading-flow: grid-rows on the grid so keyboard focus follows the current layout (Chrome and Edge 137+).",
       "evidence": [
-        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/errors.md, packages/core/src/engine/rules.ts, packages/core/src/validateGridConfig.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md at 24684d5922f082551cc1fd15d1e0fc6221ed472a"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
