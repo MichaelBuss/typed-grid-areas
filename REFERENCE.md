@@ -198,7 +198,11 @@ defineLayout({
     },
     // The derived layout without a tag would stack icon and information in
     // the min-content column; put them side by side instead.
-    { unless: ["cardTag"], template: "icon information / children children" },
+    {
+      unless: ["cardTag"],
+      template: "icon information / children children",
+      columns: "min-content minmax(0, 1fr)",
+    },
   ],
 });
 ```
@@ -570,7 +574,11 @@ const PreferenceContent = createGridComponent(
           },
         },
       },
-      { unless: ["cardTag"], template: "icon information / children children" },
+      {
+        unless: ["cardTag"],
+        template: "icon information / children children",
+        columns: "min-content minmax(0, 1fr)",
+      },
       {
         when: ["cardTag"],
         unless: ["icon"],

@@ -32,7 +32,7 @@ Without `icon`, the first column is dropped (`information` continues into the se
 
 **7. Overrides.** One per wrong case, naming only the areas that decide it:
 
-- `unless: ["cardTag"]`: `icon information / children children`. It has no breakpoints, so it applies at every width, which is what the design wants (and what `@sm` derived anyway). Its own derived layouts: without `icon`, `information / children`; as designed.
+- `unless: ["cardTag"]`: `icon information / children children`, with columns `min-content minmax(0, 1fr)` (an override inherits no tracks; without them the auto columns share the free width and the icon drifts from the title). It has no breakpoints, so it applies at every width, which is what the design wants (and what `@sm` derived anyway). Its own derived layouts: without `icon`, `information / children`; as designed.
 - `when: ["cardTag"], unless: ["icon"]`: `information cardTag / children children`, with the tag's column `auto`. Declared last, so it wins over the base layout's `@sm` too; `@sm` derived the same picture.
 
 **8. Rendering.**
@@ -60,7 +60,11 @@ const PreferenceContent = createGridComponent(
           },
         },
       },
-      { unless: ["cardTag"], template: "icon information / children children" },
+      {
+        unless: ["cardTag"],
+        template: "icon information / children children",
+        columns: "min-content minmax(0, 1fr)",
+      },
       {
         when: ["cardTag"],
         unless: ["icon"],
