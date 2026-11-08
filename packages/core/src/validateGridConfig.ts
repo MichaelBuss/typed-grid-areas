@@ -5,8 +5,10 @@ import {
   LayoutConfig,
   TrackSize,
   GridConfig,
+  BREAKPOINT_UNITS,
 } from "./types.ts";
 import { cellAreas, parseCell } from "./engine/cells.ts";
+import { breakpointUnit } from "./engine/rules.ts";
 
 /**
  * Creates a normalized key from a condition (when + unless) for comparison.
@@ -281,6 +283,40 @@ function validateDuplicateConditions<TAreaName extends string>(
 }
 
 /**
+ * Reports breakpoint keys that aren't allowed, and, once per definition,
+ * breakpoints that don't all share one unit (named sizes are in rem): the
+ * generated CSS orders breakpoints by width, which only works within a unit.
+ */
+function validateBreakpointKeys<TAreaName extends string>(
+  layouts: Array<LayoutConfig<TAreaName>>,
+): Array<string> {
+  const warnings: Array<string> = [];
+  const units: Array<{ key: string; unit: string }> = [];
+
+  layouts.forEach(({ breakpoints }, i) => {
+    for (const key of Object.keys(breakpoints ?? {})) {
+      const unit = breakpointUnit(key);
+      if (unit === undefined) {
+        warnings.push(
+          `Layout ${i}: Breakpoint "${key}" isn't supported. A breakpoint is a named size ("@xs" to "@7xl") or "@[<number><unit>]", with a plain, non-negative number and a unit from ${BREAKPOINT_UNITS.join(", ")}.`,
+        );
+      } else {
+        units.push({ key, unit });
+      }
+    }
+  });
+
+  if (new Set(units.map(({ unit }) => unit)).size > 1) {
+    warnings.push(
+      `Breakpoints mix units: ${units.map(({ key, unit }) => `"${key}" (${unit})`).join(", ")}. ` +
+        "Breakpoints in one definition must share a unit (named sizes are rem): breakpoints in different units can't be ordered when the CSS is generated, because their relative sizes depend on font sizes and the viewport.",
+    );
+  }
+
+  return warnings;
+}
+
+/**
  * Validates a grid configuration and returns an array of error messages.
  * Returns an empty array if the configuration is valid.
  *
@@ -304,6 +340,7 @@ export function validateGridConfig<TAreaName extends string>(
   }
 
   errors.push(...validateDuplicateConditions(layouts));
+  errors.push(...validateBreakpointKeys(layouts));
 
   // Validate each layout
   for (let i = 0; i < layouts.length; i++) {

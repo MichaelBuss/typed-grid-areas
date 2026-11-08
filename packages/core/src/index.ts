@@ -11,6 +11,7 @@ export {
   type AreaAlignments,
   type BreakpointKey,
   type BreakpointLayoutConfig,
+  type BreakpointUnit,
   type ContainerBreakpoint,
   type EmptyCell,
   type GridCell,

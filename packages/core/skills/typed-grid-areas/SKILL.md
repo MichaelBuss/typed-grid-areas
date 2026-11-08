@@ -127,7 +127,8 @@ The fill order is a convention. When a different neighbour should grow, or the r
 ## Breakpoints
 
 - **A breakpoint applies from its width up**: the arrangement under `"@md"` replaces the layout's own once the grid is given at least 28rem, so the layout's own arrangement is the narrowest.
-- **Keys** are Tailwind's `@container` sizes, `@xs` (20rem), `@sm` (24rem), `@md` (28rem), `@lg` (32rem), `@xl` (36rem), `@2xl` (42rem) up to `@7xl` (80rem), or an arbitrary length: `"@[27rem]"`, `"@[448px]"`. Named keys are in `rem`, so they move with the root font size; use a `px` key when the design gives its threshold in pixels.
+- **Keys** are Tailwind's `@container` sizes, `@xs` (20rem), `@sm` (24rem), `@md` (28rem), `@lg` (32rem), `@xl` (36rem), `@2xl` (42rem) up to `@7xl` (80rem), or an arbitrary length: `"@[27rem]"`, `"@[448px]"`. Named keys are in `rem`, so they move with the root font size.
+- **One unit per definition.** Every breakpoint key in every layout of a definition uses the same unit, and named keys count as `rem`, so `"@[20ch]"` next to `"@sm"` is a type error. The generated CSS orders breakpoints by width, and widths in different units can't be ordered when it's generated (how they compare depends on font sizes and the viewport). An arbitrary key is a plain, non-negative number and one of `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vi`, `vb`; not a percentage, `calc()` or a container query unit. When a design gives one threshold in pixels, write all of that definition's breakpoints in `px` (`"@[384px]"` for `@sm`).
 
 ```ts
 import { defineLayout } from "typed-grid-areas";

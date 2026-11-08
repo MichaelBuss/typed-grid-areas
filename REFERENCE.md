@@ -124,13 +124,17 @@ Compile-time checks, each reported on the offending property:
   `{ _columnCountError: { expected: 2; got: 3 } }` on `columns` (and
   `_rowCountError` on `rows`); skipped for `repeat(` and non-literal strings
 - unknown `align` keys and unknown `when`/`unless` values
+- a breakpoint key that isn't allowed: `{ _unsupportedBreakpoint: "@[50%]" }`
+  on the key, and breakpoints in more than one unit:
+  `{ _mixedBreakpointUnits: "…: ch is mixed with rem" }` on every key (see
+  [Breakpoints](#breakpoints)); skipped for keys that aren't literals
 
 There is no autocomplete inside a template string, and each template reports
 one problem at a time.
 
 In development, `defineLayout` also runs `validateGridConfig()` once per
 definition and logs what types can't check: areas and layers that aren't
-rectangles, and malformed cells. `validateGridConfig()` returns those
+rectangles, malformed cells, and breakpoint keys that aren't literals. `validateGridConfig()` returns those
 warnings as strings, so it is also useful for definitions assembled
 dynamically.
 
@@ -254,6 +258,16 @@ defineLayout({
   ],
 });
 ```
+
+**Every breakpoint of a definition uses one unit**, across all its layouts,
+and the named sizes count as `rem`. An arbitrary key is a plain,
+non-negative number and one of `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`,
+`vi` or `vb`: `"@[27.5rem]"`, `"@[40ch]"`. The generated CSS relies on
+breakpoints being ordered by width, and breakpoints in different units can't
+be ordered when it's generated, because how they compare depends on font
+sizes and the viewport. So `"@[20ch]"` next to `"@sm"` is a type error.
+Percentages, `calc()` and container query units (`cqw`, `cqi`, …, which in
+a query measure a container above the grid) aren't allowed either.
 
 A breakpoint arrangement beats its own layout's base arrangement, but a
 later layout still beats an earlier layout's breakpoints. Breakpoint
