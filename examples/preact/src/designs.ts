@@ -36,7 +36,11 @@ export const preferenceContentGrid = defineLayout({
         },
       },
     },
-    { unless: ["cardTag"], template: "icon information / children children" },
+    {
+      unless: ["cardTag"],
+      template: "icon information / children children",
+      columns: "min-content minmax(0, 1fr)",
+    },
     // Without an icon, the derived narrow layout would stack the tag above
     // the information; keep them side by side at every width instead.
     {

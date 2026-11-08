@@ -3,46 +3,46 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "3fc05896a7a3956b97df5cb7f3b16171577cd87a9286f9932a5f86ef45eeea95",
+      "fingerprint": "54d93e72a052a5fdbf6351168856401e01333bf986648bc237d502ab0c39887f",
       "snapshot": {
-        "REFERENCE.md": "dadb851d10fcce8ac956754dff9ceed59dd4f403b6b160af263de7793ef7bcc8",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "fe290c489773741eddb28a5231def0e1046efd7a695a0662d3a3412127e3b4b9",
+        "REFERENCE.md": "ac54537a7be1389e0a9f8e6d649568c176d9cf5f8a94bcf12667d1d6c361bb3c",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "14d20e2253242af98cd082f08f69449089bde0c75a7905facd5d381445a91803",
         "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
-        "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
+        "packages/core/skills/typed-grid-areas/references/examples.md": "ba314316b8b9521630d7dce6e79225097eff49fdac93ea36299476e53369a733",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
         "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
         "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "24684d5922f082551cc1fd15d1e0fc6221ed472a",
+      "head": "c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7",
       "outcome": "updated",
-      "reason": "Skill step 8 and REFERENCE.md now cover reading-flow: render slots in the most important layout's order and add reading-flow: grid-rows on the grid so keyboard focus follows the current layout (Chrome and Edge 137+).",
+      "reason": "Added a trap to SKILL.md step 7 and a note in examples.md: an override inherits no tracks, so without columns it emits grid-template-columns: none and auto tracks stretch. The PreferenceCard example's tagless override now sets its columns; REFERENCE.md and acceptance designs.ts carry the same fix.",
       "evidence": [
-        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md at 24684d5922f082551cc1fd15d1e0fc6221ed472a"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/examples.md at c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "11a734713059889c8894ca75c601d69ea263cb0cbc5ab8bca5b094fee6ed4e74",
+      "fingerprint": "ef81ce7a91afc58f448d3852d30a000392abf885a8ce26b2d5b89f340db2d363",
       "snapshot": {
-        "REFERENCE.md": "dadb851d10fcce8ac956754dff9ceed59dd4f403b6b160af263de7793ef7bcc8",
+        "REFERENCE.md": "ac54537a7be1389e0a9f8e6d649568c176d9cf5f8a94bcf12667d1d6c361bb3c",
         "_artifacts/domain_map.yaml": "b860380083d88b4e652a56702d349bc68a9f96981c35aedb99c1ed765b64e660",
         "_artifacts/skill_spec.md": "41ff0c605a25d062ccc4020db2b618227934dca83f636683690c6223c2b1647d",
         "_artifacts/skill_tree.yaml": "6ba8ae5e57334ae2d62b4aba9a6e57a467a88d279b1ffc533f5ea0f6cc5ced2f",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "fe290c489773741eddb28a5231def0e1046efd7a695a0662d3a3412127e3b4b9",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "14d20e2253242af98cd082f08f69449089bde0c75a7905facd5d381445a91803",
         "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
-        "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
+        "packages/core/skills/typed-grid-areas/references/examples.md": "ba314316b8b9521630d7dce6e79225097eff49fdac93ea36299476e53369a733",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
         "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
         "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "24684d5922f082551cc1fd15d1e0fc6221ed472a",
+      "head": "c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7",
       "outcome": "updated",
-      "reason": "Skill step 8 and REFERENCE.md now cover reading-flow: render slots in the most important layout's order and add reading-flow: grid-rows on the grid so keyboard focus follows the current layout (Chrome and Edge 137+).",
+      "reason": "Added a trap to SKILL.md step 7 and a note in examples.md: an override inherits no tracks, so without columns it emits grid-template-columns: none and auto tracks stretch. The PreferenceCard example's tagless override now sets its columns; REFERENCE.md and acceptance designs.ts carry the same fix.",
       "evidence": [
-        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md at 24684d5922f082551cc1fd15d1e0fc6221ed472a"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/examples.md at c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
@@ -274,15 +274,15 @@
       ]
     },
     "source:packages/acceptance/src/designs.ts": {
-      "fingerprint": "5730c21851cee8101b9ef2425ecab4dc6321b71d1cf720d9e1a0c5a014a6c595",
+      "fingerprint": "a6cb5262b640683b7692476ff7911cbfb98176a045dea3db102273bef1f38b1d",
       "snapshot": {
-        "packages/acceptance/src/designs.ts": "9a6a719ddeca0c814e7246e28a8e9cf51cec80569f08863bf5647e182451c3b8"
+        "packages/acceptance/src/designs.ts": "cd2a59109ae7768ad79359e1dbada9f8a5e7a060dd3248ba4d9c0b4f7c472a46"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
-      "outcome": "no-change",
-      "reason": "A comment now names REFERENCE.md instead of the README; the designs are unchanged.",
+      "head": "c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7",
+      "outcome": "updated",
+      "reason": "Added a trap to SKILL.md step 7 and a note in examples.md: an override inherits no tracks, so without columns it emits grid-template-columns: none and auto tracks stretch. The PreferenceCard example's tagless override now sets its columns; REFERENCE.md and acceptance designs.ts carry the same fix.",
       "evidence": [
-        "packages/acceptance/src/designs.ts"
+        "Changed: packages/acceptance/src/designs.ts at c36270e6b4ec4ad31adb0e5cdc3c35a179c7d9b7"
       ]
     },
     "source:packages/acceptance/src/index.ts": {

@@ -32,7 +32,11 @@ defineLayout({
     },
     // Without a tag, the derived layout would stack the icon above the
     // information in the narrow first column; put them side by side instead.
-    { unless: ["cardTag"], template: "icon information / children children" },
+    {
+      unless: ["cardTag"],
+      template: "icon information / children children",
+      columns: "min-content minmax(0, 1fr)",
+    },
   ],
 });
 ```
