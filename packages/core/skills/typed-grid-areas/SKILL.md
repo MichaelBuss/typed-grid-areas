@@ -65,6 +65,7 @@ Worked examples of the whole process, a nested card and a layered ID card, are i
    - Leave a slot out only to make an optional area absent. Render a slot whose area the current layout hides, and every required slot, always.
    - A nested grid is the outer area's slot (`nest: { content: Content }`, then `<Card.content.icon>`).
    - Put the component's gap, padding and border classes on the grid and the slots; placement comes from the generated CSS.
+   - When the layouts put interactive slots in different visual orders, render the slots in the most important layout's order and give the grid a class with `reading-flow: grid-rows`, so keyboard focus follows the current layout where the browser supports it. Details are in the reference's "Accessibility: reading order" section.
 
    _Done when_ every area has its slot in the markup: required ones always rendered, optional ones under the condition that makes them absent.
 
