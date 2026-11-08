@@ -3,46 +3,46 @@
   "baseline": "5c28744021dd9d569588d59c256162bbf08d0457",
   "items": {
     "skill:packages/core/skills/typed-grid-areas/SKILL.md": {
-      "fingerprint": "cdd948531a69168bc487d7b4b4e9a5d6983f8f8d05c35020ef67004da534db45",
+      "fingerprint": "2958182f6fad8d524a372247c94ceb3ca0afe8b6c85c0883e0ceb445b28a742a",
       "snapshot": {
-        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
-        "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
+        "REFERENCE.md": "99d98578d18892808f0001cbf8e54dfcde73c39e5f76fa1240c03032b494b2fd",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "8d87556bd1962d47c2cbb46aa4829996e32281c266ebfadffa28ffdb08c280ca",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
-        "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
-        "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
+        "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
+        "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
       "outcome": "updated",
-      "reason": "The API reference moved unchanged, headings included, from the README to REFERENCE.md, which ships beside the README in every package (#63, ADR 0007). The skill's source is now REFERENCE.md, and SKILL.md step 8 and references/errors.md send agents to node_modules/typed-grid-areas/REFERENCE.md for their adapter's section.",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
       "evidence": [
-        "SKILL.md sources and step 8; references/errors.md; REFERENCE.md headings unchanged (packages/site/src/reference.node.spec.ts)"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/errors.md, packages/core/src/engine/rules.ts, packages/core/src/validateGridConfig.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
       ]
     },
     "planning:_artifacts": {
-      "fingerprint": "1c76264398618d65d0e2eac8817f9e96986c0111a79a719204fbace48b84c595",
+      "fingerprint": "3a2c52fbef4f92e05a66296c060ef391fd397036bff8866b6b0539da292cd18f",
       "snapshot": {
-        "REFERENCE.md": "04cc57930713cfdba9fa986bd79c1b7ddb45501178d7a60e8507a235914d48c4",
+        "REFERENCE.md": "99d98578d18892808f0001cbf8e54dfcde73c39e5f76fa1240c03032b494b2fd",
         "_artifacts/domain_map.yaml": "b860380083d88b4e652a56702d349bc68a9f96981c35aedb99c1ed765b64e660",
         "_artifacts/skill_spec.md": "41ff0c605a25d062ccc4020db2b618227934dca83f636683690c6223c2b1647d",
         "_artifacts/skill_tree.yaml": "6ba8ae5e57334ae2d62b4aba9a6e57a467a88d279b1ffc533f5ea0f6cc5ced2f",
-        "packages/core/skills/typed-grid-areas/SKILL.md": "1290f2d8c5ef9467b9f07d4775c7a229f81a420c9332d7ded501cb8004168039",
-        "packages/core/skills/typed-grid-areas/references/errors.md": "16ea97f974e4505d46a458ef43390d20affe6818b269c66cd368448a4271f6e1",
+        "packages/core/skills/typed-grid-areas/SKILL.md": "8d87556bd1962d47c2cbb46aa4829996e32281c266ebfadffa28ffdb08c280ca",
+        "packages/core/skills/typed-grid-areas/references/errors.md": "c79976fb8f3eca723e5969093565ba4e0cf2783ecfc3b0a63db5b4d079240a52",
         "packages/core/skills/typed-grid-areas/references/examples.md": "5ebd804e6c349a1fc4d8c33f4de1d74935e066d8d2267e9acaa2391987ac29f4",
         "packages/core/src/adapter/slotCheck.ts": "2874374a25c038e3a1b142010410d030155f03f4b699e64cdb7d33a9d5b1eafe",
         "packages/core/src/engine/cells.ts": "585a1174441065edf99620cc7498ef86cbc2adb632e83c5bae04de0dd7ba50a7",
         "packages/core/src/engine/derive.ts": "e4acadca1796ef8115cd7532333880e25fccb6f3d856f2a430361931f0365e00",
-        "packages/core/src/engine/rules.ts": "d47b5cc232ea4abffde0c7e5a843ccc85e76e2bac138685eae572cc2123e8eed",
-        "packages/core/src/validateGridConfig.ts": "2e75652cf7df23e04cce314da1ec29ed398ca5335f3042243c1bd4307d5fd7bd"
+        "packages/core/src/engine/rules.ts": "4d11dc599b95922e1e1506fd992d60c8df4b8ab9b85964232267ab6ea65c9b4c",
+        "packages/core/src/validateGridConfig.ts": "21e93e663a3e80896831419147d2efc0e4c7fcd81381c49fc83f8e31848f621b"
       },
-      "head": "972d48f20f46f8b763d52b8d768a1024e078af15",
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
       "outcome": "updated",
-      "reason": "The planning records follow the move: skill_tree.yaml lists REFERENCE.md as the source (intent maintainer sync), domain_map.yaml and skill_spec.md cite REFERENCE.md (Breakpoints), and skill_spec.md records #63 in its history.",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
       "evidence": [
-        "_artifacts/skill_tree.yaml, domain_map.yaml, skill_spec.md"
+        "Changed: REFERENCE.md, packages/core/skills/typed-grid-areas/SKILL.md, packages/core/skills/typed-grid-areas/references/errors.md, packages/core/src/engine/rules.ts, packages/core/src/validateGridConfig.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
       ]
     },
     "source:skills/typed-grid-areas/SKILL.md": {
@@ -106,15 +106,15 @@
       ]
     },
     "source:packages/core/src/defineLayout.ts": {
-      "fingerprint": "b462fff24ac7528367db44b8fae4b3742643f7a93ff41122110a18ea7cd23bea",
+      "fingerprint": "451d7275311b6616c0e49e5d37298b0b11fb2eaee4489b526ae29aac65ef7b95",
       "snapshot": {
-        "packages/core/src/defineLayout.ts": "757be80cb31c1675cac28b87fe587b3d6e9d26d25eb85f90a30ca0c43edc78be"
+        "packages/core/src/defineLayout.ts": "fdf598b80d69dab036e529e9c9a7ce2ca6a6f86348e5ed5ef3e9d8845d989dff"
       },
-      "head": "09f74620d77df855ee3a680a0ae52aee1aedde3a",
-      "outcome": "no-change",
-      "reason": "Development-only checks are now written so bundlers drop them from production builds (#46). The skill's guidance is unchanged: warnings are logged in development only, production builds log nothing, and the messages are the same; the README's adapter-authoring example changed how the slot check is gated, which the skill does not cover.",
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "outcome": "updated",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
       "evidence": [
-        "Changed: packages/core/src/defineLayout.ts at 09f74620d77df855ee3a680a0ae52aee1aedde3a"
+        "Changed: packages/core/src/defineLayout.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
       ]
     },
     "source:packages/core/src/isDevelopment.ts": {
@@ -343,6 +343,42 @@
       "reason": "A test helper now reads the Preact blocks of both the README and REFERENCE.md; no API or behaviour changes.",
       "evidence": [
         "packages/preact/src/test-utils/readmeBlocks.ts"
+      ]
+    },
+    "source:packages/core/src/index.ts": {
+      "fingerprint": "c1fb9d207a77e4e549dbe322ea6a7f953dd20a8fe81dda490d9ca3deb63a55b2",
+      "snapshot": {
+        "packages/core/src/index.ts": "f4889c8aed8240361fbcc161e27f9f7f27a20910bd674197c7adc80c3cec9db2"
+      },
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "outcome": "updated",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
+      "evidence": [
+        "Changed: packages/core/src/index.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
+      ]
+    },
+    "source:packages/core/src/template/breakpointTypes.ts": {
+      "fingerprint": "17ad190847cee82a144ff4c71e3d9d4a2eb30f03cc41debc5eb76b9010747b11",
+      "snapshot": {
+        "packages/core/src/template/breakpointTypes.ts": "df0a8f405b75bdd4391961cc37f04913d702fccc35f73b8e45b0909267cb3780"
+      },
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "outcome": "updated",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
+      "evidence": [
+        "Changed: packages/core/src/template/breakpointTypes.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
+      ]
+    },
+    "source:packages/core/src/types.ts": {
+      "fingerprint": "492c5c30c5b66875cd5308324f12c17b8e25899492425aa8d9c99c69353000c5",
+      "snapshot": {
+        "packages/core/src/types.ts": "0e6d4f2a8ec3756c85d3c11b32f3c8ff592fec2648907b52693657678e9a7589"
+      },
+      "head": "d76f5e0e99a6f87e20d2bc1739cd76513967ce1a",
+      "outcome": "updated",
+      "reason": "Breakpoints section and errors reference now state one unit per definition (named sizes are rem), the allowed units and why, and document _unsupportedBreakpoint, _mixedBreakpointUnits and the matching development warnings; px-threshold advice rewritten to put the whole definition in px",
+      "evidence": [
+        "Changed: packages/core/src/types.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
       ]
     }
   }
