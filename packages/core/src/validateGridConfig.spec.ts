@@ -201,6 +201,60 @@ describe("validateGridConfig", () => {
     });
   });
 
+  describe("breakpoint key validation", () => {
+    /** A config with a base layout and at most one conditional layout, each with breakpoints under the given keys. */
+    function withBreakpoints(...keysByLayout: Array<Array<string>>): GridConfig<"a"> {
+      return {
+        areas: ["a"],
+        layouts: keysByLayout.map((keys, i) => ({
+          when: i === 0 ? undefined : ["a"],
+          cells: [["a"]],
+          breakpoints: Object.fromEntries(keys.map(key => [key, { cells: [["a"]] }])),
+        })),
+      };
+    }
+
+    it.each(["@[50%]", "@[calc(1rem + 2ch)]", "@[10cqw]", "@huge", "@[-5rem]", "@[1e3px]"])(
+      "should warn about the unsupported key %s",
+      key => {
+        const errors = validateGridConfig(withBreakpoints([key]));
+
+        expect(errors).toEqual([
+          expect.stringMatching(
+            new RegExp(
+              `^Layout 0: Breakpoint "${key.replace(/[[\](){}+.*?^$|\\]/g, "\\$&")}" isn't supported\\. .*px, rem, em, ch, ex, vw, vh, vi, vb`,
+            ),
+          ),
+        ]);
+      },
+    );
+
+    it("should warn once when one layout mixes units, naming each key's unit and why", () => {
+      const errors = validateGridConfig(withBreakpoints(["@[20ch]", "@sm"]));
+
+      expect(errors).toEqual([
+        expect.stringContaining('Breakpoints mix units: "@[20ch]" (ch), "@sm" (rem).'),
+      ]);
+      expect(errors[0]).toContain("must share a unit (named sizes are rem)");
+      expect(errors[0]).toContain("can't be ordered when the CSS is generated");
+    });
+
+    it("should warn when different layouts use different units", () => {
+      const errors = validateGridConfig(withBreakpoints(["@[20ch]"], ["@[500px]"]));
+
+      expect(errors).toEqual([
+        expect.stringContaining('Breakpoints mix units: "@[20ch]" (ch), "@[500px]" (px).'),
+      ]);
+    });
+
+    it.each([[["@[27.5rem]", "@md"]], [["@[20ch]", "@[40ch]"]], [["@[.5em]", "@[0em]"]]])(
+      "should accept breakpoints that share a unit: %j",
+      keys => {
+        expect(validateGridConfig(withBreakpoints(keys))).toEqual([]);
+      },
+    );
+  });
+
   describe("duplicate condition validation", () => {
     it("should report the whole condition two layouts share", () => {
       const config: GridConfig<"icon" | "info" | "tag"> = {

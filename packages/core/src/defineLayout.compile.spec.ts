@@ -100,6 +100,17 @@ defineLayout({
     { template: "icon cardTag / information information", rows: "auto" },
   ],
 });
+defineLayout({
+  areas,
+  layouts: [{ template: "icon", breakpoints: { "@[50%]": { template: "icon" }, "@huge": { template: "icon" } } }],
+});
+defineLayout({
+  areas,
+  layouts: [
+    { template: "icon", breakpoints: { "@[20ch]": { template: "icon" }, "@sm": { template: "icon" } } },
+    { when: ["cardTag"], template: "icon", breakpoints: { "@[500px]": { template: "icon" } } },
+  ],
+});
 `;
 
 /**
@@ -188,5 +199,11 @@ describe("defineLayout at compile time", () => {
     expect(output).toContain("{ _raggedRow: { row: 2; cells: 1; expected: 2; }; }");
     expect(output).toContain("{ _columnCountError: { expected: 2; got: 3; }; }");
     expect(output).toContain("{ _rowCountError: { expected: 2; got: 1; }; }");
+    expect(output).toContain('{ _unsupportedBreakpoint: "@[50%]"; }');
+    expect(output).toContain('{ _unsupportedBreakpoint: "@huge"; }');
+    const mixed = "Breakpoints in one definition must share a unit (named sizes are rem)";
+    expect(output).toContain(`{ _mixedBreakpointUnits: "${mixed}: ch is mixed with px, rem"; }`);
+    expect(output).toContain(`{ _mixedBreakpointUnits: "${mixed}: rem is mixed with px, ch"; }`);
+    expect(output).toContain(`{ _mixedBreakpointUnits: "${mixed}: px is mixed with rem, ch"; }`);
   });
 });

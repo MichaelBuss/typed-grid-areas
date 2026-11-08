@@ -22,10 +22,26 @@ export const CONTAINER_BREAKPOINTS = {
 export type ContainerBreakpoint = keyof typeof CONTAINER_BREAKPOINTS;
 
 /**
- * A breakpoint at an arbitrary width, in Tailwind's arbitrary-value syntax:
- * `"@[27rem]"` switches when the grid is given at least 27rem.
+ * The units a breakpoint can be written in. Every breakpoint of a definition
+ * uses the same one (named sizes are in rem), so breakpoints can be ordered
+ * when the CSS is generated.
  */
-export type ArbitraryBreakpoint = `@[${string}]`;
+export const BREAKPOINT_UNITS = ["px", "rem", "em", "ch", "ex", "vw", "vh", "vi", "vb"] as const;
+
+/**
+ * A unit a breakpoint can be written in: `px`, `rem`, `em`, `ch`, `ex`, `vw`,
+ * `vh`, `vi` or `vb`.
+ */
+export type BreakpointUnit = (typeof BREAKPOINT_UNITS)[number];
+
+/**
+ * A breakpoint at an arbitrary width, in Tailwind's arbitrary-value syntax:
+ * `"@[27rem]"` switches when the grid is given at least 27rem. The width is a
+ * number and a {@link BreakpointUnit}; `defineLayout` also requires the
+ * number to be plain and non-negative (`"@[-5px]"` and `"@[1e3px]"` are
+ * rejected there).
+ */
+export type ArbitraryBreakpoint = `@[${number}${BreakpointUnit}]`;
 
 /**
  * A breakpoint key: a named Tailwind size (`"@sm"`) or an arbitrary length (`"@[27rem]"`).

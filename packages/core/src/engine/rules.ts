@@ -1,6 +1,8 @@
 import {
   AreaAlignments,
+  BREAKPOINT_UNITS,
   BreakpointLayoutConfig,
+  BreakpointUnit,
   CONTAINER_BREAKPOINTS,
   ContainerBreakpoint,
   GridConfig,
@@ -43,6 +45,9 @@ export type Rule = {
   arrangement: Arrangement;
 };
 
+/** An arbitrary breakpoint's width: a plain, non-negative number and an allowed unit. */
+const ARBITRARY_WIDTH = new RegExp(`^(\\d+(?:\\.\\d+)?|\\.\\d+)(${BREAKPOINT_UNITS.join("|")})$`);
+
 /**
  * Resolves a breakpoint key to the width it switches at: a named Tailwind
  * size (`"@sm"` -> `"24rem"`) or an arbitrary length (`"@[27rem]"` -> `"27rem"`).
@@ -56,20 +61,27 @@ export function breakpointWidth(key: string): string | undefined {
 }
 
 /**
- * Orders widths from narrowest to widest; no width ranks lowest. Lengths in
- * px, rem and em are compared (at 16px to the rem); any other length ranks
- * after all of those.
+ * The unit of an allowed breakpoint key (named sizes are in rem), or
+ * undefined for a key that isn't allowed.
+ */
+export function breakpointUnit(key: string): BreakpointUnit | undefined {
+  const width = breakpointWidth(key);
+  return width === undefined
+    ? undefined
+    : (ARBITRARY_WIDTH.exec(width)?.[2] as BreakpointUnit | undefined);
+}
+
+/**
+ * Orders widths from narrowest to widest; no width ranks lowest. Widths are
+ * compared by their number alone, which is exact because every breakpoint of
+ * a definition shares one unit. A width that isn't allowed ranks last.
  */
 export function widthRank(width: string | undefined): number {
   if (width === undefined) {
     return -1;
   }
-  const match = /^(\d*\.?\d+)(px|rem|em)$/.exec(width.trim());
-  if (match === null) {
-    return Number.MAX_SAFE_INTEGER;
-  }
-  const value = Number(match[1]);
-  return match[2] === "px" ? value : value * 16;
+  const match = ARBITRARY_WIDTH.exec(width);
+  return match === null ? Number.MAX_SAFE_INTEGER : Number(match[1]);
 }
 
 /**

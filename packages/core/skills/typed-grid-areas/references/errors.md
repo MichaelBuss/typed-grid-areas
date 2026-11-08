@@ -68,6 +68,50 @@ defineLayout({
 
 A breakpoint arrangement inherits nothing: when its template has a different shape, it needs its own `columns` and `rows`.
 
+### `{ _unsupportedBreakpoint: "@[50%]" }` on a breakpoint key
+
+A breakpoint key is a named size (`"@xs"` to `"@7xl"`) or `"@[<number><unit>]"`: a plain, non-negative number and one of `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vi`, `vb`. Percentages, `calc()`, container query units (`cqw`, `cqi`, …) and other names aren't allowed. Write the width as a length in the unit the definition's other breakpoints use.
+
+```ts
+import { defineLayout } from "typed-grid-areas";
+
+defineLayout({
+  areas: ["icon", "information"],
+  layouts: [
+    {
+      template: "icon / information",
+      breakpoints: {
+        // @ts-expect-error -- { _unsupportedBreakpoint: "@[50%]" }
+        "@[50%]": { template: "icon information" },
+      },
+    },
+  ],
+});
+```
+
+### `{ _mixedBreakpointUnits: "Breakpoints in one definition must share a unit (named sizes are rem): ch is mixed with rem" }` on every breakpoint key
+
+The definition's breakpoints, across all its layouts, use more than one unit; named sizes count as `rem`. Breakpoints are ordered by width when the CSS is generated, and widths in different units can't be compared then. Rewrite them in one unit: `"@sm"` is `"@[24rem]"`, or `"@[384px]"` at the default 16px font size.
+
+```ts
+import { defineLayout } from "typed-grid-areas";
+
+defineLayout({
+  areas: ["icon", "information"],
+  layouts: [
+    {
+      template: "icon / information",
+      breakpoints: {
+        // @ts-expect-error -- { _mixedBreakpointUnits: "…: ch is mixed with rem" }
+        "@[20ch]": { template: "icon information" },
+        // @ts-expect-error -- { _mixedBreakpointUnits: "…: rem is mixed with ch" }
+        "@md": { template: "information icon" },
+      },
+    },
+  ],
+});
+```
+
 ### `Type '"iconn"' is not assignable to type '"icon" | …'` on `when` or `unless`
 
 A condition names an area that isn't in `areas`. Name areas without their `?`.
@@ -122,6 +166,7 @@ Logged with `console.warn` in development only (`process.env.NODE_ENV === "devel
 - **`defineLayout: Layout 0: Area "photo" isn't a rectangle, so it will cover rows 0-3, columns 0-2 (its bounding box).`** (or `Layer "…"`) An area's cells form an L or another non-rectangular shape, and the browser places it over their bounding box, on top of whatever else is there. Redraw the template so each area's cells, and each layer's, form one rectangle. `Layout 0, breakpoint "@md":` names a breakpoint arrangement.
 - **`Malformed cell "…" at row …, column …`**: a cell that isn't `.`, an area name, or a base (an area name or `.`) and layers (area names) joined by `+`, each name at most once: a stray `+`, `photo+.`, `photo+photo`. Fix the cell.
 - **`Unknown area name "…"`**, **`Unknown area "…" in 'when' clause`**, **`Row 1 has 1 columns, but row 0 has 2`**, **`columns array length (3) doesn't match layout column count (2)`**: the type errors above, for templates, conditions and track lists that aren't literals, so the types couldn't check them.
+- **`Layout 0: Breakpoint "@[50%]" isn't supported. …`** and **`Breakpoints mix units: "@[20ch]" (ch), "@sm" (rem). …`**: the breakpoint type errors above, for keys that aren't literals. The second is logged once per definition and names every key with its unit.
 - **`Layout 2 has the same condition as Layout 1 (unless: cardTag). Layout 2 will override Layout 1 since it appears later.`** Two layouts have the same `when` and `unless`; the earlier one never applies. Merge them, or delete the earlier one.
 
 ### From a grid, after it renders

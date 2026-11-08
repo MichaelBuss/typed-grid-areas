@@ -1,4 +1,5 @@
 import { parseTemplate, parseTracks } from "./template/parseTemplate.ts";
+import { BreakpointKeyCheck, DefinitionUnits } from "./template/breakpointTypes.ts";
 import { ArrangementCheck } from "./template/templateTypes.ts";
 import {
   AreaAlignments,
@@ -40,14 +41,24 @@ export type LayoutInput<TAreaName extends string> = ArrangementInput<TAreaName> 
   breakpoints?: Partial<Record<BreakpointKey, ArrangementInput<TAreaName>>>;
 };
 
-type LayoutCheck<TLayout, TAreaName extends string> = ArrangementCheck<TLayout, TAreaName> &
+/**
+ * The checks one layout must also pass. `TUnits` are the units of every
+ * breakpoint in the definition, which each breakpoint key is checked against.
+ */
+type LayoutCheck<TLayout, TAreaName extends string, TUnits> = ArrangementCheck<TLayout, TAreaName> &
   (TLayout extends { breakpoints: infer TBreakpoints }
-    ? { breakpoints?: { [K in keyof TBreakpoints]: ArrangementCheck<TBreakpoints[K], TAreaName> } }
+    ? {
+        breakpoints?: {
+          [K in keyof TBreakpoints]: ArrangementCheck<TBreakpoints[K], TAreaName> &
+            BreakpointKeyCheck<K, TUnits>;
+        };
+      }
     : unknown);
 
 /** Each layout, intersected with the checks it must also pass. */
 type CheckedLayouts<TLayouts, TAreaName extends string> = {
-  [K in keyof TLayouts]: TLayouts[K] & NoInfer<LayoutCheck<TLayouts[K], TAreaName>>;
+  [K in keyof TLayouts]: TLayouts[K] &
+    NoInfer<LayoutCheck<TLayouts[K], TAreaName, DefinitionUnits<TLayouts>>>;
 };
 
 function toArrangement<TAreaName extends string>(

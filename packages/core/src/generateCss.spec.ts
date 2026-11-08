@@ -155,6 +155,54 @@ describe("generateCss and createSlots", () => {
       expect(result.css).toContain("(min-width: 32rem)");
       expect(result.css).toContain("grid-template-areas: 'b a'");
     });
+
+    it("orders breakpoints in a unit other than rem from narrowest to widest", () => {
+      const css = generateCss(
+        defineLayout({
+          areas: ["a", "b"],
+          layouts: [
+            {
+              template: "a b",
+              breakpoints: {
+                "@[40ch]": { template: "b a" },
+                "@[20ch]": { template: "a / b" },
+              },
+            },
+          ],
+        }),
+      );
+
+      expect(css.indexOf("(min-width: 20ch)")).toBeGreaterThan(-1);
+      expect(css.indexOf("(min-width: 40ch)")).toBeGreaterThan(css.indexOf("(min-width: 20ch)"));
+    });
+
+    it("hides an area below the only breakpoint in a non-rem unit that places it", () => {
+      const css = generateCss(
+        defineLayout({
+          areas: ["a", "b"],
+          layouts: [
+            {
+              template: "a",
+              breakpoints: {
+                // Authored widest first, so source order alone can't put them right.
+                "@[40ch]": { template: "a b" },
+                "@[20ch]": { template: "a a" },
+              },
+            },
+          ],
+        }),
+      );
+      const hidesB = css
+        .split("@container")
+        .filter(block => block.includes("[data-area=b]") && block.includes("display: none"));
+
+      // Hidden from zero width, not only from the 20ch breakpoint on.
+      expect(hidesB.some(block => !/\(min-width: (?!40ch)/.test(block))).toBe(true);
+      for (const block of hidesB) {
+        // Hidden only below 40ch: every hide rule for b ends there.
+        expect(block).toContain("(not (min-width: 40ch))");
+      }
+    });
   });
 
   describe("row and column track support", () => {

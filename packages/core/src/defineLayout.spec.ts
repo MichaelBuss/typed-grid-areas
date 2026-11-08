@@ -1,4 +1,4 @@
-import { defineLayout } from "./defineLayout.ts";
+import { ArrangementInput, defineLayout } from "./defineLayout.ts";
 import { generateCss } from "./generateCss.ts";
 
 describe("defineLayout", () => {
@@ -167,6 +167,25 @@ describe("defineLayout", () => {
       });
 
       expect(console.warn).not.toHaveBeenCalled();
+    });
+
+    it("warns about breakpoints that mix units, and about keys that aren't allowed", () => {
+      const breakpoints: Record<string, ArrangementInput<"a" | "b">> = {
+        "@[20ch]": { template: "a b" },
+        "@sm": { template: "b a" },
+        "@[50%]": { template: "a / b" },
+      };
+      defineLayout({ areas: ["a", "b"], layouts: [{ template: "a / b", breakpoints }] });
+
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^defineLayout: Breakpoints mix units: "@\[20ch\]" \(ch\), "@sm" \(rem\)/,
+        ),
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^defineLayout: Layout 0: Breakpoint "@\[50%\]" isn't supported/),
+      );
+      expect(console.warn).toHaveBeenCalledTimes(2);
     });
 
     it("warns when a non-literal track list doesn't match the template", () => {
