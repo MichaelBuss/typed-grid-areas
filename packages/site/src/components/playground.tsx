@@ -90,8 +90,11 @@ export function Playground({
           <output>{width}px</output>
         </label>
       </div>
-      <div ref={frame} className="tga-playground-frame" data-playground-frame style={{ width }}>
-        <DesignCard design={design} present={present} />
+      {/* Scrolls sideways when the picked width is wider than the screen. */}
+      <div className="tga-playground-stage">
+        <div ref={frame} className="tga-playground-frame" data-playground-frame style={{ width }}>
+          <DesignCard design={design} present={present} />
+        </div>
       </div>
       {showCss && <GeneratedCss blocks={css} />}
     </div>

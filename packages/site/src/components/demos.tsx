@@ -42,7 +42,11 @@ export type DemoFrame<TArea extends string> = {
   present: Present<TArea>;
 };
 
-/** A card at a fixed width, labelled with it, so the page shows how the width changes the layout. */
+/**
+ * A card at a fixed width, labelled with it, so the page shows how the width
+ * changes the layout. It keeps that width on a narrower screen, where its
+ * row scrolls sideways, so the layout shown is always the one labelled.
+ */
 function Frame({
   width,
   label,
@@ -58,7 +62,7 @@ function Frame({
   return (
     <figure
       className="tga-demo"
-      style={{ width, maxWidth: "100%", margin: 0 }}
+      style={{ width, flex: "none", margin: 0 }}
       data-present={present?.join(",")}
     >
       {children}

@@ -1,10 +1,14 @@
-/* The Examples page's live demos: a wrapping row of cards at fixed widths. */
+/*
+ * The Examples page's live demos: a wrapping row of cards at fixed widths.
+ * A card wider than the screen keeps its width, and the row scrolls.
+ */
 .tga-demos {
   display: flex;
   flex-wrap: wrap;
   align-items: start;
   gap: 1.5rem;
   margin-block: 1.5rem;
+  overflow-x: auto;
 }
 
 /* The playground (Try it): controls above a container you can resize. */
@@ -48,10 +52,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Room for the frame's outline, and a sideways scroll when it's wider than the screen. */
+.tga-playground-stage {
+  overflow-x: auto;
+  padding: 6px;
+}
+
 .tga-playground-frame {
   box-sizing: content-box;
   min-width: 200px;
-  max-width: 100%;
   padding-block-end: 1rem;
   outline: 1px dashed var(--sl-color-gray-4);
   outline-offset: 4px;

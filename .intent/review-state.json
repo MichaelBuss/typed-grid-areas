@@ -310,13 +310,13 @@
       ]
     },
     "source:README.md": {
-      "fingerprint": "66af98c5a1e80d2c3fa816cae62f0ac163e25d70209eb30335786204804de23a",
+      "fingerprint": "f7278ba64fb4745056886dee8b17cdc155abad75e10286305e57fc16b5ccbe0f",
       "snapshot": {
-        "README.md": "778bc19994027196c82452e20feb4ffc65ff3fa79864ed62bb2ddb4e34f82cd1"
+        "README.md": "9c55b217dc8dcb9f80ac955d9510cde31a78674b1ab23bb23dee924d865890f4"
       },
-      "head": "ea797a95fbb579d913bb1753770a0b54f54b57ed",
+      "head": "0d885fd948d63fa745101189a9696d07f89c9b79",
       "outcome": "no-change",
-      "reason": "The README's pitch gains a line under the tagline (zero-dependency core, a few kB gzipped, built on web standards) and two sentences are tightened; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
+      "reason": "The README's grid template areas picture now links its live version on the docs site, and two Learn more items each fit on one line; the skill relies on REFERENCE.md, which is unchanged, so its guidance still holds.",
       "evidence": [
         "README.md; REFERENCE.md unchanged"
       ]

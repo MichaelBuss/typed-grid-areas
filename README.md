@@ -20,7 +20,9 @@ you name a grid's regions and write the names down the way the regions sit
 on screen; each child then takes its region by name. The template is a
 picture of the component:
 
-![A template whose area names, icon, title, tag and body, are laid out in the same shape and colours as the card they arrange](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/areas.png)
+[![A template whose area names, icon, title, tag and body, are laid out in the same shape and colours as the card they arrange](https://raw.githubusercontent.com/MichaelBuss/typed-grid-areas/main/docs/images/areas.png)](https://michaelbuss.github.io/typed-grid-areas/#grid-template-areas-in-one-picture)
+
+[Try it live](https://michaelbuss.github.io/typed-grid-areas/#grid-template-areas-in-one-picture): hover an area to find it in both, or untick a slot to watch the picture redraw.
 
 ## Simple on paper, hard in practice
 
@@ -140,10 +142,8 @@ npx @tanstack/intent@latest install
 
 ## Learn more
 
-- [Docs](https://michaelbuss.github.io/typed-grid-areas/): how it works,
-  the concepts, and live examples.
-- [Try it in your browser](https://michaelbuss.github.io/typed-grid-areas/try-it/):
-  a playground, and an example app per framework.
+- [Docs](https://michaelbuss.github.io/typed-grid-areas/): how it works, the concepts, and live examples.
+- [Try it in your browser](https://michaelbuss.github.io/typed-grid-areas/try-it/): a playground, and an example app per framework.
 - [The full API reference](https://github.com/MichaelBuss/typed-grid-areas/blob/main/REFERENCE.md):
   every option and every adapter. It also ships in every package, matching
   the version you installed: `node_modules/typed-grid-areas/REFERENCE.md`.
