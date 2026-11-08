@@ -1,5 +1,19 @@
 # typed-grid-areas
 
+## 0.4.0
+
+### Minor Changes
+
+- [#76](https://github.com/MichaelBuss/typed-grid-areas/pull/76) [`4c6c3e3`](https://github.com/MichaelBuss/typed-grid-areas/commit/4c6c3e3f2cf32b51baa2ba5886409f397716392a) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - Breakpoints in a definition now share one unit, so they're always ordered correctly. Previously a breakpoint in a unit other than `px`, `rem` or `em` (such as `"@[20ch]"`) was ordered after all others, so a narrower one could override a wider one and hide areas the wider layout shows.
+
+  Every breakpoint key in every layout of a definition must use the same unit; named sizes (`@xs` to `@7xl`) count as `rem`. An arbitrary key is a plain, non-negative number and one of `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vi` or `vb`. `defineLayout` reports `{ _unsupportedBreakpoint: "@[50%]" }` on a key that isn't allowed (percentages, `calc()`, container query units, unknown names) and `{ _mixedBreakpointUnits: "…" }` on every key when units are mixed; in development it also warns about both, including for keys that aren't literals. `ArbitraryBreakpoint` is narrowed to `` `@[${number}${BreakpointUnit}]` ``, and the new `BreakpointUnit` type lists the units.
+
+### Patch Changes
+
+- [#77](https://github.com/MichaelBuss/typed-grid-areas/pull/77) [`4cd6b8a`](https://github.com/MichaelBuss/typed-grid-areas/commit/4cd6b8a56cd058a3e4152ca031313e570e3196ce) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - The API reference has a new section, "Accessibility: reading order": keyboard focus follows the DOM while each layout can order the areas differently, and a class with `reading-flow: grid-rows` on the grid makes focus follow the current layout in Chrome and Edge 137+. The agent skill the core ships now suggests it when interactive slots move between layouts. The code is unchanged.
+
+- [#74](https://github.com/MichaelBuss/typed-grid-areas/pull/74) [`d866933`](https://github.com/MichaelBuss/typed-grid-areas/commit/d86693326b7a343cce2ec4bd742c6fb63b2a63bb) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - The npm page's picture of a grid template beside the card it lays out now links to its live version on the docs site, where you can hover an area to find it in both, or take a slot out and watch the template redraw. The code is unchanged.
+
 ## 0.3.1
 
 ### Patch Changes

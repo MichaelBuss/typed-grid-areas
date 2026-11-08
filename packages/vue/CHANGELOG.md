@@ -1,5 +1,15 @@
 # @typed-grid-areas/vue
 
+## 0.1.3
+
+### Patch Changes
+
+- [#77](https://github.com/MichaelBuss/typed-grid-areas/pull/77) [`4cd6b8a`](https://github.com/MichaelBuss/typed-grid-areas/commit/4cd6b8a56cd058a3e4152ca031313e570e3196ce) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - The API reference has a new section, "Accessibility: reading order": keyboard focus follows the DOM while each layout can order the areas differently, and a class with `reading-flow: grid-rows` on the grid makes focus follow the current layout in Chrome and Edge 137+. The agent skill the core ships now suggests it when interactive slots move between layouts. The code is unchanged.
+
+- [#74](https://github.com/MichaelBuss/typed-grid-areas/pull/74) [`d866933`](https://github.com/MichaelBuss/typed-grid-areas/commit/d86693326b7a343cce2ec4bd742c6fb63b2a63bb) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - The npm page's picture of a grid template beside the card it lays out now links to its live version on the docs site, where you can hover an area to find it in both, or take a slot out and watch the template redraw. The code is unchanged.
+- Updated dependencies [[`4c6c3e3`](https://github.com/MichaelBuss/typed-grid-areas/commit/4c6c3e3f2cf32b51baa2ba5886409f397716392a), [`4cd6b8a`](https://github.com/MichaelBuss/typed-grid-areas/commit/4cd6b8a56cd058a3e4152ca031313e570e3196ce), [`d866933`](https://github.com/MichaelBuss/typed-grid-areas/commit/d86693326b7a343cce2ec4bd742c6fb63b2a63bb)]:
+  - typed-grid-areas@0.4.0
+
 ## 0.1.2
 
 ### Patch Changes
