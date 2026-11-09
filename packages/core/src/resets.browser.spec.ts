@@ -26,6 +26,27 @@ describe("what a later layout resets of an earlier one that applies with it", ()
     expect(grid.rect("c")).toMatchObject({ x: 200, width: 100 });
   });
 
+  it("drops the base layout's track sizes at a breakpoint that doesn't set them (@sm = 384px)", () => {
+    const responsive = defineLayout({
+      areas: ["a", "b"],
+      layouts: [
+        {
+          template: "a / b",
+          rows: "30px 40px",
+          columns: "200px",
+          breakpoints: { "@sm": { template: "a b" } },
+        },
+      ],
+    });
+
+    const narrow = mountGrid(responsive, { width: 300, present: ["a", "b"] });
+    expect(narrow.rect("a")).toMatchObject({ width: 200, height: 30 });
+
+    const wide = mountGrid(responsive, { width: 500, present: ["a", "b"] });
+    expect(wide.rect("a")).toMatchObject({ x: 0, width: 250, height: 10 });
+    expect(wide.rect("b")).toMatchObject({ x: 250, width: 250 });
+  });
+
   it("drops an earlier alignment the later layout doesn't set", () => {
     const aligned = defineLayout({
       areas: ["a", "b"],
