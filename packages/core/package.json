@@ -1,6 +1,6 @@
 {
   "name": "typed-grid-areas",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Type-safe CSS grid layouts: describe a grid once, and every combination of slots lays itself out, at every breakpoint.",
   "keywords": [
     "css-grid",

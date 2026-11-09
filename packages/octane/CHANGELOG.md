@@ -1,5 +1,13 @@
 # @typed-grid-areas/octane
 
+## 0.1.4
+
+### Patch Changes
+
+- [#78](https://github.com/MichaelBuss/typed-grid-areas/pull/78) [`5bd0b3b`](https://github.com/MichaelBuss/typed-grid-areas/commit/5bd0b3b59ed0a0792bb1a05866314e2da581700e) Thanks [@MichaelBuss](https://github.com/MichaelBuss)! - The PreferenceCard example in `REFERENCE.md` and the agent skill now gives its tagless layout (`unless: ["cardTag"]`) its own `columns`. Without them the layout had `grid-template-columns: none`, so its two auto columns shared the free width and the icon drifted away from the title as the card widened. Copy the `columns: "min-content minmax(0, 1fr)"` line if you built on that example; a layout of your own that omits `columns` and sets `template` the same way needs it too. The library code is unchanged.
+- Updated dependencies [[`5bd0b3b`](https://github.com/MichaelBuss/typed-grid-areas/commit/5bd0b3b59ed0a0792bb1a05866314e2da581700e)]:
+  - typed-grid-areas@0.4.1
+
 ## 0.1.3
 
 ### Patch Changes

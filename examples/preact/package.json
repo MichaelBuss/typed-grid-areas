@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@typed-grid-areas/preact": "^0.1.3",
+    "@typed-grid-areas/preact": "^0.1.4",
     "preact": "^11.1.0",
-    "typed-grid-areas": "^0.4.0"
+    "typed-grid-areas": "^0.4.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
