@@ -1,7 +1,5 @@
-import { render } from "vitest-browser-react";
-import { defineLayout } from "typed-grid-areas";
-import { createGridComponent } from "./gridComponent.tsx";
-import { mountGrid } from "./test-utils/mountGrid.tsx";
+import { defineLayout } from "./defineLayout.ts";
+import { mountGrid } from "./test-utils/mountGrid.ts";
 
 const cardGrid = defineLayout({
   areas: ["icon", "info", "tag"],
@@ -31,7 +29,7 @@ const breakpointGrid = defineLayout({
 });
 
 describe("grid layout in a real browser", () => {
-  it("lays out a multi-line text template with a one-string track list", async () => {
+  it("lays out a multi-line text template with a one-string track list", () => {
     const textGrid = defineLayout({
       areas: ["icon", "tag", "info"],
       layouts: [
@@ -45,7 +43,7 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    const grid = await mountGrid(textGrid, { width: 200, present: ["icon", "tag", "info"] });
+    const grid = mountGrid(textGrid, { width: 200, present: ["icon", "tag", "info"] });
 
     expect(grid.templateAreas()).toBe('"icon tag" "info info"');
     expect(grid.rect("icon")).toMatchObject({ x: 0, y: 0, width: 48, height: 20 });
@@ -53,24 +51,24 @@ describe("grid layout in a real browser", () => {
     expect(grid.rect("info")).toMatchObject({ x: 0, y: 20, width: 200, height: 30 });
   });
 
-  it("applies the base layout when no condition or breakpoint matches", async () => {
-    const grid = await mountGrid(cardGrid, { width: 200, present: ["info", "tag"] });
+  it("applies the base layout when no condition or breakpoint matches", () => {
+    const grid = mountGrid(cardGrid, { width: 200, present: ["info", "tag"] });
 
     expect(grid.templateAreas()).toBe('"info tag"');
     expect(grid.rect("info")).toMatchObject({ x: 0, width: 100 });
     expect(grid.rect("tag")).toMatchObject({ x: 100, width: 100 });
   });
 
-  it("applies a layout whose condition matches exactly the rendered slots", async () => {
-    const withIconAndInfo = await mountGrid(cardGrid, { width: 200, present: ["icon", "info"] });
+  it("applies a layout whose condition matches exactly the rendered slots", () => {
+    const withIconAndInfo = mountGrid(cardGrid, { width: 200, present: ["icon", "info"] });
 
     expect(withIconAndInfo.templateAreas()).toBe('"icon info"');
     expect(withIconAndInfo.rect("icon")).toMatchObject({ x: 0, width: 48 });
     expect(withIconAndInfo.rect("info")).toMatchObject({ x: 48, width: 152 });
   });
 
-  it("still applies a layout when a slot its condition doesn't mention is also rendered", async () => {
-    const withTagToo = await mountGrid(cardGrid, {
+  it("still applies a layout when a slot its condition doesn't mention is also rendered", () => {
+    const withTagToo = mountGrid(cardGrid, {
       width: 200,
       present: ["icon", "info", "tag"],
     });
@@ -78,7 +76,7 @@ describe("grid layout in a real browser", () => {
     expect(withTagToo.templateAreas()).toBe('"icon info"');
   });
 
-  it("stops applying a layout when a slot in its unless list is rendered", async () => {
+  it("stops applying a layout when a slot in its unless list is rendered", () => {
     const unlessGrid = defineLayout({
       areas: ["icon", "info", "tag"],
       layouts: [
@@ -92,20 +90,20 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    const withoutTag = await mountGrid(unlessGrid, { width: 200, present: ["icon", "info"] });
+    const withoutTag = mountGrid(unlessGrid, { width: 200, present: ["icon", "info"] });
     expect(withoutTag.templateAreas()).toBe('"icon info"');
 
-    const withTag = await mountGrid(unlessGrid, { width: 200, present: ["icon", "info", "tag"] });
+    const withTag = mountGrid(unlessGrid, { width: 200, present: ["icon", "info", "tag"] });
     expect(withTag.templateAreas()).toBe('"info tag"');
   });
 
-  it("falls back to the base layout when a slot the condition requires is removed", async () => {
-    const withoutIcon = await mountGrid(cardGrid, { width: 200, present: ["info"] });
+  it("falls back to the base layout when a slot the condition requires is removed", () => {
+    const withoutIcon = mountGrid(cardGrid, { width: 200, present: ["info"] });
 
     expect(withoutIcon.templateAreas()).toBe('"info tag"');
   });
 
-  it("applies the later of two matching layouts even if the earlier one mentions more areas", async () => {
+  it("applies the later of two matching layouts even if the earlier one mentions more areas", () => {
     const precedenceGrid = defineLayout({
       areas: ["icon", "info", "tag"],
       layouts: [
@@ -114,7 +112,7 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    const grid = await mountGrid(precedenceGrid, {
+    const grid = mountGrid(precedenceGrid, {
       width: 300,
       present: ["icon", "info", "tag"],
     });
@@ -145,8 +143,8 @@ describe("grid layout in a real browser", () => {
       consumerStyle.remove();
     });
 
-    it("have no rendered box while that layout applies", async () => {
-      const grid = await mountGrid(hidingGrid, {
+    it("have no rendered box while that layout applies", () => {
+      const grid = mountGrid(hidingGrid, {
         width: 200,
         present: ["icon", "info", "tag"],
         slotClassNames: { tag: "flex-slot" },
@@ -156,8 +154,8 @@ describe("grid layout in a real browser", () => {
       expect(grid.slot("tag").getClientRects()).toHaveLength(0);
     });
 
-    it("appear again when a later matching layout includes them", async () => {
-      const grid = await mountGrid(hidingGrid, {
+    it("appear again when a later matching layout includes them", () => {
+      const grid = mountGrid(hidingGrid, {
         width: 200,
         present: ["icon", "tag"],
         slotClassNames: { tag: "flex-slot" },
@@ -174,8 +172,8 @@ describe("grid layout in a real browser", () => {
         layouts: [{ template: "info", breakpoints: { "@sm": { template: "icon info" } } }],
       });
 
-      it("are hidden below the breakpoint that brings them in", async () => {
-        const grid = await mountGrid(responsiveHidingGrid, {
+      it("are hidden below the breakpoint that brings them in", () => {
+        const grid = mountGrid(responsiveHidingGrid, {
           width: 200,
           present: ["icon", "info"],
           slotClassNames: { icon: "flex-slot" },
@@ -184,8 +182,8 @@ describe("grid layout in a real browser", () => {
         expect(grid.slot("icon").getClientRects()).toHaveLength(0);
       });
 
-      it("appear from that breakpoint up", async () => {
-        const grid = await mountGrid(responsiveHidingGrid, {
+      it("appear from that breakpoint up", () => {
+        const grid = mountGrid(responsiveHidingGrid, {
           width: 800,
           present: ["icon", "info"],
           slotClassNames: { icon: "flex-slot" },
@@ -209,14 +207,14 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    it("lets a layout's breakpoint arrangement beat its own base arrangement", async () => {
-      const grid = await mountGrid(precedenceGrid, { width: 800, present: ["icon", "info"] });
+    it("lets a layout's breakpoint arrangement beat its own base arrangement", () => {
+      const grid = mountGrid(precedenceGrid, { width: 800, present: ["icon", "info"] });
 
       expect(grid.templateAreas()).toBe('"icon info"');
     });
 
-    it("lets a later layout beat an earlier layout's breakpoint arrangement", async () => {
-      const grid = await mountGrid(precedenceGrid, {
+    it("lets a later layout beat an earlier layout's breakpoint arrangement", () => {
+      const grid = mountGrid(precedenceGrid, {
         width: 800,
         present: ["icon", "info", "tag"],
       });
@@ -245,16 +243,16 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    it("aligns an area within its cell", async () => {
-      const grid = await mountGrid(alignedGrid, { width: 200, present: ["info", "tag"] });
+    it("aligns an area within its cell", () => {
+      const grid = mountGrid(alignedGrid, { width: 200, present: ["info", "tag"] });
 
       // An empty slot shrinks to zero width at the end of its 100px column,
       // and its 10px min-height sits centred in the 50px row.
       expect(grid.rect("tag")).toMatchObject({ x: 200, width: 0, y: 20, height: 10 });
     });
 
-    it("doesn't carry over into a different layout that also matches", async () => {
-      const grid = await mountGrid(alignedGrid, {
+    it("doesn't carry over into a different layout that also matches", () => {
+      const grid = mountGrid(alignedGrid, {
         width: 200,
         present: ["icon", "info", "tag"],
       });
@@ -262,7 +260,7 @@ describe("grid layout in a real browser", () => {
       expect(grid.rect("tag")).toMatchObject({ x: 100, width: 100, y: 0, height: 50 });
     });
 
-    it("loses to a consumer class that sets justify-self on the slot", async () => {
+    it("loses to a consumer class that sets justify-self on the slot", () => {
       // Zero specificity and earlier in the document than the grid's own CSS,
       // so only the cascade layer lets it win.
       const consumerStyle = document.createElement("style");
@@ -270,7 +268,7 @@ describe("grid layout in a real browser", () => {
       document.head.append(consumerStyle);
 
       try {
-        const grid = await mountGrid(alignedGrid, {
+        const grid = mountGrid(alignedGrid, {
           width: 200,
           present: ["info", "tag"],
           slotClassNames: { tag: "start-slot" },
@@ -283,8 +281,8 @@ describe("grid layout in a real browser", () => {
     });
   });
 
-  it("marks slots with data-area and keeps placement out of inline styles", async () => {
-    const grid = await mountGrid(cardGrid, { width: 200, present: ["info", "tag"] });
+  it("marks slots with data-area and keeps placement out of inline styles", () => {
+    const grid = mountGrid(cardGrid, { width: 200, present: ["info", "tag"] });
 
     expect(grid.slot("info").getAttribute("data-area")).toBe("info");
     expect(grid.slot("info").hasAttribute("data-slot")).toBe(false);
@@ -292,14 +290,14 @@ describe("grid layout in a real browser", () => {
     expect(grid.rect("tag")).toMatchObject({ x: 100, width: 100 });
   });
 
-  it("applies a breakpoint layout based on the grid's own width", async () => {
+  it("applies a breakpoint layout based on the grid's own width", () => {
     // 800px is well above @sm (24rem = 384px), and the wrapper is not a container.
-    const grid = await mountGrid(breakpointGrid, { width: 800, present: ["icon", "info"] });
+    const grid = mountGrid(breakpointGrid, { width: 800, present: ["icon", "info"] });
 
     expect(grid.templateAreas()).toBe('"icon info"');
   });
 
-  it("switches a nested grid's breakpoints on the nested grid's own width", async () => {
+  it("switches a nested grid's breakpoints on the nested grid's own width", () => {
     // At 800px the outer grid's own @sm layout applies, giving `main` 200px.
     // `main` comes after an empty cell, so the nested grid only lands in it if
     // the area reaches its outermost element (auto-placement would pick the
@@ -317,31 +315,19 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    const Outer = createGridComponent(outerGrid, {
-      nest: { main: createGridComponent(breakpointGrid) },
+    const inner = mountGrid(breakpointGrid, {
+      width: 800,
+      present: ["icon", "info"],
+      outerArea: "main",
+    });
+    const outer = mountGrid(outerGrid, {
+      width: 800,
+      present: ["main", "side"],
+      nested: { main: inner.outermost },
     });
 
-    function Nested() {
-      return (
-        <Outer>
-          <Outer.main data-testid="inner">
-            <Outer.main.icon />
-            <Outer.main.info />
-          </Outer.main>
-          <Outer.side />
-        </Outer>
-      );
-    }
-
-    await render(
-      <div style={{ width: 800 }}>
-        <Nested />
-      </div>,
-    );
-
-    const inner = document.querySelector<HTMLElement>("[data-testid=inner]");
-    expect(inner?.getBoundingClientRect().width).toBe(200);
-    expect(inner && getComputedStyle(inner).gridTemplateAreas).toBe('"icon" "info"');
+    expect(outer.rect("main")).toMatchObject({ width: 200 });
+    expect(inner.templateAreas()).toBe('"icon" "info"');
   });
 
   describe("an arbitrary breakpoint (@[27rem] = 432px)", () => {
@@ -355,21 +341,21 @@ describe("grid layout in a real browser", () => {
       ],
     });
 
-    it("does not apply just below its width", async () => {
-      const grid = await mountGrid(arbitraryGrid, { width: 431, present: ["icon", "info"] });
+    it("does not apply just below its width", () => {
+      const grid = mountGrid(arbitraryGrid, { width: 431, present: ["icon", "info"] });
 
       expect(grid.templateAreas()).toBe('"icon" "info"');
     });
 
-    it("applies at its width", async () => {
-      const grid = await mountGrid(arbitraryGrid, { width: 432, present: ["icon", "info"] });
+    it("applies at its width", () => {
+      const grid = mountGrid(arbitraryGrid, { width: 432, present: ["icon", "info"] });
 
       expect(grid.templateAreas()).toBe('"icon info"');
     });
   });
 
-  it("ignores a wider size container above the grid", async () => {
-    const grid = await mountGrid(breakpointGrid, {
+  it("ignores a wider size container above the grid", () => {
+    const grid = mountGrid(breakpointGrid, {
       width: 200,
       ancestorContainerWidth: 800,
       present: ["icon", "info"],
@@ -378,8 +364,8 @@ describe("grid layout in a real browser", () => {
     expect(grid.templateAreas()).toBe('"icon" "info"');
   });
 
-  it("ignores a narrower size container above the grid", async () => {
-    const grid = await mountGrid(breakpointGrid, {
+  it("ignores a narrower size container above the grid", () => {
+    const grid = mountGrid(breakpointGrid, {
       width: 800,
       ancestorContainerWidth: 200,
       present: ["icon", "info"],

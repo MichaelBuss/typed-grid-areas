@@ -1,5 +1,5 @@
-import { defineLayout } from "typed-grid-areas";
-import { mountGrid } from "./test-utils/mountGrid.tsx";
+import { defineLayout } from "./defineLayout.ts";
+import { mountGrid } from "./test-utils/mountGrid.ts";
 
 describe("derived layouts in a real browser", () => {
   const card = defineLayout({
@@ -13,8 +13,8 @@ describe("derived layouts in a real browser", () => {
     ],
   });
 
-  it("uses the authored layout while every optional area is present", async () => {
-    const grid = await mountGrid(card, {
+  it("uses the authored layout while every optional area is present", () => {
+    const grid = mountGrid(card, {
       width: 300,
       present: ["icon", "information", "cardTag", "children"],
     });
@@ -25,8 +25,8 @@ describe("derived layouts in a real browser", () => {
     expect(grid.rect("cardTag")).toMatchObject({ x: 48, y: 0, width: 252, height: 20 });
   });
 
-  it("drops the row an absent area leaves empty", async () => {
-    const grid = await mountGrid(card, {
+  it("drops the row an absent area leaves empty", () => {
+    const grid = mountGrid(card, {
       width: 300,
       present: ["icon", "information", "cardTag"],
     });
@@ -35,8 +35,8 @@ describe("derived layouts in a real browser", () => {
     expect(grid.rect("information")).toMatchObject({ x: 0, y: 20, width: 300, height: 30 });
   });
 
-  it("drops a column, with its track size, when the areas beside it continue into another", async () => {
-    const grid = await mountGrid(card, {
+  it("drops a column, with its track size, when the areas beside it continue into another", () => {
+    const grid = mountGrid(card, {
       width: 300,
       present: ["icon", "information", "children"],
     });
@@ -47,15 +47,15 @@ describe("derived layouts in a real browser", () => {
     expect(grid.rect("children")).toMatchObject({ x: 0, y: 50, width: 48, height: 40 });
   });
 
-  it("keeps spanning areas at full width when the first row empties", async () => {
-    const grid = await mountGrid(card, { width: 300, present: ["information", "children"] });
+  it("keeps spanning areas at full width when the first row empties", () => {
+    const grid = mountGrid(card, { width: 300, present: ["information", "children"] });
 
     expect(grid.templateAreas()).toBe('"information information" "children children"');
     expect(grid.rect("information")).toMatchObject({ x: 0, y: 0, width: 300, height: 30 });
     expect(grid.rect("children")).toMatchObject({ x: 0, y: 30, width: 300, height: 40 });
   });
 
-  it("shortens an area spanning a dropped column", async () => {
+  it("shortens an area spanning a dropped column", () => {
     const idCard = defineLayout({
       areas: ["photo", "details", "qr?"],
       layouts: [
@@ -66,14 +66,14 @@ describe("derived layouts in a real browser", () => {
       ],
     });
 
-    const grid = await mountGrid(idCard, { width: 300, present: ["photo", "details"] });
+    const grid = mountGrid(idCard, { width: 300, present: ["photo", "details"] });
 
     expect(grid.templateAreas()).toBe('"photo" "details"');
     expect(grid.rect("photo")).toMatchObject({ x: 0, width: 300 });
     expect(grid.rect("details")).toMatchObject({ x: 0, width: 300 });
   });
 
-  it("lets a neighbour grow into a hole that can't be dropped", async () => {
+  it("lets a neighbour grow into a hole that can't be dropped", () => {
     const idCard = defineLayout({
       areas: ["photo", "identity", "logo", "details", "qr?"],
       layouts: [
@@ -84,7 +84,7 @@ describe("derived layouts in a real browser", () => {
       ],
     });
 
-    const grid = await mountGrid(idCard, {
+    const grid = mountGrid(idCard, {
       width: 300,
       present: ["photo", "identity", "logo", "details"],
     });
@@ -93,7 +93,7 @@ describe("derived layouts in a real browser", () => {
     expect(grid.rect("details")).toMatchObject({ x: 100, width: 200 });
   });
 
-  it("lets an override declared after the layout beat the derived layout", async () => {
+  it("lets an override declared after the layout beat the derived layout", () => {
     const withOverride = defineLayout({
       areas: ["icon?", "information", "cardTag?", "children?"],
       layouts: [
@@ -109,7 +109,7 @@ describe("derived layouts in a real browser", () => {
       ],
     });
 
-    const grid = await mountGrid(withOverride, {
+    const grid = mountGrid(withOverride, {
       width: 300,
       present: ["icon", "information", "children"],
     });
@@ -118,7 +118,7 @@ describe("derived layouts in a real browser", () => {
     expect(grid.rect("information")).toMatchObject({ x: 48, y: 0, width: 252 });
   });
 
-  it("derives breakpoint arrangements too (@sm = 384px)", async () => {
+  it("derives breakpoint arrangements too (@sm = 384px)", () => {
     const responsive = defineLayout({
       areas: ["icon?", "information", "cardTag?"],
       layouts: [
@@ -135,10 +135,10 @@ describe("derived layouts in a real browser", () => {
       ],
     });
 
-    const narrow = await mountGrid(responsive, { width: 300, present: ["information", "cardTag"] });
+    const narrow = mountGrid(responsive, { width: 300, present: ["information", "cardTag"] });
     expect(narrow.templateAreas()).toBe('"information" "cardTag"');
 
-    const wide = await mountGrid(responsive, { width: 500, present: ["information", "cardTag"] });
+    const wide = mountGrid(responsive, { width: 500, present: ["information", "cardTag"] });
     expect(wide.templateAreas()).toBe('"information cardTag"');
     expect(wide.rect("cardTag")).toMatchObject({ x: 400, width: 100 });
   });

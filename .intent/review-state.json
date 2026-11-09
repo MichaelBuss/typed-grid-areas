@@ -380,6 +380,30 @@
       "evidence": [
         "Changed: packages/core/src/types.ts at d76f5e0e99a6f87e20d2bc1739cd76513967ce1a"
       ]
+    },
+    "source:packages/core/src/test-utils/mountGrid.ts": {
+      "fingerprint": "92f40df22bec2e7b8d0a7ec540fadf0b0cb7f621c3faa469a251b5e4d4c6d494",
+      "snapshot": {
+        "packages/core/src/test-utils/mountGrid.ts": "1d255503257fb4e70ed5c6fc5f4f60b7d5a23c73b7a8afbe5bb526b6956db684"
+      },
+      "head": "da086056340ffff130810888226356ae4eea61f5",
+      "outcome": "no-change",
+      "reason": "Test-only change: layout specs and their mount helper moved from the React adapter into the core. No shipped code or skill guidance changed.",
+      "evidence": [
+        "Changed: packages/core/src/test-utils/mountGrid.ts at da086056340ffff130810888226356ae4eea61f5"
+      ]
+    },
+    "source:packages/react/src/test-utils/mountGrid.tsx": {
+      "fingerprint": "2bfef62043781bd4a86580b66f8e6595a062f2ba828672071a4403313232ee99",
+      "snapshot": {
+        "packages/react/src/test-utils/mountGrid.tsx": null
+      },
+      "head": "da086056340ffff130810888226356ae4eea61f5",
+      "outcome": "no-change",
+      "reason": "Test-only change: layout specs and their mount helper moved from the React adapter into the core. No shipped code or skill guidance changed.",
+      "evidence": [
+        "Changed: packages/react/src/test-utils/mountGrid.tsx at da086056340ffff130810888226356ae4eea61f5"
+      ]
     }
   }
 }
